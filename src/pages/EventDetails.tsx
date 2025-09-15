@@ -142,8 +142,20 @@ export default function EventDetails() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* App Bar with Back Button */}
+      <nav className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3">
+          <Link to="/">
+            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar aos eventos
+            </Button>
+          </Link>
+        </div>
+      </nav>
+
       {/* Hero Section */}
-      <section className="relative h-[60vh] w-full overflow-hidden">
+      <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
         <div className="absolute inset-0">
           <img
             src={event.image}
@@ -154,19 +166,19 @@ export default function EventDetails() {
         </div>
         
         <div className="relative z-10 h-full flex items-end">
-          <div className="container mx-auto px-4 pb-12">
+          <div className="container mx-auto px-4 pb-8 md:pb-12">
             <div className="max-w-4xl">
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+              <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-white mb-2 md:mb-4">
                 {event.title}
               </h1>
-              <div className="flex flex-wrap gap-4 text-white/90">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-white/90">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  <span className="text-lg">{event.date}</span>
+                  <Calendar className="w-4 h-4 md:w-5 md:h-5" />
+                  <span className="text-sm md:text-lg">{event.date}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
-                  <span className="text-lg">{event.time}</span>
+                  <Clock className="w-4 h-4 md:w-5 md:h-5" />
+                  <span className="text-sm md:text-lg">{event.time}</span>
                 </div>
               </div>
             </div>
@@ -174,79 +186,32 @@ export default function EventDetails() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
-        <div className="mb-6">
-          <Link to="/">
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar aos eventos
-            </Button>
-          </Link>
-        </div>
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        {/* Location Section */}
+        <Card className="bg-tikko-card-light text-gray-900 shadow-lg mb-6 md:mb-8">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex items-start gap-3">
+              <MapPin className="w-5 h-5 text-tikko-orange mt-1 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-lg text-gray-900">{event.venue}</p>
+                <p className="text-gray-600">{event.address}</p>
+                <p className="text-sm text-gray-500 mt-1">Organizado por {event.organizer}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Event Details Section */}
-          <div className="lg:col-span-2">
-            <Card className="bg-tikko-card-light text-gray-900 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-2xl text-gray-900">{event.title}</CardTitle>
-                <p className="text-gray-600">Organizado por {event.organizer}</p>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Sobre o evento</h3>
-                  <div className="text-gray-700 whitespace-pre-line leading-relaxed">
-                    {event.description}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-tikko-orange mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium text-gray-900">{event.venue}</p>
-                      <p className="text-sm text-gray-600">{event.address}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <Calendar className="w-5 h-5 text-tikko-orange mt-1 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium text-gray-900">{event.date}</p>
-                      <p className="text-sm text-gray-600">{event.time}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Tags</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {event.tags.map((tag) => (
-                      <Badge 
-                        key={tag} 
-                        variant="secondary" 
-                        className="bg-tikko-orange/10 text-tikko-orange border-tikko-orange/20"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           {/* Ticket Selection Section */}
-          <div className="lg:col-span-1">
-            <Card className="bg-card shadow-lg sticky top-8">
-              <CardHeader>
-                <CardTitle className="text-xl">Obter ingressos</CardTitle>
-                <p className="text-muted-foreground">
+          <div className="lg:col-span-1 order-1 lg:order-2">
+            <Card className="bg-card shadow-lg lg:sticky lg:top-24">
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="text-lg md:text-xl">Obter ingressos</CardTitle>
+                <p className="text-muted-foreground text-sm">
                   Por favor, escolha o tipo de ingresso desejado:
                 </p>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6 pt-0">
                 <RadioGroup
                   value={selectedTicket}
                   onValueChange={setSelectedTicket}
@@ -255,7 +220,7 @@ export default function EventDetails() {
                   {event.tickets.map((ticket) => (
                     <div
                       key={ticket.id}
-                      className={`border rounded-lg p-4 transition-all duration-200 ${
+                      className={`border rounded-lg p-3 md:p-4 transition-all duration-200 ${
                         selectedTicket === ticket.id
                           ? 'border-primary bg-primary/5 shadow-md'
                           : 'border-border hover:border-primary/50'
@@ -273,9 +238,9 @@ export default function EventDetails() {
                             className="flex-1 cursor-pointer"
                           >
                             <div>
-                              <p className="font-medium">{ticket.name}</p>
+                              <p className="font-medium text-sm md:text-base">{ticket.name}</p>
                               {ticket.requiresApproval && (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-xs md:text-sm text-muted-foreground">
                                   Requer aprovação
                                 </p>
                               )}
@@ -283,7 +248,7 @@ export default function EventDetails() {
                           </Label>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-lg">
+                          <p className="font-bold text-base md:text-lg">
                             R$ {ticket.price.toFixed(2)}
                           </p>
                         </div>
@@ -295,7 +260,7 @@ export default function EventDetails() {
                 {selectedTicket && (
                   <div className="space-y-4 pt-4 border-t">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium">Quantidade:</span>
+                      <span className="font-medium text-sm md:text-base">Quantidade:</span>
                       <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
@@ -321,7 +286,7 @@ export default function EventDetails() {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-lg font-bold">
+                    <div className="flex items-center justify-between text-base md:text-lg font-bold">
                       <span>Total:</span>
                       <span>R$ {totalPrice.toFixed(2)}</span>
                     </div>
@@ -339,6 +304,45 @@ export default function EventDetails() {
                     </Button>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Event Description Section */}
+          <div className="lg:col-span-2 order-2 lg:order-1">
+            <Card className="bg-tikko-card-light text-gray-900 shadow-lg">
+              <CardHeader className="p-4 md:p-6">
+                <CardTitle className="text-xl md:text-2xl text-gray-900">{event.title}</CardTitle>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <p className="text-gray-600">Organizado por {event.organizer}</p>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar className="w-4 h-4" />
+                    <span>{event.date} • {event.time}</span>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6 p-4 md:p-6 pt-0">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Sobre o evento</h3>
+                  <div className="text-gray-700 whitespace-pre-line leading-relaxed text-sm md:text-base">
+                    {event.description}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Tags</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {event.tags.map((tag) => (
+                      <Badge 
+                        key={tag} 
+                        variant="secondary" 
+                        className="bg-tikko-orange/10 text-tikko-orange border-tikko-orange/20 text-xs md:text-sm"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
