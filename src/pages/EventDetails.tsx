@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar, Clock, MapPin, Users, ArrowLeft, Minus, Plus } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, ArrowLeft, Minus, Plus, Share2, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -140,17 +140,58 @@ export default function EventDetails() {
     }
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: `${event.title} - Tikko`,
+      text: `${event.title} - ${event.date} em ${event.venue}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log('Error sharing:', err);
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('Link copiado para a área de transferência!');
+      } catch (err) {
+        console.log('Error copying to clipboard:', err);
+        // Final fallback: show URL in alert
+        alert(`Compartilhe este link: ${window.location.href}`);
+      }
+    }
+  };
+
+  const openGoogleMaps = () => {
+    const address = encodeURIComponent(`${event.venue}, ${event.address}`);
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${address}`;
+    window.open(googleMapsUrl, '_blank');
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      {/* App Bar with Back Button */}
+      {/* App Bar with Back Button and Share */}
       <nav className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/">
             <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar aos eventos
             </Button>
           </Link>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleShare}
+            className="text-muted-foreground hover:text-foreground"
+            title="Compartilhar evento"
+          >
+            <Share2 className="w-4 h-4" />
+          </Button>
         </div>
       </nav>
 
@@ -190,13 +231,24 @@ export default function EventDetails() {
         {/* Location Section */}
         <Card className="bg-tikko-card-light text-gray-900 shadow-lg mb-6 md:mb-8">
           <CardContent className="p-4 md:p-6">
-            <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-tikko-orange mt-1 flex-shrink-0" />
-              <div>
-                <p className="font-semibold text-lg text-gray-900">{event.venue}</p>
-                <p className="text-gray-600">{event.address}</p>
-                <p className="text-sm text-gray-500 mt-1">Organizado por {event.organizer}</p>
+            <div className="flex items-start justify-between">
+              <div className="flex items-start gap-3 flex-1">
+                <MapPin className="w-5 h-5 text-tikko-orange mt-1 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-lg text-gray-900">{event.venue}</p>
+                  <p className="text-gray-600">{event.address}</p>
+                  <p className="text-sm text-gray-500 mt-1">Organizado por {event.organizer}</p>
+                </div>
               </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={openGoogleMaps}
+                className="text-tikko-orange hover:text-tikko-orange hover:bg-tikko-orange/10 flex-shrink-0"
+                title="Ver no Google Maps"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </Button>
             </div>
           </CardContent>
         </Card>
