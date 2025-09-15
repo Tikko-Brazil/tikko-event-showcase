@@ -47,6 +47,12 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        tikko: {
+          orange: "hsl(var(--tikko-orange))",
+          purple: "hsl(var(--tikko-purple))",
+          dark: "hsl(var(--tikko-dark))",
+          "card-light": "hsl(var(--tikko-card-light))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
