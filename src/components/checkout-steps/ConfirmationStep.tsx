@@ -147,7 +147,7 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="w-full"
+            className="w-full lg:hidden"
             size="lg"
           >
             {isSubmitting ? 'Processando...' : 'Confirmar e Finalizar Compra'}

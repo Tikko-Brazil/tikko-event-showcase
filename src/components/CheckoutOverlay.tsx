@@ -147,15 +147,28 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
-        <div className="flex flex-col lg:flex-row min-h-[600px]">
+      <DialogContent className="max-w-4xl max-h-[90vh] md:max-h-[90vh] h-full md:h-auto w-full md:w-auto overflow-hidden p-0">
+        <div className="flex flex-col lg:flex-row h-full md:min-h-[600px]">
           {/* Main Content */}
-          <div className="flex-1 p-6">
+          <div className="flex-1 flex flex-col h-full">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-foreground">
+            <div className="flex items-center justify-between p-6 pb-0 md:pb-6 shrink-0">
+              {/* Back button on mobile/tablet */}
+              {currentStep > 1 && currentStep < 7 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleBack}
+                  className="lg:hidden text-muted-foreground hover:text-foreground"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+              )}
+              
+              <h2 className="text-xl font-semibold text-foreground flex-1 lg:flex-none text-center lg:text-left">
                 {currentStep === 7 ? 'Compra Realizada!' : 'Checkout'}
               </h2>
+              
               <Button
                 variant="ghost"
                 size="icon"
@@ -168,17 +181,19 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
 
             {/* Progress Indicator */}
             {currentStep < 7 && (
-              <ProgressIndicator currentStep={currentStep} totalSteps={6} />
+              <div className="px-6 pb-4 shrink-0">
+                <ProgressIndicator currentStep={currentStep} totalSteps={6} />
+              </div>
             )}
 
-            {/* Step Content */}
-            <div className="mb-6">
+            {/* Step Content - Scrollable on mobile */}
+            <div className="flex-1 overflow-y-auto px-6 pb-6 lg:pb-0">
               {renderStepContent()}
             </div>
 
-            {/* Navigation */}
+            {/* Desktop Navigation */}
             {currentStep > 1 && currentStep < 7 && (
-              <div className="flex justify-between">
+              <div className="hidden lg:flex justify-between p-6 pt-0">
                 <Button
                   variant="outline"
                   onClick={handleBack}
@@ -192,18 +207,33 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             )}
           </div>
 
-          {/* Price Summary Sidebar */}
+          {/* Price Summary - Desktop Sidebar / Mobile Bottom */}
           {currentStep < 7 && (
-            <div className="lg:w-80 bg-muted/30 p-6 border-l border-border">
-              <h3 className="text-lg font-semibold text-foreground mb-4">
-                Resumo do Pedido
-              </h3>
-              <PriceSummary
-                ticketPrice={ticketPrice}
-                ticketType={ticketType}
-                discount={discount}
-              />
-            </div>
+            <>
+              {/* Desktop Sidebar */}
+              <div className="hidden lg:block lg:w-80 bg-muted/30 p-6 border-l border-border">
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  Resumo do Pedido
+                </h3>
+                <PriceSummary
+                  ticketPrice={ticketPrice}
+                  ticketType={ticketType}
+                  discount={discount}
+                />
+              </div>
+              
+              {/* Mobile Bottom Price Summary */}
+              <div className="lg:hidden bg-muted/30 border-t border-border p-4 shrink-0">
+                <h3 className="text-sm font-semibold text-foreground mb-3">
+                  Resumo do Pedido
+                </h3>
+                <PriceSummary
+                  ticketPrice={ticketPrice}
+                  ticketType={ticketType}
+                  discount={discount}
+                />
+              </div>
+            </>
           )}
         </div>
       </DialogContent>
