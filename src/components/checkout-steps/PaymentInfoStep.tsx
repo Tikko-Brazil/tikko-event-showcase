@@ -95,7 +95,7 @@ export const PaymentInfoStep: React.FC<PaymentInfoStepProps> = ({
 
           <Button
             onClick={onNext}
-            className="w-full lg:hidden"
+            className="w-full"
             size="lg"
           >
             Continuar para Confirmação

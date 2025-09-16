@@ -58,7 +58,7 @@ export const TermsStep: React.FC<TermsStepProps> = ({
           <Button
             onClick={onNext}
             disabled={!termsAccepted}
-            className="w-full lg:hidden"
+            className="w-full"
             size="lg"
           >
             Continuar

@@ -118,7 +118,7 @@ export const CouponStep: React.FC<CouponStepProps> = ({
           <div className="pt-4">
             <Button
               onClick={onNext}
-              className="w-full lg:hidden"
+              className="w-full"
               size="lg"
             >
               Continuar

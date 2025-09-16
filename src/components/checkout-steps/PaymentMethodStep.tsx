@@ -62,7 +62,7 @@ export const PaymentMethodStep: React.FC<PaymentMethodStepProps> = ({
           <Button
             onClick={onNext}
             disabled={!paymentMethod}
-            className="w-full lg:hidden"
+            className="w-full"
             size="lg"
           >
             Continuar
