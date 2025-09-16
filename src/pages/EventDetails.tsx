@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { CheckoutOverlay } from '@/components/CheckoutOverlay';
 import heroImage from '@/assets/hero-event-image.jpg';
 
 interface TicketType {
@@ -89,6 +90,7 @@ export default function EventDetails() {
   const [selectedTicket, setSelectedTicket] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const [event, setEvent] = useState<EventData | null>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   useEffect(() => {
     // In a real app, you would fetch event data based on eventId
@@ -309,53 +311,25 @@ export default function EventDetails() {
                   ))}
                 </RadioGroup>
 
-                {selectedTicket && (
+                {/* Quantity selector - hidden but kept for future use */}
+                {selectedTicket && false && (
                   <div className="space-y-4 pt-4 border-t">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm md:text-base">Quantidade:</span>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => adjustQuantity(-1)}
-                          disabled={quantity <= 1}
-                          className="h-8 w-8"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                        <span className="w-8 text-center font-medium">
-                          {quantity}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => adjustQuantity(1)}
-                          disabled={quantity >= 10}
-                          className="h-8 w-8"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-base md:text-lg font-bold">
-                      <span>Total:</span>
-                      <span>R$ {totalPrice.toFixed(2)}</span>
-                    </div>
-
-                    <Button 
-                      className="w-full" 
-                      size="lg"
-                      onClick={() => {
-                        // In a real app, this would navigate to checkout
-                        alert(`Redirecionando para pagamento: ${selectedTicketData?.name} (${quantity}x) - Total: R$ ${totalPrice.toFixed(2)}`);
-                      }}
-                    >
-                      <Users className="w-4 h-4 mr-2" />
-                      Continuar para pagamento
-                    </Button>
+...
                   </div>
                 )}
+
+                <Button 
+                  className="w-full" 
+                  size="lg"
+                  onClick={() => {
+                    if (!selectedTicket) return;
+                    setIsCheckoutOpen(true);
+                  }}
+                  disabled={!selectedTicket}
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Continuar para pagamento
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -422,6 +396,14 @@ export default function EventDetails() {
           </div>
         </div>
       </footer>
+
+      {/* Checkout Overlay */}
+      <CheckoutOverlay
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        ticketPrice={selectedTicketData?.price || 0}
+        ticketType={selectedTicketData?.name || ''}
+      />
     </div>
   );
 }
