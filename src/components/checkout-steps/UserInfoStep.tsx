@@ -22,7 +22,13 @@ const validationSchema = Yup.object({
     .email('Email inválido')
     .required('Email é obrigatório'),
   phone: Yup.string()
-    .min(17, 'Telefone inválido')
+    .test('phone-validation', 'Telefone inválido', function(value) {
+      if (!value) return false;
+      if (value.startsWith('+55')) {
+        return value.length >= 17; // Brazilian format validation
+      }
+      return value.length >= 8; // International format - minimum 8 chars
+    })
     .required('Telefone é obrigatório'),
   identification: Yup.string()
     .min(11, 'CPF deve ter 11 dígitos')
@@ -32,6 +38,7 @@ const validationSchema = Yup.object({
     .required('Data de nascimento é obrigatória'),
   instagram: Yup.string()
     .transform((value) => value?.replace('@', '') || '')
+    .required('Instagram é obrigatório')
 });
 
 export const UserInfoStep: React.FC<UserInfoStepProps> = ({
@@ -84,21 +91,34 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
 
                   <div>
                     <Label htmlFor="phone">Telefone *</Label>
-                    <InputMask
-                      mask="+55 (99) 99999-9999"
-                      value={values.phone}
-                      onChange={(e) => setFieldValue('phone', e.target.value)}
-                    >
-                      {(inputProps: any) => (
-                        <Input
-                          {...inputProps}
-                          id="phone"
-                          placeholder="+55 (11) 99999-9999"
-                          className={errors.phone && touched.phone ? 'border-destructive' : ''}
-                        />
-                      )}
-                    </InputMask>
+                    {values.phone.startsWith('+55') ? (
+                      <InputMask
+                        mask="+55 (99) 99999-9999"
+                        value={values.phone}
+                        onChange={(e) => setFieldValue('phone', e.target.value)}
+                      >
+                        {(inputProps: any) => (
+                          <Input
+                            {...inputProps}
+                            id="phone"
+                            placeholder="+55 (11) 99999-9999"
+                            className={errors.phone && touched.phone ? 'border-destructive' : ''}
+                          />
+                        )}
+                      </InputMask>
+                    ) : (
+                      <Input
+                        id="phone"
+                        value={values.phone}
+                        onChange={(e) => setFieldValue('phone', e.target.value)}
+                        placeholder="+1 555 123-4567"
+                        className={errors.phone && touched.phone ? 'border-destructive' : ''}
+                      />
+                    )}
                     <ErrorMessage name="phone" component="div" className="text-destructive text-sm mt-1" />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Digite o código do país + número (ex: +55 para Brasil, +1 para EUA)
+                    </p>
                   </div>
 
                   <div>
@@ -140,7 +160,7 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                   </div>
 
                   <div>
-                    <Label htmlFor="instagram">Instagram (opcional)</Label>
+                    <Label htmlFor="instagram">Instagram *</Label>
                     <Field
                       as={Input}
                       id="instagram"
@@ -154,7 +174,7 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
 
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full lg:hidden"
                   size="lg"
                 >
                   Continuar

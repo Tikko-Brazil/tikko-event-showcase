@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
 interface PriceSummaryProps {
@@ -10,12 +11,23 @@ interface PriceSummaryProps {
     percentage: number;
     amount: number;
   };
+  // Mobile continue button props
+  currentStep?: number;
+  continueButtonText?: string;
+  onContinue?: () => void;
+  isContinueDisabled?: boolean;
+  isProcessing?: boolean;
 }
 
 export const PriceSummary: React.FC<PriceSummaryProps> = ({
   ticketPrice,
   ticketType,
-  discount
+  discount,
+  currentStep,
+  continueButtonText = 'Continuar',
+  onContinue,
+  isContinueDisabled = false,
+  isProcessing = false
 }) => {
   const serviceFee = ticketPrice * 0.1;
   const subtotal = ticketPrice + serviceFee;
@@ -30,34 +42,48 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   };
 
   return (
-    <Card className="bg-card border-border">
-      <CardContent className="p-4 space-y-3">
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Ingresso ({ticketType})</span>
-            <span className="text-sm font-medium">{formatCurrency(ticketPrice)}</span>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Taxa de serviço (10%)</span>
-            <span className="text-sm font-medium">{formatCurrency(serviceFee)}</span>
-          </div>
-
-          {discount && (
-            <div className="flex justify-between items-center text-green-600">
-              <span className="text-sm">Desconto ({discount.code})</span>
-              <span className="text-sm font-medium">-{formatCurrency(discountAmount)}</span>
+    <div className="space-y-4">
+      <Card className="bg-card border-border">
+        <CardContent className="p-4 space-y-3">
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Ingresso ({ticketType})</span>
+              <span className="text-sm font-medium">{formatCurrency(ticketPrice)}</span>
             </div>
-          )}
-        </div>
+            
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Taxa de serviço (10%)</span>
+              <span className="text-sm font-medium">{formatCurrency(serviceFee)}</span>
+            </div>
 
-        <Separator />
+            {discount && (
+              <div className="flex justify-between items-center text-green-600">
+                <span className="text-sm">Desconto ({discount.code})</span>
+                <span className="text-sm font-medium">-{formatCurrency(discountAmount)}</span>
+              </div>
+            )}
+          </div>
 
-        <div className="flex justify-between items-center">
-          <span className="font-semibold text-foreground">Total</span>
-          <span className="font-bold text-lg text-foreground">{formatCurrency(total)}</span>
-        </div>
-      </CardContent>
-    </Card>
+          <Separator />
+
+          <div className="flex justify-between items-center">
+            <span className="font-semibold text-foreground">Total</span>
+            <span className="font-bold text-lg text-foreground">{formatCurrency(total)}</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Mobile Continue Button */}
+      {onContinue && (
+        <Button
+          onClick={onContinue}
+          disabled={isContinueDisabled || isProcessing}
+          className="w-full lg:hidden"
+          size="lg"
+        >
+          {isProcessing ? 'Processando...' : continueButtonText}
+        </Button>
+      )}
+    </div>
   );
 };

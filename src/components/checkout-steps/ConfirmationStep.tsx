@@ -112,13 +112,11 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                 <span className="text-sm text-muted-foreground">Nascimento:</span>
                 <span className="font-medium">{userData.birthdate}</span>
               </div>
-              {userData.instagram && (
-                <div className="flex items-center gap-3">
-                  <Instagram className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Instagram:</span>
-                  <span className="font-medium">@{userData.instagram}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-3">
+                <Instagram className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Instagram:</span>
+                <span className="font-medium">@{userData.instagram}</span>
+              </div>
             </div>
           </div>
 
@@ -147,7 +145,7 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="w-full"
+            className="w-full lg:hidden"
             size="lg"
           >
             {isSubmitting ? 'Processando...' : 'Confirmar e Finalizar Compra'}
