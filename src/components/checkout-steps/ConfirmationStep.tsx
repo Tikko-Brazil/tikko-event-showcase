@@ -142,14 +142,6 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
             </div>
           </div>
 
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="w-full lg:hidden"
-            size="lg"
-          >
-            {isSubmitting ? 'Processando...' : 'Confirmar e Finalizar Compra'}
-          </Button>
         </CardContent>
       </Card>
     </div>

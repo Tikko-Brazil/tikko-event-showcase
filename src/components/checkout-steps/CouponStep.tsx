@@ -116,13 +116,6 @@ export const CouponStep: React.FC<CouponStepProps> = ({
           )}
 
           <div className="pt-4">
-            <Button
-              onClick={onNext}
-              className="w-full lg:hidden"
-              size="lg"
-            >
-              Continuar
-            </Button>
           </div>
 
           <div className="text-sm text-muted-foreground">

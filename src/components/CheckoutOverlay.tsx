@@ -234,8 +234,8 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
               </div>
             )}
 
-            {/* Step Content - Scrollable on mobile */}
-            <div className="flex-1 overflow-y-auto lg:overflow-visible p-4 lg:p-6 pb-0 lg:pb-6">
+            {/* Step Content - Scrollable on mobile with bottom padding for fixed price summary */}
+            <div className="flex-1 overflow-y-auto lg:overflow-visible p-4 lg:p-6 pb-40 lg:pb-6">
               {renderStepContent()}
             </div>
 
@@ -282,9 +282,9 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             </div>
           )}
 
-          {/* Price Summary Bottom - Mobile */}
+          {/* Price Summary Bottom - Mobile - Fixed Position */}
           {currentStep < 7 && (
-            <div className="lg:hidden bg-background border-t border-border p-4 shrink-0">
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 z-50">
               <div className="mb-3">
                 <h3 className="text-sm font-semibold text-foreground mb-2">
                   Resumo do Pedido

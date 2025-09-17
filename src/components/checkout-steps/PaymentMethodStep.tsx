@@ -59,14 +59,6 @@ export const PaymentMethodStep: React.FC<PaymentMethodStepProps> = ({
             </div>
           </RadioGroup>
 
-          <Button
-            onClick={onNext}
-            disabled={!paymentMethod}
-            className="w-full lg:hidden"
-            size="lg"
-          >
-            Continuar
-          </Button>
         </CardContent>
       </Card>
     </div>

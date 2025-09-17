@@ -55,14 +55,6 @@ export const TermsStep: React.FC<TermsStepProps> = ({
             </label>
           </div>
 
-          <Button
-            onClick={onNext}
-            disabled={!termsAccepted}
-            className="w-full lg:hidden"
-            size="lg"
-          >
-            Continuar
-          </Button>
         </CardContent>
       </Card>
     </div>

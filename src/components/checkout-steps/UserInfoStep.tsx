@@ -172,13 +172,6 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                   </div>
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full lg:hidden"
-                  size="lg"
-                >
-                  Continuar
-                </Button>
               </Form>
             )}
           </Formik>

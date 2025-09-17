@@ -93,13 +93,6 @@ export const PaymentInfoStep: React.FC<PaymentInfoStepProps> = ({
             </div>
           )}
 
-          <Button
-            onClick={onNext}
-            className="w-full lg:hidden"
-            size="lg"
-          >
-            Continuar para Confirmação
-          </Button>
         </CardContent>
       </Card>
     </div>
