@@ -73,12 +73,12 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
         </CardContent>
       </Card>
 
-      {/* Mobile Continue Button */}
+      {/* Continue Button */}
       {onContinue && (
         <Button
           onClick={onContinue}
           disabled={isContinueDisabled || isProcessing}
-          className="w-full lg:hidden"
+          className="w-full"
           size="lg"
         >
           {isProcessing ? 'Processando...' : continueButtonText}
