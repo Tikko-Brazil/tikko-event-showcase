@@ -149,10 +149,11 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                 onUserDataChange(userDataValues);
               }, [values]);
 
-              // Expose handleSubmit to parent via onNext
-              React.useEffect(() => {
-                window.userFormSubmit = handleSubmit;
-              }, [handleSubmit]);
+              // Handle form submission and call onNext
+              const handleFormSubmit = (values: any) => {
+                handleSubmit(values);
+                onNext();
+              };
 
               return (
               <Form className="space-y-4">

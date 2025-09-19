@@ -167,11 +167,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         };
       case 2:
         return {
-          onContinue: () => {
-            if (window.userFormSubmit) {
-              window.userFormSubmit();
-            }
-          },
+          onContinue: undefined, // Form handles submission directly
           continueButtonText: "Continuar",
         };
       case 3:
