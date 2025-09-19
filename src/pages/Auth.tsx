@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Mail, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowLeft, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import logoLight from '@/assets/logoLight.png';
 import EmailSignup from '@/components/auth/EmailSignup';
 import EmailLogin from '@/components/auth/EmailLogin';
@@ -163,16 +164,30 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {currentScreen !== 'entry' && (
+        <div className="flex justify-between items-center mb-4">
+          {currentScreen !== 'entry' ? (
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              className="hover:bg-accent"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+          ) : (
+            <div></div>
+          )}
           <Button
             variant="ghost"
-            onClick={handleBack}
-            className="mb-4 hover:bg-accent"
+            asChild
+            className="hover:bg-accent"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+            <Link to="/">
+              <Home className="mr-2 h-4 w-4" />
+              Home
+            </Link>
           </Button>
-        )}
+        </div>
         {renderScreen()}
       </div>
     </div>
