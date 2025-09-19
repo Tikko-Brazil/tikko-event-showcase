@@ -12,6 +12,8 @@ import { UserData } from "../CheckoutOverlay";
 interface UserInfoStepProps {
   userData: UserData;
   onUserDataChange: (data: UserData) => void;
+  identificationType: 'cpf' | 'other';
+  onIdentificationTypeChange: (type: 'cpf' | 'other') => void;
   onNext: () => void;
 }
 
@@ -57,8 +59,8 @@ const validationSchema = Yup.object({
     .required("Nome completo é obrigatório"),
   email: Yup.string().email("Email inválido").required("Email é obrigatório"),
   confirmEmail: Yup.string()
-    .oneOf([Yup.ref('email')], 'Emails não coincidem')
-    .required('Confirmação de email é obrigatória'),
+    .oneOf([Yup.ref("email")], "Emails não coincidem")
+    .required("Confirmação de email é obrigatória"),
   phone: Yup.string()
     .test("phone-validation", (value, context) => {
       const result = validateMobileNumber(value || "");
@@ -68,8 +70,8 @@ const validationSchema = Yup.object({
     })
     .required("Telefone é obrigatório"),
   confirmPhone: Yup.string()
-    .oneOf([Yup.ref('phone')], 'Telefones não coincidem')
-    .required('Confirmação de telefone é obrigatória'),
+    .oneOf([Yup.ref("phone")], "Telefones não coincidem")
+    .required("Confirmação de telefone é obrigatória"),
   identification: Yup.string()
     .test("identification-validation", "Documento inválido", function (value) {
       const { identificationType } = this.parent;
@@ -94,14 +96,13 @@ const validationSchema = Yup.object({
 export const UserInfoStep: React.FC<UserInfoStepProps> = ({
   userData,
   onUserDataChange,
+  identificationType,
+  onIdentificationTypeChange,
   onNext,
 }) => {
-  const [identificationType, setIdentificationType] = useState<"cpf" | "other">(
-    "cpf"
-  );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-60">
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Dados Pessoais</CardTitle>
@@ -110,13 +111,50 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
           <Formik
             initialValues={{ ...userData, identificationType }}
             validationSchema={validationSchema}
-            onSubmit={(values) => {
-              const { identificationType, ...userDataValues } = values;
-              onUserDataChange(userDataValues);
-              onNext();
+            enableReinitialize={true}
+            onSubmit={(values, { validateForm, setTouched }) => {
+              validateForm().then((formErrors) => {
+                if (Object.keys(formErrors).length === 0) {
+                  const { identificationType, ...userDataValues } = values;
+                  onUserDataChange(userDataValues);
+                  onNext();
+                } else {
+                  // Mark all fields as touched to show errors
+                  setTouched({
+                    fullName: true,
+                    email: true,
+                    confirmEmail: true,
+                    phone: true,
+                    confirmPhone: true,
+                    identification: true,
+                    birthdate: true,
+                    instagram: true,
+                  });
+                }
+              });
             }}
           >
-            {({ errors, touched, setFieldValue, values, handleChange, handleBlur }) => (
+            {({
+              errors,
+              touched,
+              setFieldValue,
+              values,
+              handleChange,
+              handleBlur,
+              handleSubmit,
+            }) => {
+              // Update parent state whenever form values change
+              React.useEffect(() => {
+                const { identificationType, ...userDataValues } = values;
+                onUserDataChange(userDataValues);
+              }, [values]);
+
+              // Expose handleSubmit to parent via onNext
+              React.useEffect(() => {
+                window.userFormSubmit = handleSubmit;
+              }, [handleSubmit]);
+
+              return (
               <Form className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
@@ -258,7 +296,7 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                     <RadioGroup
                       value={identificationType}
                       onValueChange={(value: "cpf" | "other") => {
-                        setIdentificationType(value);
+                        onIdentificationTypeChange(value);
                         setFieldValue("identificationType", value);
                         setFieldValue("identification", "");
                       }}
@@ -370,7 +408,8 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                   </div>
                 </div>
               </Form>
-            )}
+            );
+            }}
           </Formik>
         </CardContent>
       </Card>

@@ -32,7 +32,7 @@ export const PaymentInfoStep: React.FC<PaymentInfoStepProps> = ({
   const fakeEmail = generateFakeEmail();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 w-full max-w-full overflow-hidden">
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
@@ -81,7 +81,7 @@ export const PaymentInfoStep: React.FC<PaymentInfoStepProps> = ({
                   <Smartphone className="w-12 h-12 text-primary mx-auto" />
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">Email do Pagador</div>
-                    <div className="font-mono text-lg text-foreground">{fakeEmail}</div>
+                    <div className="font-mono text-sm sm:text-lg text-foreground break-all">{fakeEmail}</div>
                   </div>
                 </div>
               </div>
