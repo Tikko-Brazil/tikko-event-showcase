@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
-import { X, ArrowLeft, ArrowRight } from 'lucide-react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { PriceSummary } from './PriceSummary';
-import { ProgressIndicator } from './ProgressIndicator';
-import { TermsStep } from './checkout-steps/TermsStep';
-import { UserInfoStep } from './checkout-steps/UserInfoStep';
-import { CouponStep } from './checkout-steps/CouponStep';
-import { PaymentMethodStep } from './checkout-steps/PaymentMethodStep';
-import { PaymentInfoStep } from './checkout-steps/PaymentInfoStep';
-import { ConfirmationStep } from './checkout-steps/ConfirmationStep';
-import { SuccessStep } from './checkout-steps/SuccessStep';
+import React, { useState } from "react";
+import { X, ArrowLeft, ArrowRight } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { PriceSummary } from "./PriceSummary";
+import { ProgressIndicator } from "./ProgressIndicator";
+import { TermsStep } from "./checkout-steps/TermsStep";
+import { UserInfoStep } from "./checkout-steps/UserInfoStep";
+import { CouponStep } from "./checkout-steps/CouponStep";
+import { PaymentMethodStep } from "./checkout-steps/PaymentMethodStep";
+import { PaymentInfoStep } from "./checkout-steps/PaymentInfoStep";
+import { ConfirmationStep } from "./checkout-steps/ConfirmationStep";
+import { SuccessStep } from "./checkout-steps/SuccessStep";
 
 interface CheckoutOverlayProps {
   isOpen: boolean;
@@ -22,7 +22,9 @@ interface CheckoutOverlayProps {
 export interface UserData {
   fullName: string;
   email: string;
+  confirmEmail: string;
   phone: string;
+  confirmPhone: string;
   identification: string;
   birthdate: string;
   instagram: string;
@@ -38,19 +40,21 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   isOpen,
   onClose,
   ticketPrice,
-  ticketType
+  ticketType,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [userData, setUserData] = useState<UserData>({
-    fullName: '',
-    email: '',
-    phone: '+55 ',
-    identification: '',
-    birthdate: '',
-    instagram: ''
+    fullName: "",
+    email: "",
+    confirmEmail: "",
+    phone: "+55 ",
+    confirmPhone: "+55 ",
+    identification: "",
+    birthdate: "",
+    instagram: "",
   });
   const [discount, setDiscount] = useState<DiscountData | undefined>();
-  const [paymentMethod, setPaymentMethod] = useState<'credit' | 'pix' | ''>('');
+  const [paymentMethod, setPaymentMethod] = useState<"credit" | "pix" | "">("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -71,15 +75,17 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   const handleClose = () => {
     setCurrentStep(1);
     setUserData({
-      fullName: '',
-      email: '',
-      phone: '+55 ',
-      identification: '',
-      birthdate: '',
-      instagram: ''
+      fullName: "",
+      email: "",
+      confirmEmail: "",
+      phone: "+55 ",
+      confirmPhone: "+55 ",
+      identification: "",
+      birthdate: "",
+      instagram: "",
     });
     setDiscount(undefined);
-    setPaymentMethod('');
+    setPaymentMethod("");
     setTermsAccepted(false);
     setIsProcessing(false);
     onClose();
@@ -122,10 +128,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         );
       case 5:
         return (
-          <PaymentInfoStep
-            paymentMethod={paymentMethod}
-            onNext={handleNext}
-          />
+          <PaymentInfoStep paymentMethod={paymentMethod} onNext={handleNext} />
         );
       case 6:
         return (
@@ -139,9 +142,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
           />
         );
       case 7:
-        return (
-          <SuccessStep onClose={handleClose} />
-        );
+        return <SuccessStep onClose={handleClose} />;
       default:
         return null;
     }
@@ -152,42 +153,42 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
       case 1:
         return {
           onContinue: termsAccepted ? handleNext : undefined,
-          continueButtonText: 'Continuar',
-          isContinueDisabled: !termsAccepted
+          continueButtonText: "Continuar",
+          isContinueDisabled: !termsAccepted,
         };
       case 2:
         return {
           onContinue: handleNext,
-          continueButtonText: 'Continuar'
+          continueButtonText: "Continuar",
         };
       case 3:
         return {
           onContinue: handleNext,
-          continueButtonText: 'Continuar'
+          continueButtonText: "Continuar",
         };
       case 4:
         return {
           onContinue: paymentMethod ? handleNext : undefined,
-          continueButtonText: 'Continuar',
-          isContinueDisabled: !paymentMethod
+          continueButtonText: "Continuar",
+          isContinueDisabled: !paymentMethod,
         };
       case 5:
         return {
           onContinue: handleNext,
-          continueButtonText: 'Continuar para Confirmação'
+          continueButtonText: "Continuar para Confirmação",
         };
       case 6:
         return {
           onContinue: async () => {
             setIsProcessing(true);
             // Simulate the same logic as ConfirmationStep
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise((resolve) => setTimeout(resolve, 2000));
             setIsProcessing(false);
             handleNext();
           },
-          continueButtonText: 'Confirmar e Finalizar Compra',
+          continueButtonText: "Confirmar e Finalizar Compra",
           isContinueDisabled: false,
-          isProcessing: isProcessing
+          isProcessing: isProcessing,
         };
       default:
         return {};
@@ -197,9 +198,9 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl lg:max-h-[90vh] max-h-screen w-screen h-screen lg:w-auto lg:h-auto overflow-hidden p-0">
-        <div className="flex flex-col lg:flex-row h-full lg:min-h-[600px]">
+        <div className="flex flex-col lg:flex-row h-full lg:min-h-[700px]">
           {/* Main Content */}
-          <div className="flex-1 flex flex-col h-full lg:h-auto">
+          <div className="flex-1 flex flex-col min-h-0 lg:h-auto">
             {/* Header with Back Button */}
             <div className="flex items-center justify-between p-4 lg:p-6 border-b lg:border-b-0 shrink-0">
               <div className="flex items-center gap-3">
@@ -214,7 +215,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
                   </Button>
                 )}
                 <h2 className="text-xl font-semibold text-foreground">
-                  {currentStep === 7 ? 'Compra Realizada!' : 'Checkout'}
+                  {currentStep === 7 ? "Compra Realizada!" : "Checkout"}
                 </h2>
               </div>
               <Button
@@ -229,13 +230,13 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
 
             {/* Progress Indicator */}
             {currentStep < 7 && (
-              <div className="px-4 lg:px-6 py-2 lg:py-0 shrink-0">
+              <div className="px-4 lg:px-6 pt-2 pb-0 lg:py-0 shrink-0">
                 <ProgressIndicator currentStep={currentStep} totalSteps={6} />
               </div>
             )}
 
             {/* Step Content - Scrollable on mobile with bottom padding for fixed price summary */}
-            <div className="flex-1 overflow-y-auto lg:overflow-visible p-4 lg:p-6 pb-48 lg:pb-6">
+            <div className="flex-1 overflow-y-auto lg:overflow-visible p-4 lg:p-6 pt-0 pb-80 lg:pb-6 max-h-[calc(100vh-200px)] lg:max-h-none">
               {renderStepContent()}
             </div>
 
@@ -273,28 +274,28 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
                   <X className="w-5 h-5" />
                 </Button>
               </div>
-                <PriceSummary
-                  ticketPrice={ticketPrice}
-                  ticketType={ticketType}
-                  discount={discount}
-                  {...getContinueButtonProps()}
-                />
-            </div>
-          )}
-
-          {/* Price Summary Bottom - Mobile - Fixed Position */}
-          {currentStep < 7 && (
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 z-50">
-              <div className="mb-3">
-                <h3 className="text-sm font-semibold text-foreground mb-2">
-                  Resumo do Pedido
-                </h3>
               <PriceSummary
                 ticketPrice={ticketPrice}
                 ticketType={ticketType}
                 discount={discount}
                 {...getContinueButtonProps()}
               />
+            </div>
+          )}
+
+          {/* Price Summary Bottom - Mobile - Fixed Position */}
+          {currentStep < 7 && (
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 z-50 min-h-[200px]">
+              <div className="mb-3">
+                <h3 className="text-sm font-semibold text-foreground mb-2">
+                  Resumo do Pedido
+                </h3>
+                <PriceSummary
+                  ticketPrice={ticketPrice}
+                  ticketType={ticketType}
+                  discount={discount}
+                  {...getContinueButtonProps()}
+                />
               </div>
             </div>
           )}

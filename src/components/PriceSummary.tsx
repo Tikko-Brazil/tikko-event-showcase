@@ -1,7 +1,7 @@
-import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 interface PriceSummaryProps {
   ticketPrice: number;
@@ -24,10 +24,10 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   ticketType,
   discount,
   currentStep,
-  continueButtonText = 'Continuar',
+  continueButtonText = "Continuar",
   onContinue,
   isContinueDisabled = false,
-  isProcessing = false
+  isProcessing = false,
 }) => {
   const serviceFee = ticketPrice * 0.1;
   const subtotal = ticketPrice + serviceFee;
@@ -35,31 +35,41 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   const total = subtotal - discountAmount;
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(amount);
   };
 
   return (
     <div className="space-y-4">
       <Card className="bg-card border-border">
-        <CardContent className="p-4 space-y-3">
+        <CardContent className="p-2 space-y-2">
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Ingresso ({ticketType})</span>
-              <span className="text-sm font-medium">{formatCurrency(ticketPrice)}</span>
+              <span className="text-sm text-muted-foreground">
+                {ticketType}
+              </span>
+              <span className="text-sm font-medium">
+                {formatCurrency(ticketPrice)}
+              </span>
             </div>
-            
+
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Taxa de serviço (10%)</span>
-              <span className="text-sm font-medium">{formatCurrency(serviceFee)}</span>
+              <span className="text-sm text-muted-foreground">
+                Taxa de serviço (10%)
+              </span>
+              <span className="text-sm font-medium">
+                {formatCurrency(serviceFee)}
+              </span>
             </div>
 
             {discount && (
               <div className="flex justify-between items-center text-green-600">
                 <span className="text-sm">Desconto ({discount.code})</span>
-                <span className="text-sm font-medium">-{formatCurrency(discountAmount)}</span>
+                <span className="text-sm font-medium">
+                  -{formatCurrency(discountAmount)}
+                </span>
               </div>
             )}
           </div>
@@ -68,7 +78,9 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
 
           <div className="flex justify-between items-center">
             <span className="font-semibold text-foreground">Total</span>
-            <span className="font-bold text-lg text-foreground">{formatCurrency(total)}</span>
+            <span className="font-bold text-md text-foreground">
+              {formatCurrency(total)}
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -81,7 +93,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
           className="w-full"
           size="lg"
         >
-          {isProcessing ? 'Processando...' : continueButtonText}
+          {isProcessing ? "Processando..." : continueButtonText}
         </Button>
       )}
     </div>

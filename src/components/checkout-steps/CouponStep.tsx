@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, XCircle, Tag } from 'lucide-react';
-import { DiscountData } from '../CheckoutOverlay';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CheckCircle, XCircle, Tag } from "lucide-react";
+import { DiscountData } from "../CheckoutOverlay";
 
 interface CouponStepProps {
   discount?: DiscountData;
@@ -18,34 +18,34 @@ export const CouponStep: React.FC<CouponStepProps> = ({
   discount,
   onDiscountChange,
   ticketPrice,
-  onNext
+  onNext,
 }) => {
-  const [couponCode, setCouponCode] = useState(discount?.code || '');
+  const [couponCode, setCouponCode] = useState(discount?.code || "");
   const [isApplying, setIsApplying] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) {
-      setError('Digite um código de cupom');
+      setError("Digite um código de cupom");
       return;
     }
 
     setIsApplying(true);
-    setError('');
+    setError("");
 
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    if (couponCode.toUpperCase() === 'DISCOUNT10') {
+    if (couponCode.toUpperCase() === "DISCOUNT10") {
       const percentage = 10;
       const amount = (ticketPrice + ticketPrice * 0.1) * (percentage / 100);
       onDiscountChange({
         code: couponCode.toUpperCase(),
         percentage,
-        amount
+        amount,
       });
     } else {
-      setError('Código de cupom inválido');
+      setError("Código de cupom inválido");
       onDiscountChange(undefined);
     }
 
@@ -53,8 +53,8 @@ export const CouponStep: React.FC<CouponStepProps> = ({
   };
 
   const removeCoupon = () => {
-    setCouponCode('');
-    setError('');
+    setCouponCode("");
+    setError("");
     onDiscountChange(undefined);
   };
 
@@ -78,13 +78,14 @@ export const CouponStep: React.FC<CouponStepProps> = ({
                 placeholder="DIGITE SEU CUPOM"
                 disabled={isApplying}
                 className="uppercase"
+                maxLength={30}
               />
               <Button
                 onClick={applyCoupon}
                 disabled={isApplying || !couponCode.trim()}
                 variant="outline"
               >
-                {isApplying ? 'Aplicando...' : 'Aplicar'}
+                {isApplying ? "Aplicando..." : "Aplicar"}
               </Button>
             </div>
           </div>
@@ -101,7 +102,8 @@ export const CouponStep: React.FC<CouponStepProps> = ({
               <CheckCircle className="h-4 w-4" />
               <AlertDescription className="flex items-center justify-between">
                 <span>
-                  Cupom {discount.code} aplicado! Desconto de {discount.percentage}%
+                  Cupom {discount.code} aplicado! Desconto de{" "}
+                  {discount.percentage}%
                 </span>
                 <Button
                   size="sm"
@@ -115,12 +117,13 @@ export const CouponStep: React.FC<CouponStepProps> = ({
             </Alert>
           )}
 
-          <div className="pt-4">
-          </div>
+          <div className="pt-4"></div>
 
           <div className="text-sm text-muted-foreground">
             <p className="mb-2">Cupons disponíveis para teste:</p>
-            <code className="bg-muted px-2 py-1 rounded text-xs">DISCOUNT10</code>
+            <code className="bg-muted px-2 py-1 rounded text-xs">
+              DISCOUNT10
+            </code>
             <span className="ml-2">- 10% de desconto</span>
           </div>
         </CardContent>
