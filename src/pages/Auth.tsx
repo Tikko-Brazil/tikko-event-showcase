@@ -18,8 +18,8 @@ const Auth = () => {
 
   const handleGoogleAuth = () => {
     console.log('Google authentication clicked');
-    // Mock success - in real app this would handle OAuth
-    alert('Google authentication would be handled here');
+    // Mock success - redirect to dashboard
+    window.location.href = '/dashboard';
   };
 
   const handleBack = () => {
