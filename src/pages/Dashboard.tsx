@@ -17,18 +17,28 @@ import {
   Share2,
   MoreHorizontal,
   MapPin,
-  Clock
+  Clock,
+  Activity,
+  QrCode,
+  BarChart3,
+  Edit,
+  UserPlus,
+  DollarSign,
+  CheckCircle2
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useNavigate } from 'react-router-dom';
 import logoLight from '@/assets/logoLight.png';
 
-type TabType = 'explore' | 'my-events' | 'my-tickets' | 'profile';
+type TabType = 'feed' | 'explore' | 'my-events' | 'my-tickets' | 'profile';
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('explore');
+  const [activeTab, setActiveTab] = useState<TabType>('feed');
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   const tabs = [
+    { id: 'feed' as TabType, label: 'Feed', icon: Activity },
     { id: 'explore' as TabType, label: 'Explore', icon: Home },
     { id: 'my-events' as TabType, label: 'My Events', icon: Calendar },
     { id: 'my-tickets' as TabType, label: 'My Tickets', icon: Ticket },
@@ -68,6 +78,137 @@ const Dashboard = () => {
       image: '/placeholder.svg',
       attendees: 89,
       liked: false
+    }
+  ];
+
+  const mockMyEvents = [
+    {
+      id: 1,
+      title: 'My Music Showcase 2024',
+      date: 'Jul 10, 2024',
+      time: '8:00 PM',
+      location: 'The Underground, NYC',
+      status: 'upcoming',
+      attendees: 45,
+      isOwner: true,
+      type: 'owned'
+    },
+    {
+      id: 2,
+      title: 'Photography Workshop',
+      date: 'Jul 20, 2024',
+      time: '2:00 PM',
+      location: 'Studio Space, LA',
+      status: 'upcoming',
+      attendees: 12,
+      isOwner: true,
+      type: 'owned'
+    },
+    {
+      id: 3,
+      title: 'Jazz Night',
+      date: 'Jun 5, 2024',
+      time: '9:00 PM',
+      location: 'Blue Note, NYC',
+      status: 'attended',
+      attendees: 200,
+      isOwner: false,
+      type: 'attended'
+    },
+    {
+      id: 4,
+      title: 'Art Exhibition Opening',
+      date: 'May 15, 2024',
+      time: '6:00 PM',
+      location: 'Modern Gallery, SF',
+      status: 'past',
+      attendees: 150,
+      isOwner: false,
+      type: 'attended'
+    }
+  ];
+
+  const mockMyTickets = [
+    {
+      id: 1,
+      eventTitle: 'Summer Music Festival 2024',
+      ticketType: 'VIP Access',
+      date: 'Jun 15, 2024',
+      time: '6:00 PM',
+      location: 'Central Park, NY',
+      status: 'active',
+      qrCode: 'QR_123456789'
+    },
+    {
+      id: 2,
+      eventTitle: 'Tech Conference 2024',
+      ticketType: 'General Admission',
+      date: 'Jun 20, 2024',
+      time: '9:00 AM',
+      location: 'Convention Center, SF',
+      status: 'active',
+      qrCode: 'QR_987654321'
+    },
+    {
+      id: 3,
+      eventTitle: 'Jazz Night',
+      ticketType: 'Premium',
+      date: 'Jun 5, 2024',
+      time: '9:00 PM',
+      location: 'Blue Note, NYC',
+      status: 'used',
+      qrCode: 'QR_456123789'
+    },
+    {
+      id: 4,
+      eventTitle: 'Food Festival',
+      ticketType: 'Early Bird',
+      date: 'May 20, 2024',
+      time: '11:00 AM',
+      location: 'City Square, Chicago',
+      status: 'expired',
+      qrCode: 'QR_789456123'
+    }
+  ];
+
+  const mockFeedPosts = [
+    {
+      id: 1,
+      type: 'attendance',
+      user: { name: 'Sarah Johnson', avatar: '/placeholder.svg' },
+      content: 'Just got tickets for the Summer Music Festival! 🎵',
+      event: 'Summer Music Festival 2024',
+      timestamp: '2 hours ago',
+      likes: 24,
+      comments: 5
+    },
+    {
+      id: 2,
+      type: 'news',
+      title: 'New Venue Opening in Downtown',
+      content: 'The Grand Theater announces its opening with a spectacular lineup of events this fall.',
+      timestamp: '4 hours ago',
+      likes: 89,
+      comments: 12
+    },
+    {
+      id: 3,
+      type: 'post',
+      user: { name: 'Mike Chen', avatar: '/placeholder.svg' },
+      content: 'Amazing performance at the Jazz Club last night! The energy was incredible. Already looking forward to next week\'s show.',
+      timestamp: '1 day ago',
+      likes: 45,
+      comments: 8
+    },
+    {
+      id: 4,
+      type: 'attendance',
+      user: { name: 'Emily Davis', avatar: '/placeholder.svg' },
+      content: 'Who else is going to the Tech Conference next week?',
+      event: 'Tech Conference 2024',
+      timestamp: '1 day ago',
+      likes: 15,
+      comments: 3
     }
   ];
 
@@ -115,6 +256,108 @@ const Dashboard = () => {
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'feed':
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Feed</h2>
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+            </div>
+            <div className="space-y-4">
+              {mockFeedPosts.map((post) => (
+                <Card key={post.id} className="group hover:shadow-lg transition-all duration-300">
+                  <CardContent className="p-6">
+                    {post.type === 'attendance' && (
+                      <div className="flex items-start gap-4">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={post.user?.avatar} />
+                          <AvatarFallback>{post.user?.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="font-semibold">{post.user?.name}</h4>
+                            <Badge variant="secondary" className="text-xs">
+                              {post.event}
+                            </Badge>
+                          </div>
+                          <p className="text-muted-foreground mb-3">{post.content}</p>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span>{post.timestamp}</span>
+                            <Button variant="ghost" size="sm" className="h-8 p-0">
+                              <Heart className="h-4 w-4 mr-1" />
+                              {post.likes}
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 p-0">
+                              <MessageCircle className="h-4 w-4 mr-1" />
+                              {post.comments}
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 p-0">
+                              <Share2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {post.type === 'news' && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline">News</Badge>
+                          <span className="text-sm text-muted-foreground">{post.timestamp}</span>
+                        </div>
+                        <h4 className="font-semibold mb-2">{post.title}</h4>
+                        <p className="text-muted-foreground mb-3">{post.content}</p>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <Button variant="ghost" size="sm" className="h-8 p-0">
+                            <Heart className="h-4 w-4 mr-1" />
+                            {post.likes}
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-8 p-0">
+                            <MessageCircle className="h-4 w-4 mr-1" />
+                            {post.comments}
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-8 p-0">
+                            <Share2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    {post.type === 'post' && (
+                      <div className="flex items-start gap-4">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={post.user?.avatar} />
+                          <AvatarFallback>{post.user?.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="font-semibold">{post.user?.name}</h4>
+                            <span className="text-sm text-muted-foreground">{post.timestamp}</span>
+                          </div>
+                          <p className="text-muted-foreground mb-3">{post.content}</p>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <Button variant="ghost" size="sm" className="h-8 p-0">
+                              <Heart className="h-4 w-4 mr-1" />
+                              {post.likes}
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 p-0">
+                              <MessageCircle className="h-4 w-4 mr-1" />
+                              {post.comments}
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 p-0">
+                              <Share2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
       case 'explore':
         return (
           <div className="space-y-6">
@@ -133,12 +376,54 @@ const Dashboard = () => {
       case 'my-events':
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold">My Events</h2>
-            <div className="text-center py-12">
-              <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No events created yet</h3>
-              <p className="text-muted-foreground mb-4">Start organizing your first event!</p>
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">My Events</h2>
               <Button>Create Event</Button>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {mockMyEvents.map((event) => (
+                <Card key={event.id} className="group hover:shadow-lg transition-all duration-300 border-0 bg-card/50 backdrop-blur-sm">
+                  <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-t-lg relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute top-4 right-4">
+                      <Badge variant={event.status === 'upcoming' ? 'default' : event.status === 'past' ? 'secondary' : 'outline'}>
+                        {event.status}
+                      </Badge>
+                    </div>
+                    <div className="absolute bottom-4 left-4 text-white">
+                      <Badge variant="secondary" className="mb-2">
+                        {event.type === 'owned' ? 'Owned' : 'Attended'}
+                      </Badge>
+                      <h3 className="font-semibold text-lg">{event.title}</h3>
+                    </div>
+                  </div>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
+                      <Clock className="h-4 w-4" />
+                      <span>{event.date} • {event.time}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm mb-3">
+                      <MapPin className="h-4 w-4" />
+                      <span>{event.location}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-sm">
+                        <UserPlus className="h-4 w-4" />
+                        <span>{event.attendees} attendees</span>
+                      </div>
+                      {event.isOwner && (
+                        <Button 
+                          size="sm" 
+                          onClick={() => navigate(`/event-management/${event.id}`)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Manage
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         );
@@ -146,11 +431,53 @@ const Dashboard = () => {
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">My Tickets</h2>
-            <div className="text-center py-12">
-              <Ticket className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No tickets purchased yet</h3>
-              <p className="text-muted-foreground mb-4">Explore events and get your tickets!</p>
-              <Button onClick={() => setActiveTab('explore')}>Explore Events</Button>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {mockMyTickets.map((ticket) => (
+                <Card key={ticket.id} className="group hover:shadow-lg transition-all duration-300">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="font-semibold text-lg mb-1">{ticket.eventTitle}</h3>
+                        <Badge variant={
+                          ticket.status === 'active' ? 'default' : 
+                          ticket.status === 'used' ? 'secondary' : 'outline'
+                        }>
+                          {ticket.status}
+                        </Badge>
+                      </div>
+                      <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                        <QrCode className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm text-muted-foreground mb-4">
+                      <div className="flex items-center gap-2">
+                        <Ticket className="h-4 w-4" />
+                        <span>{ticket.ticketType}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        <span>{ticket.date} • {ticket.time}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        <span>{ticket.location}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" className="flex-1">
+                        View Details
+                      </Button>
+                      {ticket.status === 'active' && (
+                        <Button size="sm" className="flex-1">
+                          Show QR
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         );
