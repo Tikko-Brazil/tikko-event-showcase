@@ -19,9 +19,33 @@ import {
   Edit,
   Eye,
   FileText,
-  TrendingUp
+  TrendingUp,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
+} from 'recharts';
+import { 
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis
+} from '@/components/ui/pagination';
 import logoLight from '@/assets/logoLight.png';
 
 const EventManagement = () => {
@@ -30,6 +54,10 @@ const EventManagement = () => {
   const isMobile = useIsMobile();
   const [activeSection, setActiveSection] = useState('overview');
   const [mobileOverlay, setMobileOverlay] = useState<string | null>(null);
+  const [salesTimeWindow, setSalesTimeWindow] = useState('24h');
+  const [validationTimeWindow, setValidationTimeWindow] = useState('5h');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // Mock event data
   const eventData = {
@@ -193,26 +221,96 @@ const EventManagement = () => {
       paidTickets: 135
     };
 
-    const ticketSalesData = [
-      { time: '1h ago', tickets: 2 },
-      { time: '2h ago', tickets: 5 },
-      { time: '3h ago', tickets: 8 },
-      { time: '6h ago', tickets: 12 },
-      { time: '12h ago', tickets: 18 },
-      { time: '24h ago', tickets: 25 }
-    ];
+    // Sales data based on selected time window
+    const salesDataSets = {
+      '1h': [
+        { time: '60m', tickets: 1 },
+        { time: '50m', tickets: 0 },
+        { time: '40m', tickets: 2 },
+        { time: '30m', tickets: 1 },
+        { time: '20m', tickets: 3 },
+        { time: '10m', tickets: 2 }
+      ],
+      '3h': [
+        { time: '3h', tickets: 5 },
+        { time: '2.5h', tickets: 8 },
+        { time: '2h', tickets: 12 },
+        { time: '1.5h', tickets: 15 },
+        { time: '1h', tickets: 18 },
+        { time: '30m', tickets: 9 }
+      ],
+      '6h': [
+        { time: '6h', tickets: 8 },
+        { time: '5h', tickets: 12 },
+        { time: '4h', tickets: 15 },
+        { time: '3h', tickets: 22 },
+        { time: '2h', tickets: 18 },
+        { time: '1h', tickets: 25 }
+      ],
+      '12h': [
+        { time: '12h', tickets: 15 },
+        { time: '10h', tickets: 22 },
+        { time: '8h', tickets: 28 },
+        { time: '6h', tickets: 35 },
+        { time: '4h', tickets: 42 },
+        { time: '2h', tickets: 48 }
+      ],
+      '24h': [
+        { time: '24h', tickets: 25 },
+        { time: '20h', tickets: 35 },
+        { time: '16h', tickets: 42 },
+        { time: '12h', tickets: 55 },
+        { time: '8h', tickets: 68 },
+        { time: '4h', tickets: 75 }
+      ]
+    };
 
-    const validationData = [
-      { time: '15m', validated: 15 },
-      { time: '30m', validated: 28 },
-      { time: '1h', validated: 45 },
-      { time: '2h', validated: 67 },
-      { time: '5h', validated: 89 }
-    ];
+    // Validation data based on selected time window
+    const validationDataSets = {
+      '15m': [
+        { time: '15m', validated: 5 },
+        { time: '12m', validated: 8 },
+        { time: '9m', validated: 12 },
+        { time: '6m', validated: 15 },
+        { time: '3m', validated: 18 }
+      ],
+      '30m': [
+        { time: '30m', validated: 12 },
+        { time: '25m', validated: 18 },
+        { time: '20m', validated: 25 },
+        { time: '15m', validated: 32 },
+        { time: '10m', validated: 28 },
+        { time: '5m', validated: 35 }
+      ],
+      '1h': [
+        { time: '60m', validated: 15 },
+        { time: '50m', validated: 22 },
+        { time: '40m', validated: 28 },
+        { time: '30m', validated: 35 },
+        { time: '20m', validated: 41 },
+        { time: '10m', validated: 45 }
+      ],
+      '2h': [
+        { time: '2h', validated: 25 },
+        { time: '100m', validated: 32 },
+        { time: '80m', validated: 38 },
+        { time: '60m', validated: 45 },
+        { time: '40m', validated: 52 },
+        { time: '20m', validated: 58 }
+      ],
+      '5h': [
+        { time: '5h', validated: 35 },
+        { time: '4h', validated: 45 },
+        { time: '3h', validated: 55 },
+        { time: '2h', validated: 65 },
+        { time: '1h', validated: 75 },
+        { time: '30m', validated: 89 }
+      ]
+    };
 
     const genderData = [
       { name: 'Male', value: 55, fill: 'hsl(var(--primary))' },
-      { name: 'Female', value: 45, fill: 'hsl(var(--secondary))' }
+      { name: 'Female', value: 45, fill: 'hsl(var(--chart-2))' }
     ];
 
     const ageDistribution = [
@@ -224,11 +322,49 @@ const EventManagement = () => {
       { age: '55+', count: 2 }
     ];
 
-    const ticketTypes = [
+    const allTicketTypes = [
       { type: 'Early Bird', lot: 'Lot 1', amount: 50, revenue: 2000 },
       { type: 'Regular', lot: 'Lot 2', amount: 80, revenue: 4000 },
-      { type: 'VIP', lot: 'Lot 3', amount: 20, revenue: 1500 }
+      { type: 'VIP', lot: 'Lot 3', amount: 20, revenue: 1500 },
+      { type: 'Student', lot: 'Lot 4', amount: 30, revenue: 900 },
+      { type: 'Group', lot: 'Lot 5', amount: 25, revenue: 1250 },
+      { type: 'Last Minute', lot: 'Lot 6', amount: 15, revenue: 900 },
+      { type: 'Premium', lot: 'Lot 7', amount: 10, revenue: 800 },
+      { type: 'Corporate', lot: 'Lot 8', amount: 12, revenue: 960 }
     ];
+
+    // Pagination logic
+    const totalPages = Math.ceil(allTicketTypes.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const ticketTypes = allTicketTypes.slice(startIndex, startIndex + itemsPerPage);
+
+    const TimeWindowSelector = ({ 
+      options, 
+      selected, 
+      onSelect, 
+      className = "" 
+    }: { 
+      options: string[], 
+      selected: string, 
+      onSelect: (value: string) => void, 
+      className?: string 
+    }) => (
+      <div className={`flex bg-muted rounded-lg p-1 ${className}`}>
+        {options.map((option) => (
+          <button
+            key={option}
+            onClick={() => onSelect(option)}
+            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+              selected === option 
+                ? 'bg-background text-foreground shadow-sm' 
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+    );
 
     return (
       <div className="space-y-6">
@@ -277,44 +413,94 @@ const EventManagement = () => {
         <div className="grid gap-6 md:grid-cols-2">
           {/* Ticket Sales Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle>Tickets Sold (Last 24h)</CardTitle>
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle>Tickets Sold</CardTitle>
+                <TimeWindowSelector 
+                  options={['1h', '3h', '6h', '12h', '24h']}
+                  selected={salesTimeWindow}
+                  onSelect={setSalesTimeWindow}
+                />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[200px] w-full">
-                <div className="space-y-2">
-                  {ticketSalesData.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">{item.time}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 bg-primary rounded-full" style={{width: `${(item.tickets / 25) * 100}px`}} />
-                        <span className="text-sm font-medium">{item.tickets}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={salesDataSets[salesTimeWindow as keyof typeof salesDataSets]}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis 
+                      dataKey="time" 
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip 
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--popover))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Bar 
+                      dataKey="tickets" 
+                      fill="hsl(var(--primary))" 
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
 
           {/* Validation Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle>Ticket Validations</CardTitle>
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle>Ticket Validations</CardTitle>
+                <TimeWindowSelector 
+                  options={['15m', '30m', '1h', '2h', '5h']}
+                  selected={validationTimeWindow}
+                  onSelect={setValidationTimeWindow}
+                />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="h-[200px] w-full">
-                <div className="space-y-2">
-                  {validationData.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">{item.time}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 bg-green-500 rounded-full" style={{width: `${(item.validated / 89) * 100}px`}} />
-                        <span className="text-sm font-medium">{item.validated}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={validationDataSets[validationTimeWindow as keyof typeof validationDataSets]}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis 
+                      dataKey="time" 
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip 
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--popover))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Bar 
+                      dataKey="validated" 
+                      fill="hsl(var(--chart-2))" 
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
@@ -328,21 +514,39 @@ const EventManagement = () => {
               <CardTitle>Gender Distribution</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-primary" />
-                    <span className="text-sm">Male</span>
-                  </div>
-                  <span className="text-sm font-medium">55%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-secondary" />
-                    <span className="text-sm">Female</span>
-                  </div>
-                  <span className="text-sm font-medium">45%</span>
-                </div>
+              <div className="h-[200px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={genderData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {genderData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value) => [`${value}%`, 'Percentage']}
+                      labelStyle={{ color: 'hsl(var(--foreground))' }}
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--popover))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '12px' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </CardContent>
           </Card>
@@ -396,21 +600,39 @@ const EventManagement = () => {
             <CardTitle>Age Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {ageDistribution.map((item, i) => (
-                <div key={i} className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground w-16">{item.age}</span>
-                  <div className="flex-1 mx-4">
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-primary rounded-full" 
-                        style={{width: `${(item.count / 62) * 100}%`}}
-                      />
-                    </div>
-                  </div>
-                  <span className="text-sm font-medium w-8">{item.count}</span>
-                </div>
-              ))}
+            <div className="h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={ageDistribution} layout="horizontal">
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis 
+                    type="number"
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    type="category"
+                    dataKey="age" 
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                    width={60}
+                  />
+                  <Tooltip 
+                    labelStyle={{ color: 'hsl(var(--foreground))' }}
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--popover))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Bar 
+                    dataKey="count" 
+                    fill="hsl(var(--chart-3))" 
+                    radius={[0, 4, 4, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
@@ -421,21 +643,71 @@ const EventManagement = () => {
             <CardTitle>Tickets by Type</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="grid grid-cols-4 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
                 <span>Type</span>
                 <span>Lot</span>
                 <span>Amount</span>
                 <span>Revenue</span>
               </div>
-              {ticketTypes.map((ticket, i) => (
-                <div key={i} className="grid grid-cols-4 gap-4 text-sm">
-                  <span className="font-medium">{ticket.type}</span>
-                  <span className="text-muted-foreground">{ticket.lot}</span>
-                  <span>{ticket.amount}</span>
-                  <span className="font-medium">${ticket.revenue}</span>
-                </div>
-              ))}
+              <div className="space-y-2">
+                {ticketTypes.map((ticket, i) => (
+                  <div key={i} className="grid grid-cols-4 gap-4 text-sm py-2 border-b border-border/50 last:border-0">
+                    <span className="font-medium">{ticket.type}</span>
+                    <span className="text-muted-foreground">{ticket.lot}</span>
+                    <span>{ticket.amount}</span>
+                    <span className="font-medium">${ticket.revenue}</span>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Pagination */}
+              <div className="flex items-center justify-between pt-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, allTicketTypes.length)} of {allTicketTypes.length} entries
+                </p>
+                
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        href="#" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage > 1) setCurrentPage(currentPage - 1);
+                        }}
+                        className={currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                    
+                    {[...Array(totalPages)].map((_, i) => (
+                      <PaginationItem key={i + 1}>
+                        <PaginationLink 
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setCurrentPage(i + 1);
+                          }}
+                          isActive={currentPage === i + 1}
+                        >
+                          {i + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                        }}
+                        className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
             </div>
           </CardContent>
         </Card>
