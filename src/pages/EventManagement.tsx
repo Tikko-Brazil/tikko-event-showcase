@@ -29,6 +29,7 @@ const EventManagement = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [activeSection, setActiveSection] = useState('overview');
+  const [mobileOverlay, setMobileOverlay] = useState<string | null>(null);
 
   // Mock event data
   const eventData = {
@@ -206,6 +207,32 @@ const EventManagement = () => {
   };
 
   if (isMobile) {
+    // Full-screen overlay for mobile management sections
+    if (mobileOverlay) {
+      return (
+        <div className="min-h-screen bg-background">
+          <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex h-14 items-center justify-between px-4">
+              <Button variant="ghost" size="sm" onClick={() => setMobileOverlay(null)}>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="font-semibold">
+                {managementSections.find(s => s.id === mobileOverlay)?.label}
+              </h1>
+              <div className="w-10" />
+            </div>
+          </header>
+          
+          <main className="p-4">
+            {mobileOverlay === 'overview' ? renderOverview() : renderPlaceholderSection(
+              managementSections.find(s => s.id === mobileOverlay)?.label || '',
+              `Manage your event ${mobileOverlay}.`
+            )}
+          </main>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-background">
         {/* Mobile Header */}
@@ -240,32 +267,57 @@ const EventManagement = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        <div className="p-4 border-b">
-          <div className="grid grid-cols-2 gap-2">
+        {/* Quick Stats */}
+        <div className="p-4 space-y-4">
+          <h2 className="text-lg font-semibold">Quick Stats</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold text-primary">{eventData.attendees}</p>
+                    <p className="text-sm text-muted-foreground">Attendees</p>
+                  </div>
+                  <Users className="h-8 w-8 text-primary/60" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold text-green-600">${eventData.revenue}</p>
+                    <p className="text-sm text-muted-foreground">Revenue</p>
+                  </div>
+                  <DollarSign className="h-8 w-8 text-green-500/60" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Management Grid Menu */}
+        <div className="p-4">
+          <h2 className="text-lg font-semibold mb-4">Event Management</h2>
+          <div className="grid grid-cols-3 gap-6 justify-items-center">
             {managementSections.map((section) => {
               const Icon = section.icon;
-              const isActive = activeSection === section.id;
               return (
-                <Button
+                <button
                   key={section.id}
-                  variant={isActive ? 'default' : 'outline'}
-                  size="sm"
-                  className="justify-start"
-                  onClick={() => setActiveSection(section.id)}
+                  onClick={() => setMobileOverlay(section.id)}
+                  className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-card hover:bg-accent/50 transition-colors"
                 >
-                  <Icon className="h-4 w-4 mr-2" />
-                  {section.label}
-                </Button>
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Icon className="h-8 w-8 text-primary" />
+                  </div>
+                  <span className="text-sm font-medium text-center">{section.label}</span>
+                </button>
               );
             })}
           </div>
         </div>
-
-        {/* Mobile Content */}
-        <main className="p-4">
-          {renderContent()}
-        </main>
       </div>
     );
   }
