@@ -174,6 +174,318 @@ const EventManagement = () => {
     </div>
   );
 
+  const renderAnalytics = () => {
+    // Fake analytics data
+    const analyticsData = {
+      totalTickets: 150,
+      liquidRevenue: 7500,
+      validatedTickets: 89,
+      validatedPercentage: 59,
+      pageVisits: 2340,
+      conversionRate: 6.4,
+      avgAge: 28,
+      avgMaleAge: 29,
+      avgFemaleAge: 27,
+      pendingRequests: 12,
+      approvedRequests: 45,
+      rejectedRequests: 8,
+      freeTickets: 15,
+      paidTickets: 135
+    };
+
+    const ticketSalesData = [
+      { time: '1h ago', tickets: 2 },
+      { time: '2h ago', tickets: 5 },
+      { time: '3h ago', tickets: 8 },
+      { time: '6h ago', tickets: 12 },
+      { time: '12h ago', tickets: 18 },
+      { time: '24h ago', tickets: 25 }
+    ];
+
+    const validationData = [
+      { time: '15m', validated: 15 },
+      { time: '30m', validated: 28 },
+      { time: '1h', validated: 45 },
+      { time: '2h', validated: 67 },
+      { time: '5h', validated: 89 }
+    ];
+
+    const genderData = [
+      { name: 'Male', value: 55, fill: 'hsl(var(--primary))' },
+      { name: 'Female', value: 45, fill: 'hsl(var(--secondary))' }
+    ];
+
+    const ageDistribution = [
+      { age: '0-17', count: 5 },
+      { age: '18-24', count: 45 },
+      { age: '25-34', count: 62 },
+      { age: '35-44', count: 28 },
+      { age: '45-54', count: 8 },
+      { age: '55+', count: 2 }
+    ];
+
+    const ticketTypes = [
+      { type: 'Early Bird', lot: 'Lot 1', amount: 50, revenue: 2000 },
+      { type: 'Regular', lot: 'Lot 2', amount: 80, revenue: 4000 },
+      { type: 'VIP', lot: 'Lot 3', amount: 20, revenue: 1500 }
+    ];
+
+    return (
+      <div className="space-y-6">
+        {/* Key Metrics Grid */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Total Tickets Issued</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analyticsData.totalTickets}</div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Liquid Revenue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${analyticsData.liquidRevenue.toLocaleString()}</div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Validated Tickets</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analyticsData.validatedTickets}</div>
+              <p className="text-xs text-muted-foreground">{analyticsData.validatedPercentage}% of total</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Conversion Rate</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analyticsData.conversionRate}%</div>
+              <p className="text-xs text-muted-foreground">{analyticsData.pageVisits} page visits</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Grid */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Ticket Sales Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Tickets Sold (Last 24h)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[200px] w-full">
+                <div className="space-y-2">
+                  {ticketSalesData.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">{item.time}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 bg-primary rounded-full" style={{width: `${(item.tickets / 25) * 100}px`}} />
+                        <span className="text-sm font-medium">{item.tickets}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Validation Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Ticket Validations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[200px] w-full">
+                <div className="space-y-2">
+                  {validationData.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">{item.time}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 bg-green-500 rounded-full" style={{width: `${(item.validated / 89) * 100}px`}} />
+                        <span className="text-sm font-medium">{item.validated}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Demographics Section */}
+        <div className="grid gap-6 md:grid-cols-3">
+          {/* Gender Distribution */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Gender Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-primary" />
+                    <span className="text-sm">Male</span>
+                  </div>
+                  <span className="text-sm font-medium">55%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-secondary" />
+                    <span className="text-sm">Female</span>
+                  </div>
+                  <span className="text-sm font-medium">45%</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Age Statistics */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Age Statistics</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Average Age</span>
+                <span className="text-sm font-medium">{analyticsData.avgAge}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Avg Male Age</span>
+                <span className="text-sm font-medium">{analyticsData.avgMaleAge}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Avg Female Age</span>
+                <span className="text-sm font-medium">{analyticsData.avgFemaleAge}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Join Requests */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Join Requests</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Pending</span>
+                <Badge variant="outline">{analyticsData.pendingRequests}</Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Approved</span>
+                <Badge variant="default">{analyticsData.approvedRequests}</Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Rejected</span>
+                <Badge variant="destructive">{analyticsData.rejectedRequests}</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Age Distribution Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Age Distribution</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {ageDistribution.map((item, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground w-16">{item.age}</span>
+                  <div className="flex-1 mx-4">
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-primary rounded-full" 
+                        style={{width: `${(item.count / 62) * 100}%`}}
+                      />
+                    </div>
+                  </div>
+                  <span className="text-sm font-medium w-8">{item.count}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Ticket Types Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tickets by Type</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="grid grid-cols-4 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+                <span>Type</span>
+                <span>Lot</span>
+                <span>Amount</span>
+                <span>Revenue</span>
+              </div>
+              {ticketTypes.map((ticket, i) => (
+                <div key={i} className="grid grid-cols-4 gap-4 text-sm">
+                  <span className="font-medium">{ticket.type}</span>
+                  <span className="text-muted-foreground">{ticket.lot}</span>
+                  <span>{ticket.amount}</span>
+                  <span className="font-medium">${ticket.revenue}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Ticket Distribution */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Ticket Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-green-500" />
+                    <span className="text-sm">Paid Tickets</span>
+                  </div>
+                  <span className="text-sm font-medium">{analyticsData.paidTickets}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-3 rounded-full bg-blue-500" />
+                    <span className="text-sm">Free Tickets</span>
+                  </div>
+                  <span className="text-sm font-medium">{analyticsData.freeTickets}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button className="w-full justify-start" variant="outline">
+                <FileText className="h-4 w-4 mr-2" />
+                Export Analytics Report
+              </Button>
+              <Button className="w-full justify-start" variant="outline">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                View Detailed Charts
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  };
+
   const renderPlaceholderSection = (title: string, description: string) => (
     <div className="text-center py-12">
       <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -190,7 +502,7 @@ const EventManagement = () => {
       case 'edit':
         return renderPlaceholderSection('Edit Event', 'Modify event details, description, and settings.');
       case 'analytics':
-        return renderPlaceholderSection('Analytics', 'View detailed analytics and insights about your event.');
+        return renderAnalytics();
       case 'participants':
         return renderPlaceholderSection('Participants', 'Manage event participants and attendees.');
       case 'tickets':
@@ -224,10 +536,12 @@ const EventManagement = () => {
           </header>
           
           <main className="p-4">
-            {mobileOverlay === 'overview' ? renderOverview() : renderPlaceholderSection(
-              managementSections.find(s => s.id === mobileOverlay)?.label || '',
-              `Manage your event ${mobileOverlay}.`
-            )}
+            {mobileOverlay === 'overview' ? renderOverview() : 
+             mobileOverlay === 'analytics' ? renderAnalytics() :
+             renderPlaceholderSection(
+               managementSections.find(s => s.id === mobileOverlay)?.label || '',
+               `Manage your event ${mobileOverlay}.`
+             )}
           </main>
         </div>
       );
