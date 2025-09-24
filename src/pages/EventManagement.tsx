@@ -622,8 +622,8 @@ const EventManagement = () => {
     };
 
     const genderData = [
-      { name: 'Male', value: 55, fill: 'hsl(var(--primary))' },
-      { name: 'Female', value: 45, fill: 'hsl(var(--chart-2))' }
+      { name: 'Male', value: 55, count: 82, fill: 'hsl(var(--primary))' },
+      { name: 'Female', value: 45, count: 68, fill: 'hsl(var(--chart-3))' }
     ];
 
     const ageDistribution = [
@@ -809,7 +809,7 @@ const EventManagement = () => {
                     />
                     <Bar 
                       dataKey="validated" 
-                      fill="hsl(var(--chart-2))" 
+                      fill="hsl(var(--primary))" 
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
@@ -827,7 +827,7 @@ const EventManagement = () => {
               <CardTitle>Gender Distribution</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[200px] w-full">
+              <div className="h-[200px] w-full mb-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -844,22 +844,42 @@ const EventManagement = () => {
                       ))}
                     </Pie>
                     <Tooltip 
-                      formatter={(value) => [`${value}%`, 'Percentage']}
+                      formatter={(value, name, props) => [`${props.payload.count} people (${value}%)`, name]}
                       labelStyle={{ color: 'hsl(var(--foreground))' }}
                       contentStyle={{ 
                         backgroundColor: 'hsl(var(--popover))', 
                         border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
+                        borderRadius: '8px',
+                        color: 'hsl(var(--foreground))'
                       }}
                     />
                     <Legend 
                       verticalAlign="bottom" 
                       height={36}
                       iconType="circle"
-                      wrapperStyle={{ fontSize: '12px' }}
+                      wrapperStyle={{ fontSize: '12px', color: 'hsl(var(--foreground))' }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
+              </div>
+              
+              {/* Gender Statistics */}
+              <div className="space-y-3 text-sm">
+                {genderData.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="h-3 w-3 rounded-full" 
+                        style={{ backgroundColor: item.fill }}
+                      />
+                      <span className="text-muted-foreground">{item.name}</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">{item.count} people</div>
+                      <div className="text-xs text-muted-foreground">{item.value}%</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -915,21 +935,18 @@ const EventManagement = () => {
           <CardContent>
             <div className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={ageDistribution} layout="horizontal">
+                <BarChart data={ageDistribution}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                   <XAxis 
-                    type="number"
+                    dataKey="age" 
                     tick={{ fontSize: 12 }}
                     tickLine={false}
                     axisLine={false}
                   />
                   <YAxis 
-                    type="category"
-                    dataKey="age" 
                     tick={{ fontSize: 12 }}
                     tickLine={false}
                     axisLine={false}
-                    width={60}
                   />
                   <Tooltip 
                     labelStyle={{ color: 'hsl(var(--foreground))' }}
@@ -942,7 +959,7 @@ const EventManagement = () => {
                   <Bar 
                     dataKey="count" 
                     fill="hsl(var(--chart-3))" 
-                    radius={[0, 4, 4, 0]}
+                    radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -954,73 +971,108 @@ const EventManagement = () => {
         <Card>
           <CardHeader>
             <CardTitle>Tickets by Type</CardTitle>
+            <CardDescription>
+              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, allTicketTypes.length)} of {allTicketTypes.length} ticket types
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="grid grid-cols-4 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
-                <span>Type</span>
-                <span>Lot</span>
-                <span>Amount</span>
-                <span>Revenue</span>
+              {/* Desktop Header - Hidden on mobile */}
+              <div className="hidden md:grid md:grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+                <span className="col-span-4">Type</span>
+                <span className="col-span-2">Lot</span>
+                <span className="col-span-3">Amount</span>
+                <span className="col-span-3">Revenue</span>
               </div>
+              
               <div className="space-y-2">
                 {ticketTypes.map((ticket, i) => (
-                  <div key={i} className="grid grid-cols-4 gap-4 text-sm py-2 border-b border-border/50 last:border-0">
-                    <span className="font-medium">{ticket.type}</span>
-                    <span className="text-muted-foreground">{ticket.lot}</span>
-                    <span>{ticket.amount}</span>
-                    <span className="font-medium">${ticket.revenue}</span>
+                  <div key={i} className="grid grid-cols-12 gap-2 md:gap-4 text-sm py-3 border-b border-border/50 last:border-0 items-center">
+                    {/* Type - Takes majority of width on mobile */}
+                    <div className="col-span-5 md:col-span-4">
+                      <span className="font-medium text-xs md:text-sm">{ticket.type}</span>
+                    </div>
+                    
+                    {/* Lot */}
+                    <div className="col-span-2 md:col-span-2">
+                      <span className="text-xs md:text-sm text-muted-foreground">{ticket.lot}</span>
+                    </div>
+                    
+                    {/* Amount */}
+                    <div className="col-span-2 md:col-span-3">
+                      <span className="text-xs md:text-sm">{ticket.amount}</span>
+                    </div>
+                    
+                    {/* Revenue */}
+                    <div className="col-span-3 md:col-span-3">
+                      <span className="text-xs md:text-sm font-medium">${ticket.revenue}</span>
+                    </div>
                   </div>
                 ))}
               </div>
-              
+
               {/* Pagination */}
-              <div className="flex items-center justify-between pt-4">
-                <p className="text-sm text-muted-foreground">
-                  Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, allTicketTypes.length)} of {allTicketTypes.length} entries
-                </p>
-                
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious 
-                        href="#" 
-                        onClick={(e) => {
-                          e.preventDefault();
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-4">
+                  <p className="text-xs md:text-sm text-muted-foreground">
+                    {startIndex + 1}-{Math.min(startIndex + itemsPerPage, allTicketTypes.length)} of {allTicketTypes.length}
+                  </p>
+                  
+                  <div className="flex items-center gap-2">
+                    {/* Desktop pagination with labels */}
+                    <div className="hidden md:flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
                           if (currentPage > 1) setCurrentPage(currentPage - 1);
                         }}
-                        className={currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
-                      />
-                    </PaginationItem>
-                    
-                    {[...Array(totalPages)].map((_, i) => (
-                      <PaginationItem key={i + 1}>
-                        <PaginationLink 
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setCurrentPage(i + 1);
-                          }}
-                          isActive={currentPage === i + 1}
-                        >
-                          {i + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
-                    
-                    <PaginationItem>
-                      <PaginationNext 
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
+                        disabled={currentPage <= 1}
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
                           if (currentPage < totalPages) setCurrentPage(currentPage + 1);
                         }}
-                        className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
+                        disabled={currentPage >= totalPages}
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                    
+                    {/* Mobile pagination with icons only */}
+                    <div className="flex md:hidden items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (currentPage > 1) setCurrentPage(currentPage - 1);
+                        }}
+                        disabled={currentPage <= 1}
+                        className="h-8 w-8 p-0"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                        }}
+                        disabled={currentPage >= totalPages}
+                        className="h-8 w-8 p-0"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
