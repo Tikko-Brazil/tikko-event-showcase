@@ -199,13 +199,29 @@ export default function EventDetails() {
 
       {/* Hero Section */}
       <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
-        <div className="absolute inset-0">
+        {/* Mobile: Full width image with overlay */}
+        <div className="absolute inset-0 md:hidden">
           <img
             src={event.image}
             alt={event.title}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-background"></div>
+        </div>
+        
+        {/* Desktop: Centered smaller image with overlay */}
+        <div className="hidden md:block absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background"></div>
+          <div className="h-full flex items-center justify-center">
+            <div className="relative max-w-4xl w-full mx-8 h-[80%] rounded-2xl overflow-hidden shadow-2xl">
+              <img
+                src={event.image}
+                alt={event.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60"></div>
+            </div>
+          </div>
         </div>
         
         <div className="relative z-10 h-full flex items-end">
