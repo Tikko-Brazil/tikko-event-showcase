@@ -87,6 +87,12 @@ const EventManagement = () => {
     ticketType: ''
   });
 
+  // Participants states
+  const [participantFilter, setParticipantFilter] = useState('all');
+  const [participantSearch, setParticipantSearch] = useState('');
+  const [participantPage, setParticipantPage] = useState(1);
+  const participantsPerPage = 6;
+
   // Mock event data
   const eventData = {
     id: eventId,
@@ -102,6 +108,120 @@ const EventManagement = () => {
     ticketsSold: 45,
     ticketsAvailable: 55
   };
+
+  // Mock participants data
+  const participantsData = [
+    {
+      id: 1,
+      name: 'Sarah Johnson',
+      email: 'sarah.johnson@email.com',
+      instagram: '@sarah_j',
+      ticketType: 'VIP',
+      paidValue: 80,
+      coupon: 'EARLY20',
+      validated: true,
+      status: 'approved'
+    },
+    {
+      id: 2,
+      name: 'Mike Chen',
+      email: 'mike.chen@gmail.com',
+      instagram: '@mike_chen',
+      ticketType: 'General',
+      paidValue: 50,
+      coupon: null,
+      validated: false,
+      status: 'approved'
+    },
+    {
+      id: 3,
+      name: 'Emily Davis',
+      email: 'emily.davis@yahoo.com',
+      instagram: '@emily_d',
+      ticketType: 'Student',
+      paidValue: 30,
+      coupon: 'STUDENT50',
+      validated: true,
+      status: 'approved'
+    },
+    {
+      id: 4,
+      name: 'Alex Rodriguez',
+      email: 'alex.rodriguez@hotmail.com',
+      instagram: '@alex_rod',
+      ticketType: 'VIP',
+      paidValue: 80,
+      coupon: null,
+      validated: false,
+      status: 'rejected'
+    },
+    {
+      id: 5,
+      name: 'Jessica Wang',
+      email: 'jessica.wang@outlook.com',
+      instagram: '@jess_wang',
+      ticketType: 'General',
+      paidValue: 45,
+      coupon: 'FRIEND10',
+      validated: true,
+      status: 'approved'
+    },
+    {
+      id: 6,
+      name: 'David Smith',
+      email: 'david.smith@email.com',
+      instagram: '@david_s',
+      ticketType: 'Student',
+      paidValue: 30,
+      coupon: 'STUDENT50',
+      validated: false,
+      status: 'approved'
+    },
+    {
+      id: 7,
+      name: 'Maria Garcia',
+      email: 'maria.garcia@gmail.com',
+      instagram: '@maria_g',
+      ticketType: 'VIP',
+      paidValue: 80,
+      coupon: null,
+      validated: true,
+      status: 'approved'
+    },
+    {
+      id: 8,
+      name: 'James Wilson',
+      email: 'james.wilson@yahoo.com',
+      instagram: '@james_w',
+      ticketType: 'General',
+      paidValue: 50,
+      coupon: null,
+      validated: false,
+      status: 'rejected'
+    },
+    {
+      id: 9,
+      name: 'Lisa Brown',
+      email: 'lisa.brown@hotmail.com',
+      instagram: '@lisa_b',
+      ticketType: 'Student',
+      paidValue: 25,
+      coupon: 'EARLY20',
+      validated: true,
+      status: 'approved'
+    },
+    {
+      id: 10,
+      name: 'Tom Anderson',
+      email: 'tom.anderson@outlook.com',
+      instagram: '@tom_a',
+      ticketType: 'VIP',
+      paidValue: 80,
+      coupon: null,
+      validated: false,
+      status: 'approved'
+    }
+  ];
 
   const managementSections = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -1223,6 +1343,192 @@ const EventManagement = () => {
     );
   };
 
+  const renderParticipants = () => {
+    // Filter participants based on status and search
+    const filteredParticipants = participantsData.filter(participant => {
+      const matchesStatus = participantFilter === 'all' || participant.status === participantFilter;
+      const matchesSearch = participantSearch === '' || 
+        participant.name.toLowerCase().includes(participantSearch.toLowerCase()) ||
+        participant.email.toLowerCase().includes(participantSearch.toLowerCase()) ||
+        participant.instagram.toLowerCase().includes(participantSearch.toLowerCase());
+      
+      return matchesStatus && matchesSearch;
+    });
+
+    // Pagination
+    const totalParticipants = filteredParticipants.length;
+    const totalPages = Math.ceil(totalParticipants / participantsPerPage);
+    const startIndex = (participantPage - 1) * participantsPerPage;
+    const endIndex = Math.min(startIndex + participantsPerPage, totalParticipants);
+    const paginatedParticipants = filteredParticipants.slice(startIndex, endIndex);
+
+    const handleRefund = (participantId: number) => {
+      // Mock refund logic
+      console.log(`Refunding participant ${participantId}`);
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Header and Controls */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Participants</h2>
+            <p className="text-muted-foreground">
+              Manage event participants and their ticket information
+            </p>
+          </div>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search participants..."
+              value={participantSearch}
+              onChange={(e) => setParticipantSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          
+          <Select value={participantFilter} onValueChange={setParticipantFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Participants</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Participants Grid */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {paginatedParticipants.map((participant) => (
+            <Card key={participant.id} className="relative">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {participant.name.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-semibold text-sm leading-none">{participant.name}</h3>
+                      <p className="text-xs text-muted-foreground mt-1">{participant.email}</p>
+                    </div>
+                  </div>
+                  <Badge variant={participant.status === 'approved' ? 'default' : 'destructive'}>
+                    {participant.status}
+                  </Badge>
+                </div>
+
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Instagram:</span>
+                    <span className="font-medium">{participant.instagram}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Ticket Type:</span>
+                    <Badge variant="outline">{participant.ticketType}</Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Paid Value:</span>
+                    <span className="font-medium">R${participant.paidValue}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Coupon:</span>
+                    <span className="font-medium">
+                      {participant.coupon ? (
+                        <Badge variant="secondary">{participant.coupon}</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">None</span>
+                      )}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Validated:</span>
+                    <div className="flex items-center gap-1">
+                      {participant.validated ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <div className="h-4 w-4 rounded-full border-2 border-muted-foreground" />
+                      )}
+                      <span className="text-xs">
+                        {participant.validated ? 'Yes' : 'No'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-4 border-t">
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => handleRefund(participant.id)}
+                  >
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Refund Ticket
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              Showing {startIndex + 1}-{endIndex} of {totalParticipants} participants
+            </p>
+            
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setParticipantPage(Math.max(1, participantPage - 1))}
+                    className={participantPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+                
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <PaginationItem key={pageNum}>
+                      <PaginationLink
+                        onClick={() => setParticipantPage(pageNum)}
+                        isActive={participantPage === pageNum}
+                        className="cursor-pointer"
+                      >
+                        {pageNum}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                })}
+                
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setParticipantPage(Math.min(totalPages, participantPage + 1))}
+                    className={participantPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderPlaceholderSection = (title: string, description: string) => (
     <div className="text-center py-12">
       <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -1241,7 +1547,7 @@ const EventManagement = () => {
       case 'analytics':
         return renderAnalytics();
       case 'participants':
-        return renderPlaceholderSection('Participants', 'Manage event participants and attendees.');
+        return renderParticipants();
       case 'tickets':
         return renderPlaceholderSection('Ticket Types', 'Configure different ticket types and pricing.');
       case 'coupons':
@@ -1275,6 +1581,7 @@ const EventManagement = () => {
            <main className="p-4">
              {mobileOverlay === 'overview' ? renderOverview() : 
               mobileOverlay === 'analytics' ? renderAnalytics() :
+              mobileOverlay === 'participants' ? renderParticipants() :
               mobileOverlay === 'coupons' ? renderCoupons() :
               renderPlaceholderSection(
                 managementSections.find(s => s.id === mobileOverlay)?.label || '',
