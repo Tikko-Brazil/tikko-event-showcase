@@ -1005,45 +1005,76 @@ const EventManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="grid grid-cols-5 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
-                <span>Code</span>
-                <span>Value</span>
-                <span>Usage</span>
-                <span>Status</span>
-                <span>Actions</span>
+              {/* Desktop Header - Hidden on mobile */}
+              <div className="hidden md:grid md:grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+                <span className="col-span-4">Code</span>
+                <span className="col-span-2">Value</span>
+                <span className="col-span-3">Usage</span>
+                <span className="col-span-2">Status</span>
+                <span className="col-span-1">Actions</span>
               </div>
               
               <div className="space-y-2">
                 {paginatedCoupons.map((coupon) => (
-                  <div key={coupon.id} className="grid grid-cols-5 gap-4 text-sm py-3 border-b border-border/50 last:border-0 items-center">
-                    <div>
-                      <span className="font-mono font-medium">{coupon.code}</span>
+                  <div key={coupon.id} className="grid grid-cols-12 gap-2 md:gap-4 text-sm py-3 border-b border-border/50 last:border-0 items-center">
+                    {/* Code - Takes majority of width on mobile */}
+                    <div className="col-span-6 md:col-span-4">
+                      <span className="font-mono font-medium text-xs md:text-sm break-all">{coupon.code}</span>
                       {coupon.isTicketSpecific && (
-                        <div className="text-xs text-muted-foreground">→ {coupon.ticketType}</div>
+                        <div className="text-xs text-muted-foreground mt-1">→ {coupon.ticketType}</div>
                       )}
                     </div>
-                    <span>
-                      {coupon.type === 'percentage' ? `${coupon.value}%` : `R$ ${coupon.value}`}
-                    </span>
-                    <span>
-                      {coupon.usage}/{coupon.maxUsage}
+                    
+                    {/* Value */}
+                    <div className="col-span-2 md:col-span-2">
+                      <span className="text-xs md:text-sm">
+                        {coupon.type === 'percentage' ? `${coupon.value}%` : `R$ ${coupon.value}`}
+                      </span>
+                    </div>
+                    
+                    {/* Usage */}
+                    <div className="col-span-2 md:col-span-3">
+                      <div className="text-xs md:text-sm">
+                        {coupon.usage}/{coupon.maxUsage}
+                      </div>
                       <div className="w-full bg-muted rounded-full h-1 mt-1">
                         <div 
                           className="bg-primary h-1 rounded-full" 
                           style={{ width: `${(coupon.usage / coupon.maxUsage) * 100}%` }}
                         />
                       </div>
-                    </span>
-                    <Badge variant={coupon.isActive ? "default" : "secondary"}>
-                      {coupon.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditCoupon(coupon)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    </div>
+                    
+                    {/* Status - Different for mobile vs desktop */}
+                    <div className="col-span-1 md:col-span-2">
+                      {/* Mobile: Visual indicator only */}
+                      <div className="md:hidden">
+                        <div 
+                          className={`w-3 h-3 rounded-full ${
+                            coupon.isActive ? 'bg-green-500' : 'bg-gray-400'
+                          }`}
+                          title={coupon.isActive ? 'Active' : 'Inactive'}
+                        />
+                      </div>
+                      {/* Desktop: Badge with text */}
+                      <div className="hidden md:block">
+                        <Badge variant={coupon.isActive ? "default" : "secondary"}>
+                          {coupon.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    {/* Actions */}
+                    <div className="col-span-1 md:col-span-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditCoupon(coupon)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-3 w-3 md:h-4 md:w-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1051,50 +1082,63 @@ const EventManagement = () => {
               {/* Pagination */}
               {totalCouponPages > 1 && (
                 <div className="flex items-center justify-between pt-4">
-                  <p className="text-sm text-muted-foreground">
-                    Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredCoupons.length)} of {filteredCoupons.length} entries
+                  <p className="text-xs md:text-sm text-muted-foreground">
+                    {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredCoupons.length)} of {filteredCoupons.length}
                   </p>
                   
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious 
-                          href="#" 
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (couponPage > 1) setCouponPage(couponPage - 1);
-                          }}
-                          className={couponPage <= 1 ? 'pointer-events-none opacity-50' : ''}
-                        />
-                      </PaginationItem>
-                      
-                      {[...Array(totalCouponPages)].map((_, i) => (
-                        <PaginationItem key={i + 1}>
-                          <PaginationLink 
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              setCouponPage(i + 1);
-                            }}
-                            isActive={couponPage === i + 1}
-                          >
-                            {i + 1}
-                          </PaginationLink>
-                        </PaginationItem>
-                      ))}
-                      
-                      <PaginationItem>
-                        <PaginationNext 
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (couponPage < totalCouponPages) setCouponPage(couponPage + 1);
-                          }}
-                          className={couponPage >= totalCouponPages ? 'pointer-events-none opacity-50' : ''}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
+                  <div className="flex items-center gap-2">
+                    {/* Desktop pagination with labels */}
+                    <div className="hidden md:flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (couponPage > 1) setCouponPage(couponPage - 1);
+                        }}
+                        disabled={couponPage <= 1}
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (couponPage < totalCouponPages) setCouponPage(couponPage + 1);
+                        }}
+                        disabled={couponPage >= totalCouponPages}
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                    
+                    {/* Mobile pagination with icons only */}
+                    <div className="flex md:hidden items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (couponPage > 1) setCouponPage(couponPage - 1);
+                        }}
+                        disabled={couponPage <= 1}
+                        className="h-8 w-8 p-0"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (couponPage < totalCouponPages) setCouponPage(couponPage + 1);
+                        }}
+                        disabled={couponPage >= totalCouponPages}
+                        className="h-8 w-8 p-0"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
