@@ -1486,43 +1486,64 @@ const EventManagement = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              Showing {startIndex + 1}-{endIndex} of {totalParticipants} participants
+          <div className="flex items-center justify-between pt-4">
+            <p className="text-xs md:text-sm text-muted-foreground">
+              {startIndex + 1}-{endIndex} of {totalParticipants} participants
             </p>
             
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious 
-                    onClick={() => setParticipantPage(Math.max(1, participantPage - 1))}
-                    className={participantPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                  />
-                </PaginationItem>
-                
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const pageNum = i + 1;
-                  return (
-                    <PaginationItem key={pageNum}>
-                      <PaginationLink
-                        onClick={() => setParticipantPage(pageNum)}
-                        isActive={participantPage === pageNum}
-                        className="cursor-pointer"
-                      >
-                        {pageNum}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                })}
-                
-                <PaginationItem>
-                  <PaginationNext 
-                    onClick={() => setParticipantPage(Math.min(totalPages, participantPage + 1))}
-                    className={participantPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+            <div className="flex items-center gap-2">
+              {/* Desktop pagination with labels */}
+              <div className="hidden md:flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (participantPage > 1) setParticipantPage(participantPage - 1);
+                  }}
+                  disabled={participantPage <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (participantPage < totalPages) setParticipantPage(participantPage + 1);
+                  }}
+                  disabled={participantPage >= totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+              
+              {/* Mobile pagination with icons only */}
+              <div className="flex md:hidden items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (participantPage > 1) setParticipantPage(participantPage - 1);
+                  }}
+                  disabled={participantPage <= 1}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (participantPage < totalPages) setParticipantPage(participantPage + 1);
+                  }}
+                  disabled={participantPage >= totalPages}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </div>
