@@ -623,7 +623,7 @@ const EventManagement = () => {
 
     const genderData = [
       { name: 'Male', value: 55, count: 82, fill: 'hsl(var(--primary))' },
-      { name: 'Female', value: 45, count: 68, fill: 'hsl(var(--chart-3))' }
+      { name: 'Female', value: 45, count: 68, fill: 'hsl(var(--tikko-orange))' }
     ];
 
     const ageDistribution = [
