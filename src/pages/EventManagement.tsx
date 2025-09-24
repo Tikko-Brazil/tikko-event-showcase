@@ -1576,6 +1576,7 @@ const EventManagement = () => {
   };
 
   const renderTicketTypes = () => {
+    console.log('renderTicketTypes called - allTicketTypes:', allTicketTypes.length);
     // Filter ticket types based on search and filter
     const filteredTicketTypes = allTicketTypes.filter(ticketType => {
       const matchesSearch = ticketType.name.toLowerCase().includes(ticketTypeSearch.toLowerCase());
