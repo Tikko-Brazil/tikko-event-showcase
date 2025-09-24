@@ -26,7 +26,10 @@ import {
   Plus,
   Filter,
   X,
-  Save
+  Save,
+  Calendar as CalendarIcon,
+  Clock,
+  Image as ImageIcon
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { 
@@ -58,6 +61,11 @@ import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import logoLight from '@/assets/logoLight.png';
 
 const EventManagement = () => {
@@ -105,6 +113,73 @@ const EventManagement = () => {
     value: 50,
     isActive: true
   });
+
+  // Edit Event states
+  const [editEventData, setEditEventData] = useState({
+    name: 'My Music Showcase 2024',
+    image: '/placeholder.svg',
+    description: 'An intimate evening featuring emerging artists and local musicians.',
+    startDate: new Date(2024, 6, 10, 20, 0), // Jul 10, 2024, 8:00 PM
+    endDate: new Date(2024, 6, 10, 23, 30), // Jul 10, 2024, 11:30 PM
+    locationName: 'The Underground',
+    location: 'The Underground, NYC',
+    autoAcceptRequests: true,
+    isActive: true
+  });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>(editEventData.image);
+  const [startDateOpen, setStartDateOpen] = useState(false);
+  const [endDateOpen, setEndDateOpen] = useState(false);
+  const [locationSuggestions] = useState([
+    'The Underground, NYC',
+    'Madison Square Garden, NYC',
+    'Brooklyn Bowl, NYC',
+    'Terminal 5, NYC'
+  ]);
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleStartTimeChange = (field: 'hours' | 'minutes', value: number) => {
+    const newDate = new Date(editEventData.startDate);
+    if (field === 'hours') {
+      newDate.setHours(value);
+    } else {
+      newDate.setMinutes(value);
+    }
+    setEditEventData(prev => ({ ...prev, startDate: newDate }));
+  };
+
+  const handleEndTimeChange = (field: 'hours' | 'minutes', value: number) => {
+    const newDate = new Date(editEventData.endDate);
+    if (field === 'hours') {
+      newDate.setHours(value);
+    } else {
+      newDate.setMinutes(value);
+    }
+    setEditEventData(prev => ({ ...prev, endDate: newDate }));
+  };
+
+  const handleSaveEvent = () => {
+    // Handle save logic here
+    console.log('Saving event data:', editEventData);
+    // Show success message or handle the save
+  };
+
+  const handleLocationSelect = (location: string) => {
+    setEditEventData(prev => ({ ...prev, location }));
+    setShowLocationSuggestions(false);
+  };
 
   // Mock event data
   const eventData = {
@@ -1971,6 +2046,316 @@ const EventManagement = () => {
     );
   };
 
+  const renderEditEvent = () => (
+    <div className="max-w-4xl mx-auto">
+      <Card className="shadow-card border-border/50">
+        <CardHeader>
+          <CardTitle className="text-2xl text-foreground">Event Information</CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Edit your event's basic information
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Event Name */}
+          <div className="space-y-2">
+            <Label htmlFor="eventName" className="text-sm font-medium text-foreground">
+              Event Name *
+            </Label>
+            <Input
+              id="eventName"
+              value={editEventData.name}
+              onChange={(e) => setEditEventData(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="Enter event name"
+              className="w-full"
+            />
+          </div>
+
+          {/* Event Image */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-foreground">
+              Event Image
+            </Label>
+            <div className="flex flex-col space-y-4">
+              {imagePreview && (
+                <div className="relative w-full max-w-md">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="w-full h-48 object-cover rounded-lg border border-border"
+                  />
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={() => {
+                      setImagePreview('');
+                      setSelectedImage(null);
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              <div className="flex items-center space-x-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  id="eventImage"
+                />
+                <Label
+                  htmlFor="eventImage"
+                  className="cursor-pointer flex items-center space-x-2 px-4 py-2 border border-border rounded-md hover:bg-accent transition-colors"
+                >
+                  <ImageIcon className="h-4 w-4" />
+                  <span>Select Image</span>
+                </Label>
+              </div>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <Label htmlFor="description" className="text-sm font-medium text-foreground">
+              Description *
+            </Label>
+            <Textarea
+              id="description"
+              value={editEventData.description}
+              onChange={(e) => setEditEventData(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Describe your event..."
+              className="min-h-[100px] resize-y"
+            />
+          </div>
+
+          {/* Date and Time Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Start Date and Time */}
+            <div className="space-y-4">
+              <Label className="text-sm font-medium text-foreground">
+                Start Date and Time *
+              </Label>
+              <div className="space-y-3">
+                <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !editEventData.startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {editEventData.startDate ? format(editEventData.startDate, "MM/dd/yyyy") : "Select date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={editEventData.startDate}
+                      onSelect={(date) => {
+                        if (date) {
+                          const newDate = new Date(date);
+                          newDate.setHours(editEventData.startDate.getHours());
+                          newDate.setMinutes(editEventData.startDate.getMinutes());
+                          setEditEventData(prev => ({ ...prev, startDate: newDate }));
+                        }
+                        setStartDateOpen(false);
+                      }}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="23"
+                      value={editEventData.startDate.getHours()}
+                      onChange={(e) => handleStartTimeChange('hours', parseInt(e.target.value) || 0)}
+                      className="w-16 text-center"
+                    />
+                    <span className="text-muted-foreground">:</span>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="59"
+                      value={editEventData.startDate.getMinutes()}
+                      onChange={(e) => handleStartTimeChange('minutes', parseInt(e.target.value) || 0)}
+                      className="w-16 text-center"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* End Date and Time */}
+            <div className="space-y-4">
+              <Label className="text-sm font-medium text-foreground">
+                End Date and Time *
+              </Label>
+              <div className="space-y-3">
+                <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !editEventData.endDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {editEventData.endDate ? format(editEventData.endDate, "MM/dd/yyyy") : "Select date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={editEventData.endDate}
+                      onSelect={(date) => {
+                        if (date) {
+                          const newDate = new Date(date);
+                          newDate.setHours(editEventData.endDate.getHours());
+                          newDate.setMinutes(editEventData.endDate.getMinutes());
+                          setEditEventData(prev => ({ ...prev, endDate: newDate }));
+                        }
+                        setEndDateOpen(false);
+                      }}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="23"
+                      value={editEventData.endDate.getHours()}
+                      onChange={(e) => handleEndTimeChange('hours', parseInt(e.target.value) || 0)}
+                      className="w-16 text-center"
+                    />
+                    <span className="text-muted-foreground">:</span>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="59"
+                      value={editEventData.endDate.getMinutes()}
+                      onChange={(e) => handleEndTimeChange('minutes', parseInt(e.target.value) || 0)}
+                      className="w-16 text-center"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Location Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Location Name */}
+            <div className="space-y-2">
+              <Label htmlFor="locationName" className="text-sm font-medium text-foreground">
+                Location Name *
+              </Label>
+              <Input
+                id="locationName"
+                value={editEventData.locationName}
+                onChange={(e) => setEditEventData(prev => ({ ...prev, locationName: e.target.value }))}
+                placeholder="Ex: Aurora Concert Hall"
+                className="w-full"
+              />
+            </div>
+
+            {/* Location Address */}
+            <div className="space-y-2 relative">
+              <Label htmlFor="location" className="text-sm font-medium text-foreground">
+                Address *
+              </Label>
+              <div className="relative">
+                <Input
+                  id="location"
+                  value={editEventData.location}
+                  onChange={(e) => {
+                    setEditEventData(prev => ({ ...prev, location: e.target.value }));
+                    setShowLocationSuggestions(e.target.value.length > 2);
+                  }}
+                  onFocus={() => setShowLocationSuggestions(editEventData.location.length > 2)}
+                  placeholder="Enter full address"
+                  className="w-full pr-10"
+                />
+                <MapPin className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
+              </div>
+              {showLocationSuggestions && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-50 max-h-40 overflow-y-auto">
+                  {locationSuggestions
+                    .filter(suggestion => 
+                      suggestion.toLowerCase().includes(editEventData.location.toLowerCase())
+                    )
+                    .map((suggestion, index) => (
+                      <div
+                        key={index}
+                        className="px-3 py-2 hover:bg-accent cursor-pointer text-sm text-foreground"
+                        onClick={() => handleLocationSelect(suggestion)}
+                      >
+                        {suggestion}
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Settings */}
+          <div className="space-y-4 pt-4 border-t border-border">
+            <h3 className="text-lg font-medium text-foreground">Settings</h3>
+            
+            {/* Auto Accept Requests */}
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="autoAccept"
+                checked={editEventData.autoAcceptRequests}
+                onCheckedChange={(checked) => 
+                  setEditEventData(prev => ({ ...prev, autoAcceptRequests: !!checked }))
+                }
+              />
+              <Label htmlFor="autoAccept" className="text-sm text-foreground cursor-pointer">
+                Join requests will be accepted automatically
+              </Label>
+            </div>
+
+            {/* Event Active Status */}
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="isActive"
+                checked={editEventData.isActive}
+                onCheckedChange={(checked) => 
+                  setEditEventData(prev => ({ ...prev, isActive: !!checked }))
+                }
+              />
+              <Label htmlFor="isActive" className="text-sm text-foreground cursor-pointer">
+                Event is active
+              </Label>
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <div className="flex justify-end pt-4">
+            <Button onClick={handleSaveEvent} className="bg-primary hover:bg-primary/90">
+              <Save className="h-4 w-4 mr-2" />
+              Save Changes
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   const renderPlaceholderSection = (title: string, description: string) => (
     <div className="text-center py-12">
       <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -1985,7 +2370,7 @@ const EventManagement = () => {
       case 'overview':
         return renderOverview();
       case 'edit':
-        return renderPlaceholderSection('Edit Event', 'Modify event details, description, and settings.');
+        return renderEditEvent();
       case 'analytics':
         return renderAnalytics();
       case 'participants':
@@ -2022,8 +2407,10 @@ const EventManagement = () => {
           
            <main className="p-4">
              {mobileOverlay === 'overview' ? renderOverview() : 
+              mobileOverlay === 'edit' ? renderEditEvent() :
               mobileOverlay === 'analytics' ? renderAnalytics() :
               mobileOverlay === 'participants' ? renderParticipants() :
+              mobileOverlay === 'tickets' ? renderTicketTypes() :
               mobileOverlay === 'coupons' ? renderCoupons() :
               renderPlaceholderSection(
                 managementSections.find(s => s.id === mobileOverlay)?.label || '',
@@ -2136,8 +2523,8 @@ const EventManagement = () => {
             <img src={logoLight} alt="Tikko" className="h-8" />
           </div>
           <Button variant="outline">
-            <Settings className="h-4 w-4 mr-2" />
-            Event Settings
+            <Users className="h-4 w-4 mr-2" />
+            View Participant List
           </Button>
         </div>
       </header>
