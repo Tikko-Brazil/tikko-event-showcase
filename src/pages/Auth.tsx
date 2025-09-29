@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Mail, ArrowLeft, Home } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import logoLight from "@/assets/logoLight.png";
 import EmailSignup from "@/components/auth/EmailSignup";
 import EmailLogin from "@/components/auth/EmailLogin";
@@ -17,6 +17,7 @@ import VerificationScreen from "@/components/auth/VerificationScreen";
 import ForgotPassword from "@/components/auth/ForgotPassword";
 import { AuthGateway } from "@/lib/AuthGateway";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
+import SuccessSnackbar from "@/components/SuccessSnackbar";
 
 export type AuthScreen =
   | "entry"
@@ -33,8 +34,18 @@ const Auth = () => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showError, setShowError] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [searchParams] = useSearchParams();
 
   const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+
+  useEffect(() => {
+    const token = searchParams.get('token');
+    if (token) {
+      setCurrentScreen('new-password');
+    }
+  }, [searchParams]);
 
   const generateCodeVerifier = () => {
     const array = new Uint8Array(32);
@@ -219,8 +230,8 @@ const Auth = () => {
           <VerificationScreen
             email={userEmail}
             onSuccess={() => {
-              setErrorMessage("Email verified successfully!");
-              setShowError(true);
+              setSuccessMessage("Email verificado com sucesso!");
+              setShowSuccess(true);
               setTimeout(() => (window.location.href = "/"), 2000);
             }}
             onBack={handleBack}
@@ -254,10 +265,11 @@ const Auth = () => {
         return (
           <EmailSignup
             isPasswordReset={true}
+            resetToken={searchParams.get('token') || ''}
             onNext={() => {
-              setErrorMessage("Password updated successfully!");
-              setShowError(true);
-              setTimeout(() => (window.location.href = "/"), 2000);
+              setSuccessMessage("Senha atualizada com sucesso!");
+              setShowSuccess(true);
+              setTimeout(() => setCurrentScreen("login"), 2000);
             }}
             onBack={handleBack}
           />
@@ -297,6 +309,11 @@ const Auth = () => {
         message={errorMessage}
         visible={showError}
         onDismiss={() => setShowError(false)}
+      />
+      <SuccessSnackbar
+        message={successMessage}
+        visible={showSuccess}
+        onDismiss={() => setShowSuccess(false)}
       />
     </div>
   );

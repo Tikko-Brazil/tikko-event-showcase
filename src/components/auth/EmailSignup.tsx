@@ -16,6 +16,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
+import { AuthGateway } from "@/lib/AuthGateway";
+import ErrorSnackbar from "@/components/ErrorSnackbar";
+import SuccessSnackbar from "@/components/SuccessSnackbar";
 
 // Phone mask for any country code
 const PHONE_MASK = "+99 (99) 99999-9999";
@@ -118,15 +121,23 @@ interface EmailSignupProps {
   onNext: (email?: string) => void;
   onBack: () => void;
   isPasswordReset?: boolean;
+  resetToken?: string;
 }
 
 const EmailSignup: React.FC<EmailSignupProps> = ({
   onNext,
   onBack,
   isPasswordReset = false,
+  resetToken,
 }) => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState("");
+  const [showError, setShowError] = React.useState(false);
+  const [successMessage, setSuccessMessage] = React.useState("");
+  const [showSuccess, setShowSuccess] = React.useState(false);
+
+  const authGateway = new AuthGateway("http://localhost:3000");
 
   const initialValues = isPasswordReset
     ? { password: "", confirmPassword: "" }
@@ -160,12 +171,51 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
-          onSubmit={(values, { setSubmitting }) => {
-            setTimeout(() => {
-              console.log("Form submitted:", values);
+          onSubmit={async (values, { setSubmitting }) => {
+            if (isPasswordReset) {
+              try {
+                const resetData = values as any;
+                await authGateway.resetPassword({
+                  token: resetToken || "",
+                  password: resetData.password,
+                });
+
+                setSuccessMessage("Senha atualizada com sucesso!");
+                setShowSuccess(true);
+                setTimeout(() => onNext(), 2000);
+              } catch (error: any) {
+                setErrorMessage(error.message);
+                setShowError(true);
+              } finally {
+                setSubmitting(false);
+              }
+              return;
+            }
+
+            try {
+              const signupData = values as any;
+              await authGateway.signup({
+                email: signupData.email,
+                username: signupData.fullName,
+                password: signupData.password,
+                gender: signupData.gender,
+                phone_number: signupData.phone,
+                location: "", // Add location field if needed
+                bio: signupData.bio,
+                instagram_profile: signupData.instagram,
+              });
+
+              setSuccessMessage(
+                "Código de verificação enviado para seu email!"
+              );
+              setShowSuccess(true);
+              setTimeout(() => onNext(signupData.email), 2000);
+            } catch (error: any) {
+              setErrorMessage(error.message);
+              setShowError(true);
+            } finally {
               setSubmitting(false);
-              onNext(isPasswordReset ? undefined : (values as any).email);
-            }, 400);
+            }
           }}
         >
           {({
@@ -457,6 +507,16 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
           )}
         </Formik>
       </CardContent>
+      <ErrorSnackbar
+        message={errorMessage}
+        visible={showError}
+        onDismiss={() => setShowError(false)}
+      />
+      <SuccessSnackbar
+        message={successMessage}
+        visible={showSuccess}
+        onDismiss={() => setShowSuccess(false)}
+      />
     </Card>
   );
 };

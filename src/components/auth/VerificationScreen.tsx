@@ -3,6 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { AuthGateway } from '@/lib/AuthGateway';
+import ErrorSnackbar from '@/components/ErrorSnackbar';
+import SuccessSnackbar from '@/components/SuccessSnackbar';
 
 interface VerificationScreenProps {
   email: string;
@@ -25,6 +28,12 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showError, setShowError] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+  
+  const authGateway = new AuthGateway('http://localhost:3000');
 
   useEffect(() => {
     if (countdown > 0) {
@@ -61,40 +70,57 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
     }
   };
 
-  const handleVerify = (verificationCode?: string) => {
+  const handleVerify = async (verificationCode?: string) => {
     const codeToVerify = verificationCode || code.join('');
     if (codeToVerify.length !== 6) return;
 
     setIsVerifying(true);
-    setTimeout(() => {
-      console.log('Verification code:', codeToVerify);
-      setIsVerifying(false);
+    try {
+      const response = await authGateway.verify({
+        email,
+        code: codeToVerify,
+      });
+      
+      localStorage.setItem('accessToken', response.token_pair.access_token);
+      localStorage.setItem('refreshToken', response.token_pair.refresh_token);
+      
       onSuccess();
-    }, 1000);
+    } catch (error: any) {
+      setErrorMessage(error.message);
+      setShowError(true);
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
-  const handleResendCode = () => {
-    console.log('Resending code to:', email);
-    setCountdown(60);
-    setCanResend(false);
-    setCode(['', '', '', '', '', '']);
-    // Focus first input
-    document.getElementById('code-0')?.focus();
+  const handleResendCode = async () => {
+    try {
+      const response = await authGateway.regenerateCode({ email });
+      setCountdown(response.next_regenerate_in || 60);
+      setCanResend(false);
+      setCode(['', '', '', '', '', '']);
+      setSuccessMessage('Código reenviado para seu email!');
+      setShowSuccess(true);
+      document.getElementById('code-0')?.focus();
+    } catch (error: any) {
+      setErrorMessage(error.message);
+      setShowError(true);
+    }
   };
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">
-          {title || 'Verify Your Email'}
+          {title || 'Verifique seu Email'}
         </CardTitle>
         <CardDescription>
-          {description || `We've sent a 6-digit code to ${email}`}
+          {description || `Enviamos um código de 6 dígitos para ${email}`}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Label>Verification Code</Label>
+          <Label>Código de Verificação</Label>
           <div className="flex gap-2 justify-center">
             {code.map((digit, index) => (
               <Input
@@ -107,7 +133,7 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
                 onChange={(e) => handleCodeChange(index, e.target.value.replace(/\D/g, ''))}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 className="w-12 h-12 text-center text-lg font-mono"
-                aria-label={`Digit ${index + 1}`}
+                aria-label={`Dígito ${index + 1}`}
               />
             ))}
           </div>
@@ -119,12 +145,12 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
           disabled={code.join('').length !== 6 || isVerifying}
           size="lg"
         >
-          {isVerifying ? 'Verifying...' : (isResetFlow ? 'Verify Code' : 'Verify Email')}
+          {isVerifying ? 'Verificando...' : (isResetFlow ? 'Verificar Código' : 'Verificar Email')}
         </Button>
 
         <div className="text-center space-y-2">
           <p className="text-sm text-muted-foreground">
-            Didn't receive the code?
+            Não recebeu o código?
           </p>
           <Button
             variant="link"
@@ -132,10 +158,20 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
             disabled={!canResend}
             className="text-sm p-0 h-auto"
           >
-            {canResend ? 'Resend Code' : `Resend in ${countdown}s`}
+            {canResend ? 'Reenviar Código' : `Reenviar em ${countdown}s`}
           </Button>
         </div>
       </CardContent>
+      <ErrorSnackbar
+        message={errorMessage}
+        visible={showError}
+        onDismiss={() => setShowError(false)}
+      />
+      <SuccessSnackbar
+        message={successMessage}
+        visible={showSuccess}
+        onDismiss={() => setShowSuccess(false)}
+      />
     </Card>
   );
 };

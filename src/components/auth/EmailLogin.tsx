@@ -6,13 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
+import { AuthGateway } from '@/lib/AuthGateway';
+import ErrorSnackbar from '@/components/ErrorSnackbar';
 
 const loginSchema = Yup.object().shape({
   email: Yup.string()
-    .email('Please enter a valid email address')
-    .required('Email is required'),
+    .email('Email inválido')
+    .required('Email é obrigatório'),
   password: Yup.string()
-    .required('Password is required'),
+    .required('Senha é obrigatória'),
 });
 
 interface EmailLoginProps {
@@ -22,50 +24,64 @@ interface EmailLoginProps {
 
 const EmailLogin: React.FC<EmailLoginProps> = ({ onForgotPassword, onBack }) => {
   const [showPassword, setShowPassword] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState('');
+  const [showError, setShowError] = React.useState(false);
+  
+  const authGateway = new AuthGateway('http://localhost:3000');
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-        <CardDescription>Sign in to your account</CardDescription>
+        <CardTitle className="text-2xl font-bold">Bem-vindo de Volta</CardTitle>
+        <CardDescription>Entre na sua conta</CardDescription>
       </CardHeader>
       <CardContent>
         <Formik
           initialValues={{ email: '', password: '' }}
           validationSchema={loginSchema}
-          onSubmit={(values, { setSubmitting }) => {
-            setTimeout(() => {
-              console.log('Login submitted:', values);
+          onSubmit={async (values, { setSubmitting }) => {
+            try {
+              const response = await authGateway.login({
+                email: values.email,
+                password: values.password,
+              });
+              
+              localStorage.setItem('accessToken', response.token_pair.access_token);
+              localStorage.setItem('refreshToken', response.token_pair.refresh_token);
+              
+              window.location.href = '/dashboard';
+            } catch (error: any) {
+              setErrorMessage(error.message);
+              setShowError(true);
+            } finally {
               setSubmitting(false);
-              alert('Login successful!');
-              window.location.href = '/';
-            }, 400);
+            }
           }}
         >
           {({ isSubmitting, errors, touched }) => (
             <Form className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address *</Label>
+                <Label htmlFor="email">Email *</Label>
                 <Field
                   as={Input}
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="your@email.com"
+                  placeholder="seu@email.com"
                   className={errors.email && touched.email ? 'border-destructive' : ''}
                 />
-                <ErrorMessage name="email" component="p" className="text-sm text-destructive" />
+                <ErrorMessage name="email" component="div" className="text-destructive text-sm mt-1" />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password *</Label>
+                <Label htmlFor="password">Senha *</Label>
                 <div className="relative">
                   <Field
                     as={Input}
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
+                    placeholder="Digite sua senha"
                     className={`pr-10 ${errors.password && touched.password ? 'border-destructive' : ''}`}
                   />
                   <button
@@ -76,7 +92,7 @@ const EmailLogin: React.FC<EmailLoginProps> = ({ onForgotPassword, onBack }) => 
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                <ErrorMessage name="password" component="p" className="text-sm text-destructive" />
+                <ErrorMessage name="password" component="div" className="text-destructive text-sm mt-1" />
               </div>
 
               <div className="flex justify-end">
@@ -86,7 +102,7 @@ const EmailLogin: React.FC<EmailLoginProps> = ({ onForgotPassword, onBack }) => 
                   onClick={onForgotPassword}
                   className="text-sm p-0 h-auto text-primary hover:text-primary/80"
                 >
-                  Forgot Password?
+                  Esqueceu a senha?
                 </Button>
               </div>
 
@@ -96,12 +112,17 @@ const EmailLogin: React.FC<EmailLoginProps> = ({ onForgotPassword, onBack }) => 
                 disabled={isSubmitting}
                 size="lg"
               >
-                {isSubmitting ? 'Signing In...' : 'Sign In'}
+                {isSubmitting ? 'Entrando...' : 'Entrar'}
               </Button>
             </Form>
           )}
         </Formik>
       </CardContent>
+      <ErrorSnackbar
+        message={errorMessage}
+        visible={showError}
+        onDismiss={() => setShowError(false)}
+      />
     </Card>
   );
 };
