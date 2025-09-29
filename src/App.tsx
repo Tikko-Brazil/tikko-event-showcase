@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import EventManagement from "./pages/EventManagement";
 import EventDetails from "./pages/EventDetails";
 import NotFound from "./pages/NotFound";
+import ProfileCompletion from "./components/auth/ProfileCompletion";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,10 @@ const App = () => (
                 <Auth />
               </PublicRoute>
             }
+          />
+          <Route
+            path="/profile-completion"
+            element={<ProfileCompletion />}
           />
           <Route
             path="/dashboard"

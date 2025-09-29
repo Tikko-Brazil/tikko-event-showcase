@@ -26,6 +26,8 @@ import {
   ForgotPasswordResponse,
   ResetPasswordRequest,
   ResetPasswordResponse,
+  CompleteProfileRequest,
+  CompleteProfileResponse,
 } from './types';
 
 const ERROR_MESSAGES = {
@@ -184,5 +186,23 @@ export class AuthGateway {
       body: JSON.stringify(request),
     });
     return this.handleResponse<ResetPasswordResponse>(response, 'resetPassword');
+  }
+
+  async completeProfile(request: CompleteProfileRequest, accessToken: string): Promise<CompleteProfileResponse> {
+    const response = await fetch(`${this.baseUrl}/complete-profile`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      body: JSON.stringify(request),
+    });
+    
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || 'Erro ao completar perfil');
+    }
+    
+    return response.json();
   }
 }

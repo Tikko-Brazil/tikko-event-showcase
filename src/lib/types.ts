@@ -113,3 +113,18 @@ export interface ResetPasswordResponse {
   message: string;
   email: string;
 }
+
+// Complete profile requests/responses
+export interface CompleteProfileRequest {
+  username: string;
+  gender: string;
+  birthday: string;
+  phone_number: string;
+  location: string;
+  bio: string;
+  instagram_profile: string;
+}
+
+export interface CompleteProfileResponse {
+  user: User;
+}
