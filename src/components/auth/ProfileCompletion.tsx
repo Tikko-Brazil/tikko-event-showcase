@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { AuthGateway } from "@/lib/AuthGateway";
+import { UserGateway } from "@/lib/UserGateway";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
 import SuccessSnackbar from "@/components/SuccessSnackbar";
 import logoLight from "@/assets/logoLight.png";
@@ -83,7 +84,6 @@ const profileCompletionSchema = Yup.object().shape({
       "Conta inválida: deve possuir entre 3 e 30 caracteres, e só deve possuir letras, números, '.' ou '_'"
     )
     .required("Este campo é obrigatório"),
-  location: Yup.string().required("Este campo é obrigatório"),
   bio: Yup.string()
     .max(500, "Bio deve ter menos de 500 caracteres")
     .required("Bio é obrigatória"),
@@ -96,6 +96,7 @@ const ProfileCompletion: React.FC = () => {
   const [showSuccess, setShowSuccess] = React.useState(false);
 
   const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const userGateway = new UserGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
   const initialValues = {
     username: "",
@@ -103,7 +104,6 @@ const ProfileCompletion: React.FC = () => {
     birthday: "",
     phone_number: "+55 ",
     instagram_profile: "",
-    location: "",
     bio: "",
   };
 
@@ -125,27 +125,22 @@ const ProfileCompletion: React.FC = () => {
             validationSchema={profileCompletionSchema}
             onSubmit={async (values, { setSubmitting }) => {
               try {
-                const accessToken = localStorage.getItem("accessToken");
-                if (!accessToken) {
-                  throw new Error("Token de acesso não encontrado");
-                }
-
-                // Convert birthday from DD/MM/YYYY to YYYY-MM-DD
-                const [day, month, year] = values.birthday.split("/");
-                const formattedBirthday = `${year}-${month}-${day}`;
-
-                await authGateway.completeProfile({
+                await userGateway.updateCurrentUser({
                   username: values.username,
                   gender: values.gender,
-                  birthday: formattedBirthday,
+                  birthday: new Date(
+                    values.birthday.split("/").reverse().join("-")
+                  ).toISOString(),
                   phone_number: values.phone_number,
-                  location: values.location,
+                  location: "", // Empty location as requested
                   bio: values.bio,
                   instagram_profile: values.instagram_profile,
-                }, accessToken);
+                  companies_following: [], // Empty array as requested
+                });
 
                 setSuccessMessage("Perfil completado com sucesso!");
                 setShowSuccess(true);
+                localStorage.removeItem("isFirstAccess");
                 setTimeout(() => {
                   window.location.href = "/dashboard";
                 }, 2000);
@@ -294,27 +289,6 @@ const ProfileCompletion: React.FC = () => {
                     />
                     <ErrorMessage
                       name="instagram_profile"
-                      component="div"
-                      className="text-destructive text-sm mt-1"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <Label htmlFor="location">Localização *</Label>
-                    <Field
-                      as={Input}
-                      id="location"
-                      name="location"
-                      placeholder="Cidade, Estado"
-                      onBlur={handleBlur}
-                      className={
-                        errors.location && touched.location
-                          ? "border-destructive"
-                          : ""
-                      }
-                    />
-                    <ErrorMessage
-                      name="location"
                       component="div"
                       className="text-destructive text-sm mt-1"
                     />

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
 import PublicRoute from "./components/PublicRoute";
+import FirstAccessGuard from "./components/FirstAccessGuard";
 import EnhancedIndex from "./pages/EnhancedIndex";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -21,46 +22,45 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <PublicRoute>
-                <EnhancedIndex />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/auth"
-            element={
-              <PublicRoute>
-                <Auth />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/profile-completion"
-            element={<ProfileCompletion />}
-          />
-          <Route
-            path="/dashboard"
-            element={
-              // <PrivateRoute>
-              <Dashboard />
-              // </PrivateRoute>
-            }
-          />
-          <Route
-            path="/event-management/:eventId"
-            element={
-              // <PrivateRoute>
-              <EventManagement />
-              // </PrivateRoute>
-            }
-          />
-          <Route path="/event/:eventId" element={<EventDetails />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <FirstAccessGuard>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <PublicRoute>
+                  <EnhancedIndex />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/auth"
+              element={
+                <PublicRoute>
+                  <Auth />
+                </PublicRoute>
+              }
+            />
+            <Route path="/profile-completion" element={<ProfileCompletion />} />
+            <Route
+              path="/dashboard"
+              element={
+                // <PrivateRoute>
+                <Dashboard />
+                // </PrivateRoute>
+              }
+            />
+            <Route
+              path="/event-management/:eventId"
+              element={
+                // <PrivateRoute>
+                <EventManagement />
+                // </PrivateRoute>
+              }
+            />
+            <Route path="/event/:eventId" element={<EventDetails />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </FirstAccessGuard>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -105,6 +105,7 @@ const Auth = () => {
       sessionStorage.removeItem("codeVerifier");
 
       if (data.user.is_first_access) {
+        localStorage.setItem('isFirstAccess', 'true');
         window.location.href = "/profile-completion";
       } else {
         window.location.href = "/dashboard";
