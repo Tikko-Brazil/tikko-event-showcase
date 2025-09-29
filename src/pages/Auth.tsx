@@ -15,6 +15,8 @@ import EmailSignup from "@/components/auth/EmailSignup";
 import EmailLogin from "@/components/auth/EmailLogin";
 import VerificationScreen from "@/components/auth/VerificationScreen";
 import ForgotPassword from "@/components/auth/ForgotPassword";
+import { AuthGateway } from "@/lib/AuthGateway";
+import ErrorSnackbar from "@/components/ErrorSnackbar";
 
 export type AuthScreen =
   | "entry"
@@ -29,6 +31,10 @@ const Auth = () => {
   const [currentScreen, setCurrentScreen] = useState<AuthScreen>("entry");
   const [userEmail, setUserEmail] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showError, setShowError] = useState(false);
+
+  const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
   const generateCodeVerifier = () => {
     const array = new Uint8Array(32);
@@ -59,7 +65,7 @@ const Auth = () => {
     sessionStorage.setItem("codeVerifier", codeVerifier);
 
     const params = new URLSearchParams({
-      client_id: import.meta.env.GOOGLE_CLIENT_ID || "",
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || "",
       redirect_uri: redirectUri,
       response_type: "code",
       scope: "openid profile email",
@@ -75,43 +81,27 @@ const Auth = () => {
     const redirectUri = `${window.location.origin}/auth`;
 
     try {
-      const response = await fetch(
-        `${import.meta.env.BACKEND_BASE_URL || ""}/public/login/exchange`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            code,
-            redirectUri,
-            codeVerifier,
-            identity_provider: "google",
-          }),
-        }
-      );
+      const data = await authGateway.exchange({
+        code,
+        redirectUri,
+        codeVerifier: codeVerifier || "",
+        identity_provider: "google",
+      });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Authentication failed");
-      }
-
-      // Store tokens (you might want to use a proper auth context)
       localStorage.setItem("accessToken", data.token_pair.access_token);
       localStorage.setItem("refreshToken", data.token_pair.refresh_token);
 
       sessionStorage.removeItem("codeVerifier");
 
-      // Redirect based on first access
       if (data.user.is_first_access) {
         window.location.href = "/profile-completion";
       } else {
         window.location.href = "/dashboard";
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("OAuth exchange failed:", error);
-      alert("Authentication failed. Please try again.");
+      setErrorMessage(`Authentication failed: ${error.message}`);
+      setShowError(true);
       setIsGoogleLoading(false);
     }
   };
@@ -123,7 +113,8 @@ const Auth = () => {
 
     if (error) {
       console.error("OAuth error:", error);
-      alert("Authentication failed");
+      setErrorMessage("Authentication failed");
+      setShowError(true);
       setIsGoogleLoading(false);
       return;
     }
@@ -228,8 +219,9 @@ const Auth = () => {
           <VerificationScreen
             email={userEmail}
             onSuccess={() => {
-              alert("Email verified successfully!");
-              window.location.href = "/";
+              setErrorMessage("Email verified successfully!");
+              setShowError(true);
+              setTimeout(() => (window.location.href = "/"), 2000);
             }}
             onBack={handleBack}
           />
@@ -263,8 +255,9 @@ const Auth = () => {
           <EmailSignup
             isPasswordReset={true}
             onNext={() => {
-              alert("Password updated successfully!");
-              window.location.href = "/";
+              setErrorMessage("Password updated successfully!");
+              setShowError(true);
+              setTimeout(() => (window.location.href = "/"), 2000);
             }}
             onBack={handleBack}
           />
@@ -300,6 +293,11 @@ const Auth = () => {
         </div>
         {renderScreen()}
       </div>
+      <ErrorSnackbar
+        message={errorMessage}
+        visible={showError}
+        onDismiss={() => setShowError(false)}
+      />
     </div>
   );
 };

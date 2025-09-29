@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PrivateRoute from "./components/PrivateRoute";
+import PublicRoute from "./components/PublicRoute";
 import EnhancedIndex from "./pages/EnhancedIndex";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -20,20 +21,39 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<EnhancedIndex />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/dashboard" element={
-            <PrivateRoute>
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <EnhancedIndex />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/auth"
+            element={
+              <PublicRoute>
+                <Auth />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              // <PrivateRoute>
               <Dashboard />
-            </PrivateRoute>
-          } />
-          <Route path="/event-management/:eventId" element={
-            <PrivateRoute>
+              // </PrivateRoute>
+            }
+          />
+          <Route
+            path="/event-management/:eventId"
+            element={
+              // <PrivateRoute>
               <EventManagement />
-            </PrivateRoute>
-          } />
+              // </PrivateRoute>
+            }
+          />
           <Route path="/event/:eventId" element={<EventDetails />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
