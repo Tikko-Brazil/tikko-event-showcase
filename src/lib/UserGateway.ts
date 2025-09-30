@@ -1,3 +1,5 @@
+import { createFetchWithAuth } from "./fetchWithAuth";
+
 interface User {
   id: number;
   username: string;
@@ -92,77 +94,89 @@ interface TicketByEmailResponse {
 
 export class UserGateway {
   private baseUrl: string;
+  private fetchWithAuth: (
+    url: string,
+    options?: RequestInit
+  ) => Promise<Response>;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
-  }
-
-  private getAuthHeaders(): HeadersInit {
-    const token = localStorage.getItem('accessToken');
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` }),
-    };
+    this.fetchWithAuth = createFetchWithAuth(baseUrl);
   }
 
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
     }
     return response.json();
   }
 
   async getUser(id: number): Promise<User> {
-    const response = await fetch(`${this.baseUrl}/private/user/${id}`, {
-      method: 'GET',
-      headers: this.getAuthHeaders(),
-    });
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/user/${id}`,
+      {
+        method: "GET",
+      }
+    );
     return this.handleResponse<User>(response);
   }
 
   async updateUser(id: number, userData: UpdateUserRequest): Promise<User> {
-    const response = await fetch(`${this.baseUrl}/private/user/${id}`, {
-      method: 'PUT',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(userData),
-    });
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/user/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(userData),
+      }
+    );
     return this.handleResponse<User>(response);
   }
 
   async updateCurrentUser(userData: UpdateUserRequest): Promise<User> {
-    const response = await fetch(`${this.baseUrl}/private/user`, {
-      method: 'PUT',
-      headers: this.getAuthHeaders(),
+    const response = await this.fetchWithAuth(`${this.baseUrl}/private/user`, {
+      method: "PUT",
       body: JSON.stringify(userData),
     });
     return this.handleResponse<User>(response);
   }
 
-  async registerAndJoinEvent(data: RegisterAndJoinEventRequest): Promise<EventJoinResponse> {
-    const response = await fetch(`${this.baseUrl}/private/user/register-and-join-event`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
+  async registerAndJoinEvent(
+    data: RegisterAndJoinEventRequest
+  ): Promise<EventJoinResponse> {
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/user/register-and-join-event`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
     return this.handleResponse<EventJoinResponse>(response);
   }
 
   async joinEvent(data: JoinEventRequest): Promise<EventJoinResponse> {
-    const response = await fetch(`${this.baseUrl}/private/user/join-event`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/user/join-event`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
     return this.handleResponse<EventJoinResponse>(response);
   }
 
-  async getTicketByEmail(data: TicketByEmailRequest): Promise<TicketByEmailResponse> {
-    const response = await fetch(`${this.baseUrl}/private/ticket/by-email`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
+  async getTicketByEmail(
+    data: TicketByEmailRequest
+  ): Promise<TicketByEmailResponse> {
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/ticket/by-email`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
     return this.handleResponse<TicketByEmailResponse>(response);
   }
 }
