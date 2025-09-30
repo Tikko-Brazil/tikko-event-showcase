@@ -1,0 +1,178 @@
+import { createFetchWithAuth } from './fetchWithAuth';
+
+interface Event {
+  id: number;
+  name: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  location: string;
+  latitude: number;
+  longitude: number;
+  image_url: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface TicketPricing {
+  id: number;
+  event_id: number;
+  ticket_type: string;
+  price: number;
+  start_date: string;
+  end_date: string;
+  gender: string;
+  male_capacity: number;
+  female_capacity: number;
+}
+
+interface CreateTicketPricingRequest {
+  ticket_type: string;
+  price: number;
+  start_date: string;
+  end_date: string;
+  gender: string;
+}
+
+interface CreateEventRequest {
+  event: {
+    name: string;
+    description: string;
+    start_date: string;
+    end_date: string;
+    location: string;
+    latitude: number;
+    longitude: number;
+    image_url: string;
+  };
+  ticket_pricing: CreateTicketPricingRequest[];
+}
+
+interface UpdateEventRequest {
+  name: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  location: string;
+  latitude: number;
+  longitude: number;
+  image_url: string;
+}
+
+interface EventWithTicketPricing {
+  event: Event;
+  ticket_pricing: TicketPricing[];
+}
+
+interface CreateEventResponse {
+  event: Event;
+  ticket_pricing: TicketPricing[];
+}
+
+interface EventStats {
+  total_tickets_sold: number;
+  total_revenue: number;
+  tickets_by_type: Record<string, number>;
+}
+
+interface AssignRoleRequest {
+  user_id: number;
+  role: string;
+}
+
+interface UploadUrlResponse {
+  upload_url: string;
+  key: string;
+}
+
+export class EventGateway {
+  private baseUrl: string;
+  private fetchWithAuth: (url: string, options?: RequestInit) => Promise<Response>;
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl;
+    this.fetchWithAuth = createFetchWithAuth(baseUrl);
+  }
+
+  private async handleResponse<T>(response: Response): Promise<T> {
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  }
+
+  // Public endpoints
+  async getEvent(id: number): Promise<Event> {
+    const response = await fetch(`${this.baseUrl}/public/event/${id}`);
+    return this.handleResponse<Event>(response);
+  }
+
+  async getAllEvents(): Promise<Event[]> {
+    const response = await fetch(`${this.baseUrl}/public/event`);
+    return this.handleResponse<Event[]>(response);
+  }
+
+  async getEventWithTicketPricing(id: number): Promise<EventWithTicketPricing> {
+    const response = await fetch(`${this.baseUrl}/public/event/${id}/with-ticket-pricing`);
+    return this.handleResponse<EventWithTicketPricing>(response);
+  }
+
+  // Private endpoints
+  async createEvent(data: CreateEventRequest): Promise<CreateEventResponse> {
+    const response = await this.fetchWithAuth(`${this.baseUrl}/private/event`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse<CreateEventResponse>(response);
+  }
+
+  async updateEvent(id: number, data: UpdateEventRequest): Promise<Event> {
+    const response = await this.fetchWithAuth(`${this.baseUrl}/private/event/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse<Event>(response);
+  }
+
+  async deleteEvent(id: number): Promise<void> {
+    const response = await this.fetchWithAuth(`${this.baseUrl}/private/event/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+  }
+
+  async getEventStats(id: number): Promise<EventStats> {
+    const response = await this.fetchWithAuth(`${this.baseUrl}/private/event/${id}/stats`);
+    return this.handleResponse<EventStats>(response);
+  }
+
+  async getUserEvents(): Promise<Event[]> {
+    const response = await this.fetchWithAuth(`${this.baseUrl}/private/event/user`);
+    return this.handleResponse<Event[]>(response);
+  }
+
+  async assignRole(id: number, data: AssignRoleRequest): Promise<void> {
+    const response = await this.fetchWithAuth(`${this.baseUrl}/private/event/${id}/role`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+    }
+  }
+
+  async getUploadUrl(filename: string, contentType?: string): Promise<UploadUrlResponse> {
+    const params = new URLSearchParams({ filename });
+    if (contentType) {
+      params.append('content_type', contentType);
+    }
+    
+    const response = await this.fetchWithAuth(`${this.baseUrl}/private/event/upload-url?${params}`);
+    return this.handleResponse<UploadUrlResponse>(response);
+  }
+}
