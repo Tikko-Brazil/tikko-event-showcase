@@ -32,9 +32,10 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   onNext,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const serviceFee = ticketPrice * 0.1;
-  const subtotal = ticketPrice + serviceFee;
   const discountAmount = discount?.amount || 0;
+  const ticketPriceAfterDiscount = Math.max(0, ticketPrice - discountAmount);
+  const serviceFee = ticketPriceAfterDiscount * 0.1;
+  const subtotal = ticketPrice + serviceFee;
   const total = subtotal - discountAmount;
 
   const formatCurrency = (amount: number) => {
@@ -77,12 +78,6 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                   {formatCurrency(ticketPrice)}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Taxa de serviço:</span>
-                <span className="font-medium">
-                  {formatCurrency(serviceFee)}
-                </span>
-              </div>
               {discount && (
                 <div className="flex justify-between text-green-600">
                   <span>Desconto ({discount.code}):</span>
@@ -91,6 +86,12 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                   </span>
                 </div>
               )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Taxa de serviço:</span>
+                <span className="font-medium">
+                  {formatCurrency(serviceFee)}
+                </span>
+              </div>
               <Separator />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total:</span>

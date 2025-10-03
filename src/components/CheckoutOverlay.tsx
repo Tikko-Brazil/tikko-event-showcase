@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useMutation } from '@tanstack/react-query';
 import { X, ArrowLeft, ArrowRight } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,9 @@ import { PaymentMethodStep } from "./checkout-steps/PaymentMethodStep";
 import { PaymentInfoStep } from "./checkout-steps/PaymentInfoStep";
 import { ConfirmationStep } from "./checkout-steps/ConfirmationStep";
 import { SuccessStep } from "./checkout-steps/SuccessStep";
+import { UserGateway } from "@/lib/UserGateway";
+
+const userGateway = new UserGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
 interface CheckoutOverlayProps {
   isOpen: boolean;
@@ -66,8 +70,28 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isUserInfoValid, setIsUserInfoValid] = useState(false);
+  const [paymentData, setPaymentData] = useState<any>(null);
 
   const totalSteps = 7;
+
+  // Calculate if ticket is free after discount
+  const finalPrice = discount ? ticketPrice - discount.amount : ticketPrice;
+  const isFreeTicket = finalPrice <= 0;
+
+  // React Query mutation for registerAndJoinEvent
+  const registerMutation = useMutation({
+    mutationFn: (data: any) => userGateway.registerAndJoinEvent(data),
+    onSuccess: (result) => {
+      if (result.payment_url) {
+        window.open(result.payment_url, '_blank');
+      }
+      handleNext(); // Go to success step
+    },
+    onError: (error) => {
+      console.error('Registration error:', error);
+      // Could show error message here
+    }
+  });
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -77,7 +101,12 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+      // Special case: if on confirmation step (6) and ticket is free, go back to coupon step (3)
+      if (currentStep === 6 && isFreeTicket) {
+        setCurrentStep(3);
+      } else {
+        setCurrentStep(currentStep - 1);
+      }
     }
   };
 
@@ -103,6 +132,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
     setTermsAccepted(false);
     setIsProcessing(false);
     setIsUserInfoValid(false);
+    setPaymentData(null);
     onClose();
   };
 
@@ -148,7 +178,12 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         );
       case 5:
         return (
-          <PaymentInfoStep paymentMethod={paymentMethod} onNext={handleNext} />
+          <PaymentInfoStep
+            paymentMethod={paymentMethod}
+            ticketPrice={ticketPrice}
+            onNext={handleNext}
+            onPaymentDataChange={setPaymentData}
+          />
         );
       case 6:
         return (
@@ -184,32 +219,159 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         };
       case 3:
         return {
-          onContinue: handleNext,
+          onContinue: () => {
+            // Skip payment steps if ticket is free
+            if (isFreeTicket) {
+              setCurrentStep(6); // Go directly to confirmation
+            } else {
+              handleNext(); // Go to payment method step
+            }
+          },
           continueButtonText: "Continuar",
         };
       case 4:
         return {
-          onContinue: paymentMethod ? handleNext : undefined,
+          onContinue: () => {
+            // Skip payment step if ticket is free
+            if (isFreeTicket) {
+              setCurrentStep(6); // Go directly to confirmation
+            } else {
+              handleNext(); // Go to payment step
+            }
+          },
           continueButtonText: "Continuar",
           isContinueDisabled: !paymentMethod,
         };
       case 5:
         return {
-          onContinue: handleNext,
-          continueButtonText: "Continuar para Confirmação",
+          // No continue button for payment step - handled by the payment forms themselves
         };
       case 6:
         return {
           onContinue: async () => {
             setIsProcessing(true);
-            // Simulate the same logic as ConfirmationStep
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-            setIsProcessing(false);
-            handleNext();
+            try {
+              // Prepare user data
+              const registerData = {
+                email: userData.email,
+                username: userData.fullName,
+                gender: identificationType === "cpf" ? "male" : "female", // Simplified
+                birthday: new Date(
+                  userData.birthdate.split("/").reverse().join("-")
+                ).toISOString(),
+                mobileNumber: userData.phone.replace(/[()\s-]/g, ""),
+                instagram: userData.instagram,
+                identificationNumber: userData.identification,
+              };
+
+              // Prepare payment data
+              let paymentInfo = undefined;
+              if (!isFreeTicket) {
+                if (
+                  paymentMethod === "credit" &&
+                  paymentData?.cardInfo?.formData
+                ) {
+                  paymentInfo = {
+                    token: paymentData.cardInfo.formData.token,
+                    description: "",
+                    installments:
+                      paymentData.cardInfo.formData.installments?.toString() ||
+                      "1",
+                    paymentMethodId:
+                      paymentData.cardInfo.formData.payment_method_id ||
+                      "credit_card",
+                    issuerId:
+                      Number(paymentData.cardInfo.formData.issuer_id) || 0,
+                    payer: {
+                      email:
+                        paymentData.cardInfo.formData.payer?.email ||
+                        userData.email,
+                      identification: paymentData.cardInfo.formData.payer
+                        ?.identification || {
+                        type: "CPF",
+                        number: userData.identification,
+                      },
+                    },
+                  };
+                } else if (paymentMethod === "pix") {
+                  paymentInfo = {
+                    token: "",
+                    description: "",
+                    installments: "1",
+                    paymentMethodId: "pix",
+                    issuerId: 0,
+                    payer: {
+                      email: paymentData?.pixInfo?.payerEmail || userData.email,
+                      identification: {
+                        type: "CPF",
+                        number: userData.identification,
+                      },
+                    },
+                  };
+                }
+              }
+
+              // Call registerAndJoinEvent
+              const result = await userGateway.registerAndJoinEvent({
+                user: {
+                  email: userData.email,
+                  username: userData.fullName,
+                  gender: identificationType === "cpf" ? "male" : "female",
+                  birthday: new Date(
+                    userData.birthdate.split("/").reverse().join("-")
+                  ).toISOString(),
+                  phone_number: userData.phone.replace(/[()\s-]/g, ""),
+                  location: "",
+                  bio: "",
+                  instagram_profile: userData.instagram,
+                },
+                event_id: eventId,
+                ticket_pricing_id: ticketPricingId,
+                coupon: discount?.code || "",
+                payment: {
+                  transaction_amount: isFreeTicket ? 0 : finalPrice,
+                  token: paymentInfo?.token || "",
+                  description: paymentInfo?.description || "Event ticket",
+                  installments: Number(paymentInfo?.installments) || 1,
+                  payment_method_id: isFreeTicket
+                    ? "free"
+                    : paymentInfo?.paymentMethodId || "",
+                  issuer_id: paymentInfo?.issuerId || 0,
+                  capture: true,
+                  external_reference: "",
+                  callback_url: "",
+                  payer: paymentInfo?.payer || {
+                    email: userData.email,
+                    identification: {
+                      type: "CPF",
+                      number: userData.identification,
+                    },
+                  },
+                },
+              });
+
+              // Handle result
+              if (result.payment_url) {
+                window.open(result.payment_url, "_blank");
+                handleNext();
+              } else if (
+                result.status === "approved" ||
+                result.status === "authorized"
+              ) {
+                handleNext();
+              } else {
+                throw new Error("Payment was not approved");
+              }
+            } catch (error: any) {
+              console.error("Checkout error:", error);
+              // Could show error message here
+            } finally {
+              setIsProcessing(false);
+            }
           },
           continueButtonText: "Confirmar e Finalizar Compra",
           isContinueDisabled: false,
-          isProcessing: isProcessing,
+          isProcessing: registerMutation.isPending,
         };
       default:
         return {};

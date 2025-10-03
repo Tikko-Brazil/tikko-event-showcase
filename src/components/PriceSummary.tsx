@@ -29,9 +29,10 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   isContinueDisabled = false,
   isProcessing = false,
 }) => {
-  const serviceFee = ticketPrice * 0.1;
-  const subtotal = ticketPrice + serviceFee;
   const discountAmount = discount?.amount || 0;
+  const ticketPriceAfterDiscount = Math.max(0, ticketPrice - discountAmount);
+  const serviceFee = ticketPriceAfterDiscount * 0.1;
+  const subtotal = ticketPrice + serviceFee;
   const total = subtotal - discountAmount;
 
   const formatCurrency = (amount: number) => {
@@ -55,15 +56,6 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
               </span>
             </div>
 
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">
-                Taxa de serviço (10%)
-              </span>
-              <span className="text-sm font-medium">
-                {formatCurrency(serviceFee)}
-              </span>
-            </div>
-
             {discount && (
               <div className="flex justify-between items-center text-green-600">
                 <span className="text-sm">Desconto ({discount.code})</span>
@@ -72,6 +64,15 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
                 </span>
               </div>
             )}
+
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">
+                Taxa de serviço (10%)
+              </span>
+              <span className="text-sm font-medium">
+                {formatCurrency(serviceFee)}
+              </span>
+            </div>
           </div>
 
           <Separator />
