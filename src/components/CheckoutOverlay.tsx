@@ -17,6 +17,8 @@ interface CheckoutOverlayProps {
   onClose: () => void;
   ticketPrice: number;
   ticketType: string;
+  eventId: number;
+  ticketPricingId: number;
 }
 
 export interface UserData {
@@ -41,6 +43,8 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   onClose,
   ticketPrice,
   ticketType,
+  eventId,
+  ticketPricingId,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [userData, setUserData] = useState<UserData>({
@@ -61,6 +65,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   const [paymentMethod, setPaymentMethod] = useState<"credit" | "pix" | "">("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isUserInfoValid, setIsUserInfoValid] = useState(false);
 
   const totalSteps = 7;
 
@@ -97,6 +102,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
     setPaymentMethod("");
     setTermsAccepted(false);
     setIsProcessing(false);
+    setIsUserInfoValid(false);
     onClose();
   };
 
@@ -118,6 +124,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             identificationType={identificationType}
             onIdentificationTypeChange={setIdentificationType}
             onNext={handleNext}
+            onValidationChange={setIsUserInfoValid}
           />
         );
       case 3:
@@ -126,6 +133,8 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             discount={discount}
             onDiscountChange={setDiscount}
             ticketPrice={ticketPrice}
+            eventId={eventId}
+            ticketPricingId={ticketPricingId}
             onNext={handleNext}
           />
         );
@@ -169,8 +178,9 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         };
       case 2:
         return {
-          onContinue: undefined, // Form handles submission directly
+          onContinue: handleNext,
           continueButtonText: "Continuar",
+          isContinueDisabled: !isUserInfoValid,
         };
       case 3:
         return {

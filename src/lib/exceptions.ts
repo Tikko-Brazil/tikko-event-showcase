@@ -54,6 +54,13 @@ export class TooManyRequestsException extends Error {
   }
 }
 
+export class LockedException extends Error {
+  constructor(message: string = 'Locked') {
+    super(message);
+    this.name = 'LockedException';
+  }
+}
+
 export class InternalServerErrorException extends Error {
   constructor(message: string = 'Internal Server Error') {
     super(message);

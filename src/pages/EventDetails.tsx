@@ -427,6 +427,8 @@ export default function EventDetails() {
         onClose={() => setIsCheckoutOpen(false)}
         ticketPrice={selectedTicketData?.price || 0}
         ticketType={formatTicketName(selectedTicketData) || ""}
+        eventId={event.id}
+        ticketPricingId={selectedTicketData?.id || 0}
       />
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,11 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, XCircle, Tag } from "lucide-react";
 import { DiscountData } from "../CheckoutOverlay";
+import { CouponGateway } from "@/lib/CouponGateway";
+
+const couponGateway = new CouponGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
 interface CouponStepProps {
   discount?: DiscountData;
   onDiscountChange: (discount?: DiscountData) => void;
   ticketPrice: number;
+  eventId: number;
+  ticketPricingId: number;
   onNext: () => void;
 }
 
@@ -18,38 +24,43 @@ export const CouponStep: React.FC<CouponStepProps> = ({
   discount,
   onDiscountChange,
   ticketPrice,
+  eventId,
+  ticketPricingId,
   onNext,
 }) => {
   const [couponCode, setCouponCode] = useState(discount?.code || "");
-  const [isApplying, setIsApplying] = useState(false);
   const [error, setError] = useState("");
 
-  const applyCoupon = async () => {
+  const couponMutation = useMutation({
+    mutationFn: (code: string) => couponGateway.getCouponPrice({
+      event_id: eventId.toString(),
+      ticket_pricing_id: ticketPricingId.toString(),
+      coupon: code,
+    }),
+    onSuccess: (data) => {
+      const discountAmount = data.original_price - data.final_price;
+      const discountPercentage = Math.round((discountAmount / data.original_price) * 100);
+      
+      onDiscountChange({
+        code: couponCode.toUpperCase(),
+        percentage: discountPercentage,
+        amount: discountAmount,
+      });
+      setError("");
+    },
+    onError: (error: any) => {
+      setError(error.message || "Código de cupom inválido");
+      onDiscountChange(undefined);
+    },
+  });
+
+  const applyCoupon = () => {
     if (!couponCode.trim()) {
       setError("Digite um código de cupom");
       return;
     }
-
-    setIsApplying(true);
     setError("");
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    if (couponCode.toUpperCase() === "DISCOUNT10") {
-      const percentage = 10;
-      const amount = (ticketPrice + ticketPrice * 0.1) * (percentage / 100);
-      onDiscountChange({
-        code: couponCode.toUpperCase(),
-        percentage,
-        amount,
-      });
-    } else {
-      setError("Código de cupom inválido");
-      onDiscountChange(undefined);
-    }
-
-    setIsApplying(false);
+    couponMutation.mutate(couponCode.toUpperCase());
   };
 
   const removeCoupon = () => {
@@ -76,16 +87,16 @@ export const CouponStep: React.FC<CouponStepProps> = ({
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                 placeholder="DIGITE SEU CUPOM"
-                disabled={isApplying}
+                disabled={couponMutation.isPending}
                 className="uppercase"
                 maxLength={30}
               />
               <Button
                 onClick={applyCoupon}
-                disabled={isApplying || !couponCode.trim()}
+                disabled={couponMutation.isPending || !couponCode.trim()}
                 variant="outline"
               >
-                {isApplying ? "Aplicando..." : "Aplicar"}
+                {couponMutation.isPending ? "Aplicando..." : "Aplicar"}
               </Button>
             </div>
           </div>
@@ -118,14 +129,6 @@ export const CouponStep: React.FC<CouponStepProps> = ({
           )}
 
           <div className="pt-4"></div>
-
-          <div className="text-sm text-muted-foreground">
-            <p className="mb-2">Cupons disponíveis para teste:</p>
-            <code className="bg-muted px-2 py-1 rounded text-xs">
-              DISCOUNT10
-            </code>
-            <span className="ml-2">- 10% de desconto</span>
-          </div>
         </CardContent>
       </Card>
     </div>
