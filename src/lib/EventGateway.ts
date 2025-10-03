@@ -1,4 +1,4 @@
-import { createFetchWithAuth } from './fetchWithAuth';
+import { createFetchWithAuth } from "./fetchWithAuth";
 
 interface Event {
   id: number;
@@ -6,6 +6,7 @@ interface Event {
   description: string;
   start_date: string;
   end_date: string;
+  address_name: string;
   location: string;
   latitude: number;
   longitude: number;
@@ -24,6 +25,7 @@ interface TicketPricing {
   gender: string;
   male_capacity: number;
   female_capacity: number;
+  lot: number;
 }
 
 interface CreateTicketPricingRequest {
@@ -87,7 +89,10 @@ interface UploadUrlResponse {
 
 export class EventGateway {
   private baseUrl: string;
-  private fetchWithAuth: (url: string, options?: RequestInit) => Promise<Response>;
+  private fetchWithAuth: (
+    url: string,
+    options?: RequestInit
+  ) => Promise<Response>;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -97,7 +102,9 @@ export class EventGateway {
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
     }
     return response.json();
   }
@@ -114,65 +121,89 @@ export class EventGateway {
   }
 
   async getEventWithTicketPricing(id: number): Promise<EventWithTicketPricing> {
-    const response = await fetch(`${this.baseUrl}/public/event/${id}/with-ticket-pricing`);
+    const response = await fetch(
+      `${this.baseUrl}/public/event/${id}/with-ticket-pricing`
+    );
     return this.handleResponse<EventWithTicketPricing>(response);
   }
 
   // Private endpoints
   async createEvent(data: CreateEventRequest): Promise<CreateEventResponse> {
     const response = await this.fetchWithAuth(`${this.baseUrl}/private/event`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
     return this.handleResponse<CreateEventResponse>(response);
   }
 
   async updateEvent(id: number, data: UpdateEventRequest): Promise<Event> {
-    const response = await this.fetchWithAuth(`${this.baseUrl}/private/event/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/event/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
     return this.handleResponse<Event>(response);
   }
 
   async deleteEvent(id: number): Promise<void> {
-    const response = await this.fetchWithAuth(`${this.baseUrl}/private/event/${id}`, {
-      method: 'DELETE',
-    });
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/event/${id}`,
+      {
+        method: "DELETE",
+      }
+    );
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
     }
   }
 
   async getEventStats(id: number): Promise<EventStats> {
-    const response = await this.fetchWithAuth(`${this.baseUrl}/private/event/${id}/stats`);
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/event/${id}/stats`
+    );
     return this.handleResponse<EventStats>(response);
   }
 
   async getUserEvents(): Promise<Event[]> {
-    const response = await this.fetchWithAuth(`${this.baseUrl}/private/event/user`);
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/event/user`
+    );
     return this.handleResponse<Event[]>(response);
   }
 
   async assignRole(id: number, data: AssignRoleRequest): Promise<void> {
-    const response = await this.fetchWithAuth(`${this.baseUrl}/private/event/${id}/role`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/event/${id}/role`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
     }
   }
 
-  async getUploadUrl(filename: string, contentType?: string): Promise<UploadUrlResponse> {
+  async getUploadUrl(
+    filename: string,
+    contentType?: string
+  ): Promise<UploadUrlResponse> {
     const params = new URLSearchParams({ filename });
     if (contentType) {
-      params.append('content_type', contentType);
+      params.append("content_type", contentType);
     }
-    
-    const response = await this.fetchWithAuth(`${this.baseUrl}/private/event/upload-url?${params}`);
+
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/event/upload-url?${params}`
+    );
     return this.handleResponse<UploadUrlResponse>(response);
   }
 }

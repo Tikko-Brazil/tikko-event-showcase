@@ -1,126 +1,133 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Calendar, Clock, MapPin, Users, ArrowLeft, Minus, Plus, Share2, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { CheckoutOverlay } from '@/components/CheckoutOverlay';
-import heroImage from '@/assets/hero-event-image.jpg';
+import React, { useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  ArrowLeft,
+  Share2,
+  ExternalLink,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CheckoutOverlay } from "@/components/CheckoutOverlay";
+import { EventGateway } from "@/lib/EventGateway";
+import { GeocodingGateway } from "@/lib/GeocodingGateway";
+import heroImage from "@/assets/hero-event-image.jpg";
 
-interface TicketType {
-  id: string;
-  name: string;
-  price: number;
-  description?: string;
-  requiresApproval?: boolean;
-}
-
-interface EventData {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  venue: string;
-  address: string;
-  organizer: string;
-  image: string;
-  tickets: TicketType[];
-  tags: string[];
-}
-
-// Static event data - in a real app, this would come from an API
-const eventData: EventData = {
-  id: 'colmeia-27',
-  title: 'Colmeia',
-  description: `Bem-vindo à Colmeia 🐝
-
-Você não compra um ingresso. Você é aceito.
-
-Uma experiência exclusiva onde a música eletrônica encontra a sofisticação. A Colmeia é mais que uma festa, é uma comunidade seletiva de amantes da música eletrônica de qualidade.
-
-Nossa proposta é criar um ambiente intimista e elegante, onde cada participante faz parte de algo especial. Com sistema de aprovação para garantir a qualidade da experiência, oferecemos diferentes níveis de acesso para você viver a noite do seu jeito.
-
-✨ Line-up cuidadosamente selecionado
-🎵 Som de alta qualidade em ambiente acústico premium  
-🥂 Bar premium com drinks autorais
-🔒 Ambiente exclusivo e seguro
-👥 Networking com pessoas que compartilham sua paixão pela música
-
-Prepare-se para uma noite inesquecível.`,
-  date: 'Sábado, 25 de outubro de 2025',
-  time: '23:00 - 07:00',
-  venue: 'Sala 528 (Anexo ao Greenvalley)',
-  address: 'Rua Antônio Lopes Gonçalves Bastos, Rio Pequeno, Camboriú - Santa Catarina',
-  organizer: 'Tikko Events',
-  image: heroImage,
-  tickets: [
-    {
-      id: 'frontstage-m',
-      name: 'Frontstage Masculino - Pré-venda',
-      price: 70,
-      requiresApproval: true
-    },
-    {
-      id: 'frontstage-f',
-      name: 'Frontstage Feminino - Pré-venda',
-      price: 40,
-      requiresApproval: true
-    },
-    {
-      id: 'backstage-m',
-      name: 'Backstage Masculino - Pré-venda',
-      price: 210,
-      requiresApproval: true
-    },
-    {
-      id: 'backstage-f',
-      name: 'Backstage Feminino - Pré-venda',
-      price: 160,
-      requiresApproval: true
-    }
-  ],
-  tags: ['Música Eletrônica', 'Festa Exclusiva', 'Requer Aprovação', 'Camboriú']
-};
+const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+const geocodingGateway = new GeocodingGateway();
 
 export default function EventDetails() {
   const { eventId } = useParams<{ eventId: string }>();
-  const [selectedTicket, setSelectedTicket] = useState<string>('');
-  const [quantity, setQuantity] = useState(1);
-  const [event, setEvent] = useState<EventData | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<string>("");
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  useEffect(() => {
-    // In a real app, you would fetch event data based on eventId
-    // For now, we'll use the static data
-    setEvent(eventData);
-    
-    // Set SEO meta tags dynamically
-    document.title = `${eventData.title} - Tikko`;
-    
-    // Update meta description
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', `${eventData.title} - ${eventData.date} em ${eventData.venue}. ${eventData.description.substring(0, 160)}...`);
+  // Fetch event with ticket pricing
+  const {
+    data: eventData,
+    isLoading: eventLoading,
+    error: eventError,
+  } = useQuery({
+    queryKey: ["event-with-pricing", eventId],
+    queryFn: () => eventGateway.getEventWithTicketPricing(Number(eventId)),
+    enabled: !!eventId,
+  });
+
+  // Fetch address for event coordinates
+  const { data: address, isLoading: addressLoading } = useQuery({
+    queryKey: [
+      "geocode",
+      eventData?.event.latitude,
+      eventData?.event.longitude,
+    ],
+    queryFn: () =>
+      geocodingGateway.reverseGeocode(
+        eventData!.event.latitude,
+        eventData!.event.longitude
+      ),
+    enabled: !!(eventData?.event.latitude && eventData?.event.longitude),
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+  });
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("pt-BR", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return `${start.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })} - ${end.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+  };
+
+  const formatTicketName = (ticket: any) => {
+    const genderText =
+      ticket?.gender === "male"
+        ? "Masculino"
+        : ticket?.gender === "female"
+        ? "Feminino"
+        : "Unissex";
+    const lotText = ticket?.lot === 0 ? "Pré-venda" : `Lote ${ticket?.lot}`;
+    return `${ticket?.ticket_type} - ${genderText} - ${lotText}`;
+  };
+
+  const formatPrice = (price: number) => {
+    return price.toLocaleString("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    });
+  };
+
+  const getEventAddress = () => {
+    if (address) {
+      const { road, suburb, city, state } = address;
+      return `${road || ""}${road && suburb ? ", " : ""}${suburb || ""}${
+        (road || suburb) && city ? ", " : ""
+      }${city}${state ? ` - ${state}` : ""}`;
     }
+    return eventData?.event.location || "Localização não disponível";
+  };
 
-    // Update Open Graph tags
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    const ogDescription = document.querySelector('meta[property="og:description"]');
-    const ogImage = document.querySelector('meta[property="og:image"]');
-    
-    if (ogTitle) ogTitle.setAttribute('content', `${eventData.title} - Tikko`);
-    if (ogDescription) ogDescription.setAttribute('content', `${eventData.title} - ${eventData.date} em ${eventData.venue}`);
-    if (ogImage) ogImage.setAttribute('content', eventData.image);
-  }, [eventId]);
+  if (eventLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex items-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mr-2" />
+          <span className="text-muted-foreground">Carregando evento...</span>
+        </div>
+      </div>
+    );
+  }
 
-  if (!event) {
+  if (eventError || !eventData) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-foreground mb-4">Evento não encontrado</h2>
+          <Alert className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Erro ao carregar evento. Tente novamente mais tarde.
+            </AlertDescription>
+          </Alert>
           <Link to="/">
             <Button variant="outline">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -132,20 +139,17 @@ export default function EventDetails() {
     );
   }
 
-  const selectedTicketData = event.tickets.find(t => t.id === selectedTicket);
-  const totalPrice = selectedTicketData ? selectedTicketData.price * quantity : 0;
-
-  const adjustQuantity = (change: number) => {
-    const newQuantity = quantity + change;
-    if (newQuantity >= 1 && newQuantity <= 10) {
-      setQuantity(newQuantity);
-    }
-  };
+  const { event, ticket_pricing } = eventData;
+  const selectedTicketData = ticket_pricing.find(
+    (t) => t.id.toString() === selectedTicket
+  );
 
   const handleShare = async () => {
     const shareData = {
-      title: `${event.title} - Tikko`,
-      text: `${event.title} - ${event.date} em ${event.venue}`,
+      title: `${event.name} - Tikko`,
+      text: `${event.name} - ${formatDate(event.start_date)} em ${
+        event.location
+      }`,
       url: window.location.href,
     };
 
@@ -153,25 +157,26 @@ export default function EventDetails() {
       try {
         await navigator.share(shareData);
       } catch (err) {
-        console.log('Error sharing:', err);
+        console.log("Error sharing:", err);
       }
     } else {
-      // Fallback: copy to clipboard
       try {
         await navigator.clipboard.writeText(window.location.href);
-        alert('Link copiado para a área de transferência!');
+        alert("Link copiado para a área de transferência!");
       } catch (err) {
-        console.log('Error copying to clipboard:', err);
-        // Final fallback: show URL in alert
         alert(`Compartilhe este link: ${window.location.href}`);
       }
     }
   };
 
   const openGoogleMaps = () => {
-    const address = encodeURIComponent(`${event.venue}, ${event.address}`);
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${address}`;
-    window.open(googleMapsUrl, '_blank');
+    const addressText = address
+      ? `${address.displayName}`
+      : `${event.location}`;
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      addressText
+    )}`;
+    window.open(googleMapsUrl, "_blank");
   };
 
   return (
@@ -180,13 +185,16 @@ export default function EventDetails() {
       <nav className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/">
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+            <Button
+              variant="ghost"
+              className="text-muted-foreground hover:text-foreground"
+            >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar aos eventos
             </Button>
           </Link>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="icon"
             onClick={handleShare}
             className="text-muted-foreground hover:text-foreground"
@@ -202,48 +210,49 @@ export default function EventDetails() {
         {/* Mobile: Full width image with overlay */}
         <div className="absolute inset-0 md:hidden">
           <img
-            src={event.image}
-            alt={event.title}
+            src={event.image_url || heroImage}
+            alt={event.name}
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-background"></div>
         </div>
-        
-        {/* Desktop: Centered smaller image with overlay */}
         <div className="hidden md:block absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background"></div>
           <div className="h-full flex items-center justify-center">
             <div className="relative max-w-4xl w-full mx-8 h-[80%] rounded-2xl overflow-hidden shadow-2xl">
               <img
-                src={event.image}
-                alt={event.title}
+                src={event.image_url || heroImage}
+                alt={event.name}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60"></div>
             </div>
           </div>
         </div>
-        
-        <div className="relative z-10 h-full flex items-end">
-          <div className="container mx-auto px-4 pb-8 md:pb-12">
-            <div className="max-w-4xl">
-              <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-white mb-2 md:mb-4">
-                {event.title}
-              </h1>
-              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-white/90">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 md:w-5 md:h-5" />
-                  <span className="text-sm md:text-lg">{event.date}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 md:w-5 md:h-5" />
-                  <span className="text-sm md:text-lg">{event.time}</span>
-                </div>
+      </section>
+      <div className="relative z-10 h-full flex items-end">
+        <div className="container mx-auto px-4 pb-1 md:pb-12">
+          <div className="max-w-4xl">
+            <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-white mb-2 md:mb-4">
+              {event.name}
+            </h1>
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-white/90">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="text-sm md:text-lg">
+                  {formatDate(event.start_date)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 md:w-5 md:h-5" />
+                <span className="text-sm md:text-lg">
+                  {formatTime(event.start_date, event.end_date)}
+                </span>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
       <div className="container mx-auto px-4 py-6 md:py-8">
         {/* Location Section */}
@@ -253,9 +262,19 @@ export default function EventDetails() {
               <div className="flex items-start gap-3 flex-1">
                 <MapPin className="w-5 h-5 text-tikko-orange mt-1 flex-shrink-0" />
                 <div>
-                  <p className="font-semibold text-lg text-gray-900">{event.venue}</p>
-                  <p className="text-gray-600">{event.address}</p>
-                  <p className="text-sm text-gray-500 mt-1">Organizado por {event.organizer}</p>
+                  <p className="font-semibold text-lg text-gray-900">
+                    {event.address_name || event.location}
+                  </p>
+                  <p className="text-gray-600">
+                    {addressLoading ? (
+                      <span className="flex items-center">
+                        <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                        Carregando endereço...
+                      </span>
+                    ) : (
+                      getEventAddress()
+                    )}
+                  </p>
                 </div>
               </div>
               <Button
@@ -276,7 +295,9 @@ export default function EventDetails() {
           <div className="lg:col-span-1 order-1 lg:order-2">
             <Card className="bg-card shadow-lg lg:sticky lg:top-24">
               <CardHeader className="p-4 md:p-6">
-                <CardTitle className="text-lg md:text-xl">Obter ingressos</CardTitle>
+                <CardTitle className="text-lg md:text-xl">
+                  Obter ingressos
+                </CardTitle>
                 <p className="text-muted-foreground text-sm">
                   Por favor, escolha o tipo de ingresso desejado:
                 </p>
@@ -285,41 +306,41 @@ export default function EventDetails() {
                 <RadioGroup
                   value={selectedTicket}
                   onValueChange={setSelectedTicket}
-                  className="space-y-3"
+                  className="space-y-1"
                 >
-                  {event.tickets.map((ticket) => (
+                  {ticket_pricing.map((ticket) => (
                     <div
                       key={ticket.id}
                       className={`border rounded-lg p-3 md:p-4 transition-all duration-200 ${
-                        selectedTicket === ticket.id
-                          ? 'border-primary bg-primary/5 shadow-md'
-                          : 'border-border hover:border-primary/50'
+                        selectedTicket === ticket.id.toString()
+                          ? "border-primary bg-primary/5 shadow-md"
+                          : "border-border hover:border-primary/50"
                       }`}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3 flex-1">
                           <RadioGroupItem
-                            value={ticket.id}
-                            id={ticket.id}
+                            value={ticket.id.toString()}
+                            id={ticket.id.toString()}
                             className="mt-1"
                           />
                           <Label
-                            htmlFor={ticket.id}
+                            htmlFor={ticket.id.toString()}
                             className="flex-1 cursor-pointer"
                           >
                             <div>
-                              <p className="font-medium text-sm md:text-base">{ticket.name}</p>
-                              {ticket.requiresApproval && (
-                                <p className="text-xs md:text-sm text-muted-foreground">
-                                  Requer aprovação
-                                </p>
-                              )}
+                              <p className="font-medium text-sm md:text-base">
+                                {formatTicketName(ticket)}
+                              </p>
+                              <p className="text-xs md:text-sm text-muted-foreground">
+                                Requer aprovação
+                              </p>
                             </div>
                           </Label>
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-base md:text-lg">
-                            R$ {ticket.price.toFixed(2)}
+                            {formatPrice(ticket.price)}
                           </p>
                         </div>
                       </div>
@@ -329,13 +350,11 @@ export default function EventDetails() {
 
                 {/* Quantity selector - hidden but kept for future use */}
                 {selectedTicket && false && (
-                  <div className="space-y-4 pt-4 border-t">
-...
-                  </div>
+                  <div className="space-y-4 pt-4 border-t">...</div>
                 )}
 
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   size="lg"
                   onClick={() => {
                     if (!selectedTicket) return;
@@ -354,35 +373,24 @@ export default function EventDetails() {
           <div className="lg:col-span-2 order-2 lg:order-1">
             <Card className="bg-tikko-card-light text-gray-900 shadow-lg">
               <CardHeader className="p-4 md:p-6">
-                <CardTitle className="text-xl md:text-2xl text-gray-900">{event.title}</CardTitle>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                  <p className="text-gray-600">Organizado por {event.organizer}</p>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Calendar className="w-4 h-4" />
-                    <span>{event.date} • {event.time}</span>
-                  </div>
+                <CardTitle className="text-xl md:text-2xl text-gray-900">
+                  {event.name}
+                </CardTitle>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    {formatDate(event.start_date)} •{" "}
+                    {formatTime(event.start_date, event.end_date)}
+                  </span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6 p-4 md:p-6 pt-0">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Sobre o evento</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    Sobre o evento
+                  </h3>
                   <div className="text-gray-700 whitespace-pre-line leading-relaxed text-sm md:text-base">
                     {event.description}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Tags</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {event.tags.map((tag) => (
-                      <Badge 
-                        key={tag} 
-                        variant="secondary" 
-                        className="bg-tikko-orange/10 text-tikko-orange border-tikko-orange/20 text-xs md:text-sm"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
                   </div>
                 </div>
               </CardContent>
@@ -399,7 +407,7 @@ export default function EventDetails() {
               <Link to="/" className="text-lg font-bold text-primary">
                 Tikko
               </Link>
-              <Link 
+              <Link
                 to="/"
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
@@ -418,7 +426,7 @@ export default function EventDetails() {
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
         ticketPrice={selectedTicketData?.price || 0}
-        ticketType={selectedTicketData?.name || ''}
+        ticketType={formatTicketName(selectedTicketData) || ""}
       />
     </div>
   );

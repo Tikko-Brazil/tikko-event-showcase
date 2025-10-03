@@ -32,7 +32,6 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   onNext,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const serviceFee = ticketPrice * 0.1;
   const subtotal = ticketPrice + serviceFee;
   const discountAmount = discount?.amount || 0;

@@ -53,7 +53,9 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
     birthdate: "",
     instagram: "",
   });
-  const [identificationType, setIdentificationType] = useState<'cpf' | 'other'>('cpf');
+  const [identificationType, setIdentificationType] = useState<"cpf" | "other">(
+    "cpf"
+  );
   const [formValidationTrigger, setFormValidationTrigger] = useState(0);
   const [discount, setDiscount] = useState<DiscountData | undefined>();
   const [paymentMethod, setPaymentMethod] = useState<"credit" | "pix" | "">("");
@@ -90,7 +92,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
       birthdate: "",
       instagram: "",
     });
-    setIdentificationType('cpf');
+    setIdentificationType("cpf");
     setDiscount(undefined);
     setPaymentMethod("");
     setTermsAccepted(false);

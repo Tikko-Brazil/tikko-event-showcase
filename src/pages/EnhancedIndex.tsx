@@ -46,18 +46,24 @@ const EnhancedIndex = () => {
 
   // Fetch addresses for events with coordinates (cached by coordinates)
   const { data: addresses, isLoading: addressesLoading } = useQuery({
-    queryKey: ["addresses", events?.map(e => `${e.latitude},${e.longitude}`).join('|')],
+    queryKey: [
+      "addresses",
+      events?.map((e) => `${e.latitude},${e.longitude}`).join("|"),
+    ],
     queryFn: async () => {
       if (!events) return {};
-      
+
       const addressMap: Record<string, any> = {};
-      
+
       for (const event of events) {
         if (event.latitude && event.longitude) {
           const cacheKey = `${event.latitude},${event.longitude}`;
           if (!addressMap[cacheKey]) {
             try {
-              const address = await geocodingGateway.reverseGeocode(event.latitude, event.longitude);
+              const address = await geocodingGateway.reverseGeocode(
+                event.latitude,
+                event.longitude
+              );
               addressMap[cacheKey] = address;
             } catch (error) {
               console.error(`Failed to geocode ${cacheKey}:`, error);
@@ -66,12 +72,11 @@ const EnhancedIndex = () => {
           }
         }
       }
-      
+
       return addressMap;
     },
     enabled: !!events && events.length > 0,
-    staleTime: 24 * 60 * 60 * 1000, // 24 hours
-    cacheTime: 24 * 60 * 60 * 1000, // 1 day
+    staleTime: 24 * 60 * 60 * 1000,
   });
 
   const formatDate = (dateString: string) => {
