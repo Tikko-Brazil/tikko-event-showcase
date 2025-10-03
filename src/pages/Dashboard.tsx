@@ -376,10 +376,10 @@ const Dashboard = () => {
       case 'my-events':
         return (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">My Events</h2>
-              <Button>Create Event</Button>
-            </div>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">My Events</h2>
+            <Button onClick={() => navigate('/create-event')}>Create Event</Button>
+          </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {mockMyEvents.map((event) => (
                 <Card key={event.id} className="group hover:shadow-lg transition-all duration-300 border-0 bg-card/50 backdrop-blur-sm">

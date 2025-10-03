@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import EventManagement from "./pages/EventManagement";
 import EventDetails from "./pages/EventDetails";
+import EventCreation from "./pages/EventCreation";
 import NotFound from "./pages/NotFound";
 import ProfileCompletion from "./components/auth/ProfileCompletion";
 
@@ -54,6 +55,14 @@ const App = () => (
               element={
                 // <PrivateRoute>
                 <EventManagement />
+                // </PrivateRoute>
+              }
+            />
+            <Route
+              path="/create-event"
+              element={
+                // <PrivateRoute>
+                <EventCreation />
                 // </PrivateRoute>
               }
             />
