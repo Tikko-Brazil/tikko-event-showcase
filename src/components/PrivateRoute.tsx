@@ -1,12 +1,17 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate } from "react-router-dom";
 
 interface PrivateRouteProps {
   children: React.ReactNode;
 }
 
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const token = localStorage.getItem('accessToken');
-  
+  // If private routes are disabled, allow access without authentication
+  if (!import.meta.env.VITE_ENABLE_PRIVATE_ROUTES) {
+    return <>{children}</>;
+  }
+
+  const token = localStorage.getItem("accessToken");
+
   return token ? <>{children}</> : <Navigate to="/auth" replace />;
 };
 

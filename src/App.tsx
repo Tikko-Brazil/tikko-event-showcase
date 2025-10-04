@@ -45,25 +45,25 @@ const App = () => (
             <Route
               path="/dashboard"
               element={
-                // <PrivateRoute>
-                <Dashboard />
-                // </PrivateRoute>
+                <PrivateRoute>
+                  <Dashboard />
+                </PrivateRoute>
               }
             />
             <Route
               path="/event-management/:eventId"
               element={
-                // <PrivateRoute>
-                <EventManagement />
-                // </PrivateRoute>
+                <PrivateRoute>
+                  <EventManagement />
+                </PrivateRoute>
               }
             />
             <Route
               path="/create-event"
               element={
-                // <PrivateRoute>
-                <EventCreation />
-                // </PrivateRoute>
+                <PrivateRoute>
+                  <EventCreation />
+                </PrivateRoute>
               }
             />
             <Route path="/event/:eventId" element={<EventDetails />} />
