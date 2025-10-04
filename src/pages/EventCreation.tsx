@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Formik, FieldArray, FormikProps } from "formik";
 import * as Yup from "yup";
 import { useMutation } from "@tanstack/react-query";
 import { v4 as uuidv4 } from "uuid";
+import { debounce } from "lodash";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -46,6 +47,7 @@ interface FormValues {
   startTime: string;
   endDate: string;
   endTime: string;
+  locationName: string;
   addressName: string;
   addressComplement: string;
   latitude: number | null;
@@ -91,6 +93,10 @@ const EventCreationSchema = Yup.object().shape({
       /^([01][0-9]|2[0-3]):([0-5][0-9])$/,
       "Formato de horário inválido (HH:MM)"
     ),
+  locationName: Yup.string()
+    .required("Nome do local é obrigatório")
+    .min(3, "Nome do local deve ter pelo menos 3 caracteres")
+    .max(100, "Nome do local deve ter no máximo 100 caracteres"),
   addressName: Yup.string()
     .required("Endereço é obrigatório")
     .min(5, "Endereço deve ter pelo menos 5 caracteres")
@@ -168,6 +174,7 @@ const EventCreation = () => {
     startTime: "",
     endDate: "",
     endTime: "",
+    locationName: "",
     addressName: "",
     addressComplement: "",
     latitude: null,
@@ -270,27 +277,29 @@ const EventCreation = () => {
     }
   };
 
-  // Handle location search
-  const handleLocationSearch = async (query: string, setFieldValue: any) => {
-    if (query.length > 2) {
-      try {
-        const results = await geocodingGateway.forwardGeocode(query, 5);
-        setLocationSuggestions(results);
-        setShowLocationSuggestions(true);
-      } catch (error) {
-        console.error("Geocoding error:", error);
+  // Handle location search with debouncing
+  const debouncedLocationSearch = useCallback(
+    debounce(async (query: string) => {
+      if (query.length > 2) {
+        try {
+          const results = await geocodingGateway.forwardGeocode(query, 5);
+          setLocationSuggestions(results);
+          setShowLocationSuggestions(true);
+        } catch (error) {
+          console.error("Geocoding error:", error);
+        }
+      } else {
+        setShowLocationSuggestions(false);
       }
-    } else {
-      setShowLocationSuggestions(false);
-    }
-  };
+    }, 800),
+    []
+  );
 
   // Handle location selection
   const handleLocationSelect = (location: any, setFieldValue: any) => {
     setFieldValue("addressName", location.displayName);
     setFieldValue("latitude", parseFloat(location.latitude));
     setFieldValue("longitude", parseFloat(location.longitude));
-    setFieldValue("locationDisplayName", location.displayName);
     setShowLocationSuggestions(false);
   };
 
@@ -545,57 +554,79 @@ const EventCreation = () => {
 
                     {/* Location Section */}
                     <div className="space-y-4">
-                      <Label className="text-sm font-medium text-foreground">
-                        Location *
-                      </Label>
-                      <div className="relative">
+                      {/* Location Name */}
+                      <div className="space-y-2">
+                        <Label htmlFor="locationName" className="text-sm font-medium text-foreground">
+                          Location Name *
+                        </Label>
                         <Input
-                          name="addressName"
-                          value={values.addressName}
-                          onChange={(e) => {
-                            handleChange(e);
-                            handleLocationSearch(e.target.value, setFieldValue);
-                          }}
+                          id="locationName"
+                          name="locationName"
+                          value={values.locationName}
+                          onChange={handleChange}
                           onBlur={handleBlur}
-                          placeholder="Enter full address"
-                          className={`pr-10 ${
-                            errors.addressName && touched.addressName
-                              ? "border-red-500"
-                              : ""
-                          }`}
+                          placeholder="Ex: Aurora Concert Hall"
+                          className={errors.locationName && touched.locationName ? 'border-red-500' : ''}
                         />
-                        <MapPin className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
-
-                        {showLocationSuggestions &&
-                          locationSuggestions.length > 0 && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-50 max-h-40 overflow-y-auto">
-                              {locationSuggestions.map((suggestion, index) => (
-                                <div
-                                  key={index}
-                                  className="px-3 py-2 hover:bg-accent cursor-pointer text-sm text-foreground"
-                                  onClick={() =>
-                                    handleLocationSelect(
-                                      suggestion,
-                                      setFieldValue
-                                    )
-                                  }
-                                >
-                                  {suggestion.displayName}
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                        {errors.locationName && touched.locationName && (
+                          <p className="text-sm text-red-500">{errors.locationName}</p>
+                        )}
                       </div>
-                      {errors.addressName && touched.addressName && (
-                        <p className="text-sm text-red-500">
-                          {errors.addressName}
-                        </p>
-                      )}
-                      {errors.latitude && touched.latitude && (
-                        <p className="text-sm text-red-500">
-                          {errors.latitude}
-                        </p>
-                      )}
+
+                      {/* Address Search */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-foreground">
+                          Address *
+                        </Label>
+                        <div className="relative">
+                          <Input
+                            name="addressName"
+                            value={values.addressName}
+                            onChange={(e) => {
+                              handleChange(e);
+                              debouncedLocationSearch(e.target.value);
+                            }}
+                            onBlur={handleBlur}
+                            placeholder="Enter full address"
+                            className={`pr-10 ${
+                              errors.addressName && touched.addressName
+                                ? "border-red-500"
+                                : ""
+                            }`}
+                          />
+                          <MapPin className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
+
+                          {showLocationSuggestions &&
+                            locationSuggestions.length > 0 && (
+                              <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-50 max-h-40 overflow-y-auto">
+                                {locationSuggestions.map((suggestion, index) => (
+                                  <div
+                                    key={index}
+                                    className="px-3 py-2 hover:bg-accent cursor-pointer text-sm text-foreground"
+                                    onClick={() =>
+                                      handleLocationSelect(
+                                        suggestion,
+                                        setFieldValue
+                                      )
+                                    }
+                                  >
+                                    {suggestion.displayName}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                        </div>
+                        {errors.addressName && touched.addressName && (
+                          <p className="text-sm text-red-500">
+                            {errors.addressName}
+                          </p>
+                        )}
+                        {errors.latitude && touched.latitude && (
+                          <p className="text-sm text-red-500">
+                            {errors.latitude}
+                          </p>
+                        )}
+                      </div>
 
                       <Input
                         name="addressComplement"
