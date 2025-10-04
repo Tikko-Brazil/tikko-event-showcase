@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { useMutation } from '@tanstack/react-query';
+import { useMutation } from "@tanstack/react-query";
 import { X, ArrowLeft, ArrowRight } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { PriceSummary } from "./PriceSummary";
+import ErrorSnackbar from "./ErrorSnackbar";
 import { ProgressIndicator } from "./ProgressIndicator";
 import { TermsStep } from "./checkout-steps/TermsStep";
 import { UserInfoStep } from "./checkout-steps/UserInfoStep";
@@ -71,6 +72,8 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [isUserInfoValid, setIsUserInfoValid] = useState(false);
   const [paymentData, setPaymentData] = useState<any>(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showError, setShowError] = useState(false);
 
   const totalSteps = 7;
 
@@ -83,14 +86,14 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
     mutationFn: (data: any) => userGateway.registerAndJoinEvent(data),
     onSuccess: (result) => {
       if (result.payment_url) {
-        window.open(result.payment_url, '_blank');
+        window.open(result.payment_url, "_blank");
       }
       handleNext(); // Go to success step
     },
-    onError: (error) => {
-      console.error('Registration error:', error);
-      // Could show error message here
-    }
+    onError: (error: any) => {
+      setErrorMessage(error.message || "Erro durante o registro");
+      setShowError(true);
+    },
   });
 
   const handleNext = () => {
@@ -444,6 +447,12 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
           )}
         </div>
       </DialogContent>
+
+      <ErrorSnackbar
+        message={errorMessage}
+        visible={showError}
+        onDismiss={() => setShowError(false)}
+      />
     </Dialog>
   );
 };
