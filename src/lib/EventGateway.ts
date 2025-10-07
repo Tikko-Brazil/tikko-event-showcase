@@ -34,18 +34,25 @@ interface CreateTicketPricingRequest {
   start_date: string;
   end_date: string;
   gender: string;
+  active: boolean;
 }
 
 interface CreateEventRequest {
   event: {
     name: string;
     description: string;
+    is_paid?: boolean;
     start_date: string;
     end_date: string;
-    location: string;
-    latitude: number;
+    address_name: string;
     longitude: number;
-    image_url: string;
+    latitude: number;
+    address_complement: string;
+    is_private: boolean;
+    auto_accept: boolean;
+    company_id?: number;
+    is_active: boolean;
+    image: string;
   };
   ticket_pricing: CreateTicketPricingRequest[];
 }
@@ -53,12 +60,16 @@ interface CreateEventRequest {
 interface UpdateEventRequest {
   name: string;
   description: string;
+  image: string;
   start_date: string;
   end_date: string;
-  location: string;
-  latitude: number;
+  address_name: string;
   longitude: number;
-  image_url: string;
+  latitude: number;
+  address_complement: string;
+  is_private: boolean;
+  auto_accept: boolean;
+  is_active: boolean;
 }
 
 interface EventWithTicketPricing {

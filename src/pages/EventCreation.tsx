@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import { useMutation } from "@tanstack/react-query";
 import { v4 as uuidv4 } from "uuid";
 import { debounce } from "lodash";
+import InputMask from "react-input-mask";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -227,12 +228,14 @@ const EventCreation = () => {
           description: values.description,
           start_date: combineDateTime(values.startDate, values.startTime),
           end_date: combineDateTime(values.endDate, values.endTime),
-          location:
-            values.addressName +
-            (values.addressComplement ? `, ${values.addressComplement}` : ""),
-          latitude: values.latitude!,
+          address_name: values.locationName,
           longitude: values.longitude!,
-          image_url: imageKey || "",
+          latitude: values.latitude!,
+          address_complement: values.addressComplement || "",
+          is_private: values.isPrivate,
+          auto_accept: values.autoAccept,
+          is_active: values.isActive,
+          image: imageKey || "",
         },
         ticket_pricing: values.ticketPricings.map((tp) => ({
           ticket_type: tp.ticketType,
@@ -240,6 +243,7 @@ const EventCreation = () => {
           price: parseInt(tp.price),
           start_date: combineDateTime(values.startDate, values.startTime),
           end_date: combineDateTime(values.endDate, values.endTime),
+          active: true,
         })),
       };
 
@@ -471,35 +475,49 @@ const EventCreation = () => {
                           Start Date and Time *
                         </Label>
                         <div className="space-y-3">
-                          <Input
+                          <InputMask
+                            mask="99/99/9999"
                             name="startDate"
                             value={values.startDate}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            placeholder="DD/MM/YYYY"
-                            className={
-                              errors.startDate && touched.startDate
-                                ? "border-red-500"
-                                : ""
-                            }
-                          />
+                          >
+                            {(inputProps: any) => (
+                              <Input
+                                {...inputProps}
+                                placeholder="DD/MM/YYYY"
+                                className={
+                                  errors.startDate && touched.startDate
+                                    ? "border-red-500"
+                                    : ""
+                                }
+                              />
+                            )}
+                          </InputMask>
                           {errors.startDate && touched.startDate && (
                             <p className="text-sm text-red-500">
                               {errors.startDate}
                             </p>
                           )}
-                          <Input
+                          <InputMask
+                            mask="99:99"
                             name="startTime"
                             value={values.startTime}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            placeholder="HH:MM"
-                            className={
-                              errors.startTime && touched.startTime
-                                ? "border-red-500"
-                                : ""
-                            }
-                          />
+                          >
+                            {(inputProps: any) => (
+                              <Input
+                                {...inputProps}
+                                placeholder="HH:MM"
+                                className={
+                                  errors.startTime && touched.startTime
+                                    ? "border-red-500"
+                                    : ""
+                                }
+                              />
+                            )}
+                          </InputMask>
                           {errors.startTime && touched.startTime && (
                             <p className="text-sm text-red-500">
                               {errors.startTime}
@@ -514,35 +532,49 @@ const EventCreation = () => {
                           End Date and Time *
                         </Label>
                         <div className="space-y-3">
-                          <Input
+                          <InputMask
+                            mask="99/99/9999"
                             name="endDate"
                             value={values.endDate}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            placeholder="DD/MM/YYYY"
-                            className={
-                              errors.endDate && touched.endDate
-                                ? "border-red-500"
-                                : ""
-                            }
-                          />
+                          >
+                            {(inputProps: any) => (
+                              <Input
+                                {...inputProps}
+                                placeholder="DD/MM/YYYY"
+                                className={
+                                  errors.endDate && touched.endDate
+                                    ? "border-red-500"
+                                    : ""
+                                }
+                              />
+                            )}
+                          </InputMask>
                           {errors.endDate && touched.endDate && (
                             <p className="text-sm text-red-500">
                               {errors.endDate}
                             </p>
                           )}
-                          <Input
+                          <InputMask
+                            mask="99:99"
                             name="endTime"
                             value={values.endTime}
                             onChange={handleChange}
                             onBlur={handleBlur}
-                            placeholder="HH:MM"
-                            className={
-                              errors.endTime && touched.endTime
-                                ? "border-red-500"
-                                : ""
-                            }
-                          />
+                          >
+                            {(inputProps: any) => (
+                              <Input
+                                {...inputProps}
+                                placeholder="HH:MM"
+                                className={
+                                  errors.endTime && touched.endTime
+                                    ? "border-red-500"
+                                    : ""
+                                }
+                              />
+                            )}
+                          </InputMask>
                           {errors.endTime && touched.endTime && (
                             <p className="text-sm text-red-500">
                               {errors.endTime}
@@ -556,7 +588,10 @@ const EventCreation = () => {
                     <div className="space-y-4">
                       {/* Location Name */}
                       <div className="space-y-2">
-                        <Label htmlFor="locationName" className="text-sm font-medium text-foreground">
+                        <Label
+                          htmlFor="locationName"
+                          className="text-sm font-medium text-foreground"
+                        >
                           Location Name *
                         </Label>
                         <Input
@@ -566,10 +601,16 @@ const EventCreation = () => {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           placeholder="Ex: Aurora Concert Hall"
-                          className={errors.locationName && touched.locationName ? 'border-red-500' : ''}
+                          className={
+                            errors.locationName && touched.locationName
+                              ? "border-red-500"
+                              : ""
+                          }
                         />
                         {errors.locationName && touched.locationName && (
-                          <p className="text-sm text-red-500">{errors.locationName}</p>
+                          <p className="text-sm text-red-500">
+                            {errors.locationName}
+                          </p>
                         )}
                       </div>
 
@@ -599,20 +640,22 @@ const EventCreation = () => {
                           {showLocationSuggestions &&
                             locationSuggestions.length > 0 && (
                               <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-50 max-h-40 overflow-y-auto">
-                                {locationSuggestions.map((suggestion, index) => (
-                                  <div
-                                    key={index}
-                                    className="px-3 py-2 hover:bg-accent cursor-pointer text-sm text-foreground"
-                                    onClick={() =>
-                                      handleLocationSelect(
-                                        suggestion,
-                                        setFieldValue
-                                      )
-                                    }
-                                  >
-                                    {suggestion.displayName}
-                                  </div>
-                                ))}
+                                {locationSuggestions.map(
+                                  (suggestion, index) => (
+                                    <div
+                                      key={index}
+                                      className="px-3 py-2 hover:bg-accent cursor-pointer text-sm text-foreground"
+                                      onClick={() =>
+                                        handleLocationSelect(
+                                          suggestion,
+                                          setFieldValue
+                                        )
+                                      }
+                                    >
+                                      {suggestion.displayName}
+                                    </div>
+                                  )
+                                )}
                               </div>
                             )}
                         </div>
@@ -780,11 +823,16 @@ const EventCreation = () => {
                                   genderInput?.value &&
                                   priceInput?.value
                                 ) {
-                                  push({
+                                  const newTicket = {
                                     ticketType: nameInput.value,
                                     gender: genderInput.value,
                                     price: priceInput.value,
-                                  });
+                                  };
+                                  
+                                  // Use setFieldValue to ensure proper form state update
+                                  setFieldValue('ticketPricings', [...values.ticketPricings, newTicket]);
+                                  
+                                  // Clear inputs
                                   nameInput.value = "";
                                   priceInput.value = "";
                                   const radios = document.querySelectorAll(
