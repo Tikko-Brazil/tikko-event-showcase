@@ -27,12 +27,23 @@ import {
   Trash2,
   MapPin,
   Loader2,
+  Calendar,
+  Clock,
 } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import SuccessSnackbar from "@/components/SuccessSnackbar";
+import ErrorSnackbar from "@/components/ErrorSnackbar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import logoLight from "@/assets/logoLight.png";
 import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
-import ErrorSnackbar from "@/components/ErrorSnackbar";
 
 // Interfaces
 interface TicketPricing {
@@ -70,24 +81,14 @@ const EventCreationSchema = Yup.object().shape({
     .required("Descrição do evento é obrigatória")
     .min(10, "Descrição deve ter pelo menos 10 caracteres")
     .max(1500, "Descrição deve ter no máximo 1500 caracteres"),
-  startDate: Yup.string()
-    .required("Data de início é obrigatória")
-    .matches(
-      /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/,
-      "Formato de data inválido (DD/MM/AAAA)"
-    ),
+  startDate: Yup.string().required("Data de início é obrigatória"),
   startTime: Yup.string()
     .required("Horário de início é obrigatório")
     .matches(
       /^([01][0-9]|2[0-3]):([0-5][0-9])$/,
       "Formato de horário inválido (HH:MM)"
     ),
-  endDate: Yup.string()
-    .required("Data de término é obrigatória")
-    .matches(
-      /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/,
-      "Formato de data inválido (DD/MM/AAAA)"
-    ),
+  endDate: Yup.string().required("Data de término é obrigatória"),
   endTime: Yup.string()
     .required("Horário de término é obrigatório")
     .matches(
@@ -139,15 +140,8 @@ const EventCreationSchema = Yup.object().shape({
 });
 
 const combineDateTime = (date: string, time: string): string => {
-  const [day, month, year] = date.split("/");
   const [hours, minutes] = time.split(":");
-  return new Date(
-    parseInt(year),
-    parseInt(month) - 1,
-    parseInt(day),
-    parseInt(hours),
-    parseInt(minutes)
-  ).toISOString();
+  return new Date(`${date}T${hours}:${minutes}:00Z`).toISOString();
 };
 
 const EventCreation = () => {
@@ -160,6 +154,9 @@ const EventCreation = () => {
   const [isImageUploading, setIsImageUploading] = useState(false);
   const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const [startDateOpen, setStartDateOpen] = useState(false);
+  const [endDateOpen, setEndDateOpen] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showError, setShowError] = useState(false);
 
@@ -250,10 +247,15 @@ const EventCreation = () => {
       return eventGateway.createEvent(eventData);
     },
     onSuccess: () => {
-      navigate("/dashboard");
+      setShowSuccess(true);
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 2000);
     },
     onError: (error: any) => {
-      setErrorMessage(error.message || "Erro ao criar evento");
+      setErrorMessage(
+        error.message || "Erro ao criar evento. Tente novamente."
+      );
       setShowError(true);
     },
   });
@@ -354,10 +356,10 @@ const EventCreation = () => {
                 <Card className="shadow-card border-border/50">
                   <CardHeader>
                     <CardTitle className="text-2xl text-foreground">
-                      Event Information
+                      Informações do Evento
                     </CardTitle>
                     <CardDescription className="text-muted-foreground">
-                      Basic details about your event
+                      Detalhes básicos sobre seu evento
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -367,7 +369,7 @@ const EventCreation = () => {
                         htmlFor="name"
                         className="text-sm font-medium text-foreground"
                       >
-                        Event Name *
+                        Nome do Evento *
                       </Label>
                       <Input
                         id="name"
@@ -375,7 +377,7 @@ const EventCreation = () => {
                         value={values.name}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        placeholder="Enter event name"
+                        placeholder="Digite o nome do evento"
                         className={
                           errors.name && touched.name ? "border-red-500" : ""
                         }
@@ -388,7 +390,7 @@ const EventCreation = () => {
                     {/* Event Image */}
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-foreground">
-                        Event Image
+                        Imagem do Evento
                       </Label>
                       <div className="flex flex-col space-y-4">
                         {image && (
@@ -445,7 +447,7 @@ const EventCreation = () => {
                         htmlFor="description"
                         className="text-sm font-medium text-foreground"
                       >
-                        Description *
+                        Descrição *
                       </Label>
                       <Textarea
                         id="description"
@@ -472,52 +474,91 @@ const EventCreation = () => {
                       {/* Start Date and Time */}
                       <div className="space-y-4">
                         <Label className="text-sm font-medium text-foreground">
-                          Start Date and Time *
+                          Data e Horário de Início *
                         </Label>
                         <div className="space-y-3">
-                          <InputMask
-                            mask="99/99/9999"
-                            name="startDate"
-                            value={values.startDate}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
+                          <Popover
+                            open={startDateOpen}
+                            onOpenChange={setStartDateOpen}
                           >
-                            {(inputProps: any) => (
-                              <Input
-                                {...inputProps}
-                                placeholder="DD/MM/YYYY"
-                                className={
-                                  errors.startDate && touched.startDate
-                                    ? "border-red-500"
-                                    : ""
+                            <PopoverTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !values.startDate && "text-muted-foreground",
+                                  errors.startDate &&
+                                    touched.startDate &&
+                                    "border-red-500"
+                                )}
+                              >
+                                <Calendar className="mr-2 h-4 w-4" />
+                                {values.startDate
+                                  ? format(
+                                      new Date(values.startDate),
+                                      "dd/MM/yyyy"
+                                    )
+                                  : "Selecionar data"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
+                              <CalendarComponent
+                                mode="single"
+                                selected={
+                                  values.startDate
+                                    ? new Date(values.startDate)
+                                    : undefined
                                 }
+                                onSelect={(date) => {
+                                  if (date) {
+                                    setFieldValue(
+                                      "startDate",
+                                      format(date, "yyyy-MM-dd")
+                                    );
+                                    setStartDateOpen(false);
+                                  }
+                                }}
+                                disabled={(date) =>
+                                  date <
+                                  new Date(new Date().setHours(0, 0, 0, 0))
+                                }
+                                initialFocus
+                                className="p-3 pointer-events-auto"
                               />
-                            )}
-                          </InputMask>
+                            </PopoverContent>
+                          </Popover>
                           {errors.startDate && touched.startDate && (
                             <p className="text-sm text-red-500">
                               {errors.startDate}
                             </p>
                           )}
-                          <InputMask
-                            mask="99:99"
-                            name="startTime"
-                            value={values.startTime}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                          >
-                            {(inputProps: any) => (
-                              <Input
-                                {...inputProps}
-                                placeholder="HH:MM"
-                                className={
-                                  errors.startTime && touched.startTime
-                                    ? "border-red-500"
-                                    : ""
-                                }
-                              />
-                            )}
-                          </InputMask>
+                          <div className="relative">
+                            <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <InputMask
+                              mask="99:99"
+                              name="startTime"
+                              value={values.startTime}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                            >
+                              {(inputProps: any) => (
+                                <Input
+                                  {...inputProps}
+                                  placeholder="Horário de início"
+                                  className={cn(
+                                    "pl-10",
+                                    errors.startTime && touched.startTime
+                                      ? "border-red-500"
+                                      : ""
+                                  )}
+                                />
+                              )}
+                            </InputMask>
+                          </div>
                           {errors.startTime && touched.startTime && (
                             <p className="text-sm text-red-500">
                               {errors.startTime}
@@ -529,52 +570,91 @@ const EventCreation = () => {
                       {/* End Date and Time */}
                       <div className="space-y-4">
                         <Label className="text-sm font-medium text-foreground">
-                          End Date and Time *
+                          Data e Horário de Término *
                         </Label>
                         <div className="space-y-3">
-                          <InputMask
-                            mask="99/99/9999"
-                            name="endDate"
-                            value={values.endDate}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
+                          <Popover
+                            open={endDateOpen}
+                            onOpenChange={setEndDateOpen}
                           >
-                            {(inputProps: any) => (
-                              <Input
-                                {...inputProps}
-                                placeholder="DD/MM/YYYY"
-                                className={
-                                  errors.endDate && touched.endDate
-                                    ? "border-red-500"
-                                    : ""
+                            <PopoverTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !values.endDate && "text-muted-foreground",
+                                  errors.endDate &&
+                                    touched.endDate &&
+                                    "border-red-500"
+                                )}
+                              >
+                                <Calendar className="mr-2 h-4 w-4" />
+                                {values.endDate
+                                  ? format(
+                                      new Date(values.endDate),
+                                      "dd/MM/yyyy"
+                                    )
+                                  : "Selecionar data"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
+                              <CalendarComponent
+                                mode="single"
+                                selected={
+                                  values.endDate
+                                    ? new Date(values.endDate)
+                                    : undefined
                                 }
+                                onSelect={(date) => {
+                                  if (date) {
+                                    setFieldValue(
+                                      "endDate",
+                                      format(date, "yyyy-MM-dd")
+                                    );
+                                    setEndDateOpen(false);
+                                  }
+                                }}
+                                disabled={(date) =>
+                                  date <
+                                  new Date(new Date().setHours(0, 0, 0, 0))
+                                }
+                                initialFocus
+                                className="p-3 pointer-events-auto"
                               />
-                            )}
-                          </InputMask>
+                            </PopoverContent>
+                          </Popover>
                           {errors.endDate && touched.endDate && (
                             <p className="text-sm text-red-500">
                               {errors.endDate}
                             </p>
                           )}
-                          <InputMask
-                            mask="99:99"
-                            name="endTime"
-                            value={values.endTime}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                          >
-                            {(inputProps: any) => (
-                              <Input
-                                {...inputProps}
-                                placeholder="HH:MM"
-                                className={
-                                  errors.endTime && touched.endTime
-                                    ? "border-red-500"
-                                    : ""
-                                }
-                              />
-                            )}
-                          </InputMask>
+                          <div className="relative">
+                            <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                            <InputMask
+                              mask="99:99"
+                              name="endTime"
+                              value={values.endTime}
+                              onChange={handleChange}
+                              onBlur={handleBlur}
+                            >
+                              {(inputProps: any) => (
+                                <Input
+                                  {...inputProps}
+                                  placeholder="Horário de término"
+                                  className={cn(
+                                    "pl-10",
+                                    errors.endTime && touched.endTime
+                                      ? "border-red-500"
+                                      : ""
+                                  )}
+                                />
+                              )}
+                            </InputMask>
+                          </div>
                           {errors.endTime && touched.endTime && (
                             <p className="text-sm text-red-500">
                               {errors.endTime}
@@ -592,7 +672,7 @@ const EventCreation = () => {
                           htmlFor="locationName"
                           className="text-sm font-medium text-foreground"
                         >
-                          Location Name *
+                          Nome do Local *
                         </Label>
                         <Input
                           id="locationName"
@@ -617,7 +697,7 @@ const EventCreation = () => {
                       {/* Address Search */}
                       <div className="space-y-2">
                         <Label className="text-sm font-medium text-foreground">
-                          Address *
+                          Endereço *
                         </Label>
                         <div className="relative">
                           <Input
@@ -628,7 +708,7 @@ const EventCreation = () => {
                               debouncedLocationSearch(e.target.value);
                             }}
                             onBlur={handleBlur}
-                            placeholder="Enter full address"
+                            placeholder="Digite o endereço completo"
                             className={`pr-10 ${
                               errors.addressName && touched.addressName
                                 ? "border-red-500"
@@ -683,7 +763,7 @@ const EventCreation = () => {
                     {/* Settings */}
                     <div className="space-y-4 pt-4 border-t border-border">
                       <h3 className="text-lg font-medium text-foreground">
-                        Settings
+                        Configurações
                       </h3>
 
                       <div className="flex items-center space-x-3">
@@ -698,7 +778,7 @@ const EventCreation = () => {
                           htmlFor="autoAccept"
                           className="text-sm font-medium text-foreground cursor-pointer"
                         >
-                          Auto-accept join requests
+                          Aceitar solicitações automaticamente
                         </Label>
                       </div>
 
@@ -714,7 +794,7 @@ const EventCreation = () => {
                           htmlFor="isPrivate"
                           className="text-sm font-medium text-foreground cursor-pointer"
                         >
-                          Private event
+                          Evento privado
                         </Label>
                       </div>
 
@@ -730,7 +810,7 @@ const EventCreation = () => {
                           htmlFor="isActive"
                           className="text-sm font-medium text-foreground cursor-pointer"
                         >
-                          Event is active
+                          Event ativo
                         </Label>
                       </div>
                     </div>
@@ -741,10 +821,10 @@ const EventCreation = () => {
                 <Card className="shadow-card border-border/50">
                   <CardHeader>
                     <CardTitle className="text-2xl text-foreground">
-                      Ticket Types
+                      Tipos de Ingresso
                     </CardTitle>
                     <CardDescription className="text-muted-foreground">
-                      Define different ticket types for your event
+                      Defina diferentes tipos de ingresso para seu evento
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -754,12 +834,12 @@ const EventCreation = () => {
                           {/* Add New Ticket Type Form */}
                           <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/30">
                             <h3 className="font-semibold text-foreground">
-                              Add Ticket Type
+                              Adicionar Tipo de Ingresso
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                               <Input
-                                placeholder="Ticket name (e.g., VIP, General)"
+                                placeholder="Nome do ingresso (ex: VIP, Pista)"
                                 id="newTicketName"
                               />
 
@@ -777,7 +857,7 @@ const EventCreation = () => {
                                       htmlFor="gender-male"
                                       className="text-sm font-normal cursor-pointer"
                                     >
-                                      Male
+                                      Masculino
                                     </Label>
                                   </div>
                                   <div className="flex items-center space-x-2">
@@ -792,7 +872,7 @@ const EventCreation = () => {
                                       htmlFor="gender-female"
                                       className="text-sm font-normal cursor-pointer"
                                     >
-                                      Female
+                                      Feminino
                                     </Label>
                                   </div>
                                 </div>
@@ -800,7 +880,7 @@ const EventCreation = () => {
 
                               <Input
                                 type="number"
-                                placeholder="Price (BRL)"
+                                placeholder="Preço (R$)"
                                 id="newTicketPrice"
                               />
                             </div>
@@ -828,10 +908,13 @@ const EventCreation = () => {
                                     gender: genderInput.value,
                                     price: priceInput.value,
                                   };
-                                  
+
                                   // Use setFieldValue to ensure proper form state update
-                                  setFieldValue('ticketPricings', [...values.ticketPricings, newTicket]);
-                                  
+                                  setFieldValue("ticketPricings", [
+                                    ...values.ticketPricings,
+                                    newTicket,
+                                  ]);
+
                                   // Clear inputs
                                   nameInput.value = "";
                                   priceInput.value = "";
@@ -846,7 +929,7 @@ const EventCreation = () => {
                               className="w-full md:w-auto"
                             >
                               <Plus className="h-4 w-4 mr-2" />
-                              Add Ticket Type
+                              Adicionar Tipo de Ingresso
                             </Button>
                           </div>
 
@@ -854,7 +937,7 @@ const EventCreation = () => {
                           {values.ticketPricings.length > 0 && (
                             <div className="space-y-3">
                               <h3 className="font-semibold text-foreground">
-                                Added Ticket Types
+                                Tipos de Ingresso Adicionados
                               </h3>
                               <div className="grid gap-3">
                                 {values.ticketPricings.map((ticket, index) => (
@@ -870,8 +953,8 @@ const EventCreation = () => {
                                         <div className="flex items-center gap-2 mt-1">
                                           <span className="text-sm text-muted-foreground">
                                             {ticket.gender === "male"
-                                              ? "Male Only"
-                                              : "Female Only"}
+                                              ? "Apenas Masculino"
+                                              : "Apenas Feminino"}
                                           </span>
                                           <span className="text-sm text-muted-foreground">
                                             •
@@ -925,7 +1008,7 @@ const EventCreation = () => {
                   ) : (
                     <>
                       <Save className="h-5 w-5 mr-2" />
-                      Create Event
+                      Criar Evento
                     </>
                   )}
                 </Button>
@@ -935,6 +1018,11 @@ const EventCreation = () => {
         </div>
       </main>
 
+      <SuccessSnackbar
+        visible={showSuccess}
+        onDismiss={() => setShowSuccess(false)}
+        message="Evento criado com sucesso!"
+      />
       <ErrorSnackbar
         message={errorMessage}
         visible={showError}

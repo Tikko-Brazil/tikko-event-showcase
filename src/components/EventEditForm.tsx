@@ -4,6 +4,7 @@ import * as Yup from "yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { v4 as uuidv4 } from "uuid";
 import { debounce } from "lodash";
+import InputMask from "react-input-mask";
 import {
   Card,
   CardContent,
@@ -81,41 +82,41 @@ interface EventEditFormProps {
 
 const EventEditSchema = Yup.object().shape({
   name: Yup.string()
-    .required("Event name is required")
-    .min(3, "Name must be at least 3 characters")
-    .max(100, "Name must be at most 100 characters"),
+    .required("Nome do evento é obrigatório")
+    .min(3, "Nome deve ter pelo menos 3 caracteres")
+    .max(100, "Nome deve ter no máximo 100 caracteres"),
   description: Yup.string()
-    .required("Description is required")
-    .min(10, "Description must be at least 10 characters")
-    .max(1500, "Description must be at most 1500 characters"),
-  startDate: Yup.string().required("Start date is required"),
+    .required("Descrição é obrigatória")
+    .min(10, "Descrição deve ter pelo menos 10 caracteres")
+    .max(1500, "Descrição deve ter no máximo 1500 caracteres"),
+  startDate: Yup.string().required("Data de início é obrigatória"),
   startTime: Yup.string()
-    .required("Start time is required")
+    .required("Horário de início é obrigatório")
     .matches(
       /^([01][0-9]|2[0-3]):([0-5][0-9])$/,
-      "Invalid time format (HH:MM)"
+      "Formato de horário inválido (HH:MM)"
     ),
-  endDate: Yup.string().required("End date is required"),
+  endDate: Yup.string().required("Data de término é obrigatória"),
   endTime: Yup.string()
-    .required("End time is required")
+    .required("Horário de término é obrigatório")
     .matches(
       /^([01][0-9]|2[0-3]):([0-5][0-9])$/,
-      "Invalid time format (HH:MM)"
+      "Formato de horário inválido (HH:MM)"
     ),
   locationName: Yup.string()
-    .required("Location name is required")
-    .min(3, "Location name must be at least 3 characters")
-    .max(100, "Location name must be at most 100 characters"),
+    .required("Nome do local é obrigatório")
+    .min(3, "Nome do local deve ter pelo menos 3 caracteres")
+    .max(100, "Nome do local deve ter no máximo 100 caracteres"),
   addressName: Yup.string()
-    .required("Address is required")
-    .min(5, "Address must be at least 5 characters")
-    .max(400, "Address must be at most 400 characters"),
+    .required("Endereço é obrigatório")
+    .min(5, "Endereço deve ter pelo menos 5 caracteres")
+    .max(400, "Endereço deve ter no máximo 400 caracteres"),
   latitude: Yup.number()
     .nullable()
-    .required("Location coordinates are required"),
+    .required("Coordenadas do local são obrigatórias"),
   longitude: Yup.number()
     .nullable()
-    .required("Location coordinates are required"),
+    .required("Coordenadas do local são obrigatórias"),
   autoAccept: Yup.boolean(),
   isPrivate: Yup.boolean(),
   isActive: Yup.boolean(),
@@ -296,10 +297,10 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
             <Card className="shadow-card border-border/50">
               <CardHeader>
                 <CardTitle className="text-2xl text-foreground">
-                  Event Information
+                  Informações do Evento
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
-                  Edit your event's basic information
+                  Edite as informações básicas do seu evento
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -309,7 +310,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     htmlFor="name"
                     className="text-sm font-medium text-foreground"
                   >
-                    Event Name *
+                    Nome do Evento *
                   </Label>
                   <Input
                     id="name"
@@ -317,7 +318,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     value={values.name}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    placeholder="Enter event name"
+                    placeholder="Digite o nome do evento"
                     className={cn(
                       "w-full",
                       errors.name && touched.name && "border-red-500"
@@ -331,7 +332,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                 {/* Event Image */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-foreground">
-                    Event Image
+                    Imagem do Evento
                   </Label>
                   <div className="flex flex-col space-y-4">
                     {imagePreview && (
@@ -371,12 +372,12 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                         {isImageUploading ? (
                           <>
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Uploading...</span>
+                            <span>Carregando...</span>
                           </>
                         ) : (
                           <>
                             <ImageIcon className="h-4 w-4" />
-                            <span>Select Image</span>
+                            <span>Selecionar Imagem</span>
                           </>
                         )}
                       </Label>
@@ -390,7 +391,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     htmlFor="description"
                     className="text-sm font-medium text-foreground"
                   >
-                    Description *
+                    Descrição *
                   </Label>
                   <Textarea
                     id="description"
@@ -416,7 +417,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                   {/* Start Date and Time */}
                   <div className="space-y-4">
                     <Label className="text-sm font-medium text-foreground">
-                      Start Date and Time *
+                      Data e Horário de Início *
                     </Label>
                     <div className="space-y-3">
                       <Popover
@@ -437,8 +438,8 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {values.startDate
-                              ? format(new Date(values.startDate), "MM/dd/yyyy")
-                              : "Select date"}
+                              ? format(new Date(values.startDate), "dd/MM/yyyy")
+                              : "Selecionar data"}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
@@ -468,21 +469,28 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                           {errors.startDate}
                         </p>
                       )}
-                      <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <Input
-                          type="time"
+                      <div className="relative">
+                        <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <InputMask
+                          mask="99:99"
                           name="startTime"
                           value={values.startTime}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          className={cn(
-                            "w-32",
-                            errors.startTime &&
-                              touched.startTime &&
-                              "border-red-500"
+                        >
+                          {(inputProps: any) => (
+                            <Input
+                              {...inputProps}
+                              placeholder="Digite o horário de início"
+                              className={cn(
+                                "w-full pl-10",
+                                errors.startTime &&
+                                  touched.startTime &&
+                                  "border-red-500"
+                              )}
+                            />
                           )}
-                        />
+                        </InputMask>
                       </div>
                       {errors.startTime && touched.startTime && (
                         <p className="text-sm text-red-500">
@@ -495,7 +503,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                   {/* End Date and Time */}
                   <div className="space-y-4">
                     <Label className="text-sm font-medium text-foreground">
-                      End Date and Time *
+                      Data e Horário de Término *
                     </Label>
                     <div className="space-y-3">
                       <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
@@ -513,8 +521,8 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {values.endDate
-                              ? format(new Date(values.endDate), "MM/dd/yyyy")
-                              : "Select date"}
+                              ? format(new Date(values.endDate), "dd/MM/yyyy")
+                              : "Selecionar data"}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
@@ -542,21 +550,28 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       {errors.endDate && touched.endDate && (
                         <p className="text-sm text-red-500">{errors.endDate}</p>
                       )}
-                      <div className="flex items-center space-x-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <Input
-                          type="time"
+                      <div className="relative">
+                        <Clock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <InputMask
+                          mask="99:99"
                           name="endTime"
                           value={values.endTime}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          className={cn(
-                            "w-32",
-                            errors.endTime &&
-                              touched.endTime &&
-                              "border-red-500"
+                        >
+                          {(inputProps: any) => (
+                            <Input
+                              {...inputProps}
+                              placeholder="Digite o horário de término"
+                              className={cn(
+                                "w-full pl-10",
+                                errors.endTime &&
+                                  touched.endTime &&
+                                  "border-red-500"
+                              )}
+                            />
                           )}
-                        />
+                        </InputMask>
                       </div>
                       {errors.endTime && touched.endTime && (
                         <p className="text-sm text-red-500">{errors.endTime}</p>
@@ -573,7 +588,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       htmlFor="locationName"
                       className="text-sm font-medium text-foreground"
                     >
-                      Location Name *
+                      Nome do Local *
                     </Label>
                     <Input
                       id="locationName"
@@ -602,7 +617,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       htmlFor="addressName"
                       className="text-sm font-medium text-foreground"
                     >
-                      Address *
+                      Endereço *
                     </Label>
                     <div className="relative">
                       <Input
@@ -618,16 +633,16 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                           debouncedLocationSearch(e.target.value);
                         }}
                         onBlur={handleBlur}
-                        placeholder="Enter full address"
+                        placeholder="Digite o endereço completo"
                         disabled={addressLoading}
                         className={cn(
-                          "w-full pr-10",
+                          "w-full pl-10",
                           errors.addressName &&
                             touched.addressName &&
                             "border-red-500"
                         )}
                       />
-                      <MapPin className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 
                       {/* Location Suggestions */}
                       {showLocationSuggestions &&
@@ -683,7 +698,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     htmlFor="addressComplement"
                     className="text-sm font-medium text-foreground"
                   >
-                    Address Complement
+                    Complemento do Endereço
                   </Label>
                   <Input
                     id="addressComplement"
@@ -699,7 +714,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                 {/* Settings */}
                 <div className="space-y-4 pt-4 border-t border-border">
                   <h3 className="text-lg font-medium text-foreground">
-                    Settings
+                    Configurações
                   </h3>
 
                   {/* Auto Accept Requests */}
@@ -715,7 +730,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       htmlFor="autoAccept"
                       className="text-sm text-foreground cursor-pointer"
                     >
-                      Join requests will be accepted automatically
+                      Solicitações de participação serão aceitas automaticamente
                     </Label>
                   </div>
 
@@ -732,7 +747,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       htmlFor="isPrivate"
                       className="text-sm text-foreground cursor-pointer"
                     >
-                      Private event (invite only)
+                      Evento privado (apenas por convite)
                     </Label>
                   </div>
 
@@ -749,7 +764,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       htmlFor="isActive"
                       className="text-sm text-foreground cursor-pointer"
                     >
-                      Event is active
+                      Evento está ativo
                     </Label>
                   </div>
                 </div>
@@ -769,7 +784,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-2" />
-                        Save Changes
+                        Salvar Alterações
                       </>
                     )}
                   </Button>
@@ -783,7 +798,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
       <SuccessSnackbar
         visible={showSuccess}
         onDismiss={() => setShowSuccess(false)}
-        message="Event updated successfully!"
+        message="Evento atualizado com sucesso!"
       />
 
       <ErrorSnackbar
