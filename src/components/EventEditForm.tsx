@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Formik, FormikProps } from "formik";
 import * as Yup from "yup";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { v4 as uuidv4 } from "uuid";
+import { debounce } from "lodash";
 import {
   Card,
   CardContent,
@@ -21,6 +24,10 @@ import {
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { EventGateway } from "@/lib/EventGateway";
+import { GeocodingGateway } from "@/lib/GeocodingGateway";
+import SuccessSnackbar from "@/components/SuccessSnackbar";
+import ErrorSnackbar from "@/components/ErrorSnackbar";
 import {
   X,
   Image as ImageIcon,
@@ -28,18 +35,27 @@ import {
   Clock,
   MapPin,
   Save,
+  Loader2,
 } from "lucide-react";
 
-interface EditEventData {
+const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+const geocodingGateway = new GeocodingGateway();
+
+interface Event {
+  id: number;
   name: string;
-  image: string;
   description: string;
-  startDate: Date;
-  endDate: Date;
-  locationName: string;
+  image: string | null;
+  start_date: string;
+  end_date: string;
+  address_name: string;
   location: string;
-  autoAcceptRequests: boolean;
-  isActive: boolean;
+  latitude: number;
+  longitude: number;
+  address_complement: string | null;
+  is_private: boolean;
+  auto_accept: boolean;
+  is_active: boolean;
 }
 
 interface FormValues {
@@ -50,15 +66,17 @@ interface FormValues {
   endDate: string;
   endTime: string;
   locationName: string;
-  location: string;
-  autoAcceptRequests: boolean;
+  addressName: string;
+  addressComplement: string;
+  latitude: number | null;
+  longitude: number | null;
+  autoAccept: boolean;
+  isPrivate: boolean;
   isActive: boolean;
 }
 
 interface EventEditFormProps {
-  editEventData: EditEventData;
-  onSave: (values: FormValues) => void;
-  locationSuggestions: string[];
+  event: Event;
 }
 
 const EventEditSchema = Yup.object().shape({
@@ -88,53 +106,173 @@ const EventEditSchema = Yup.object().shape({
     .required("Location name is required")
     .min(3, "Location name must be at least 3 characters")
     .max(100, "Location name must be at most 100 characters"),
-  location: Yup.string()
+  addressName: Yup.string()
     .required("Address is required")
     .min(5, "Address must be at least 5 characters")
-    .max(200, "Address must be at most 200 characters"),
-  autoAcceptRequests: Yup.boolean(),
+    .max(400, "Address must be at most 400 characters"),
+  latitude: Yup.number()
+    .nullable()
+    .required("Location coordinates are required"),
+  longitude: Yup.number()
+    .nullable()
+    .required("Location coordinates are required"),
+  autoAccept: Yup.boolean(),
+  isPrivate: Yup.boolean(),
   isActive: Yup.boolean(),
 });
 
-export const EventEditForm = ({
-  editEventData,
-  onSave,
-  locationSuggestions,
-}: EventEditFormProps) => {
+export const EventEditForm = ({ event }: EventEditFormProps) => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>(editEventData.image);
+  const [imagePreview, setImagePreview] = useState<string>(event.image || "");
+  const [imageKey, setImageKey] = useState<string | undefined>(
+    event.image || undefined
+  );
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
+  const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // Fetch address from coordinates
+  const { data: addressData, isLoading: addressLoading } = useQuery({
+    queryKey: ["geocode", event.latitude, event.longitude],
+    queryFn: () =>
+      geocodingGateway.reverseGeocode(event.latitude, event.longitude),
+    enabled: !!(event.latitude && event.longitude),
+    staleTime: 24 * 60 * 60 * 1000, // 24 hours
+  });
+
+  // Image upload mutation
+  const uploadImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const uniqueId = uuidv4();
+      const fileExtension = file.name.split(".").pop()?.toLowerCase();
+      const key = `${uniqueId}.${fileExtension}`;
+
+      // Get upload URL
+      const uploadResponse = await eventGateway.getUploadUrl(key, file.type);
+
+      // Upload to S3
+      await fetch(uploadResponse.upload_url, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      return uploadResponse.key;
+    },
+    onSuccess: (key) => {
+      setImageKey(key);
+      setIsImageUploading(false);
+    },
+    onError: (error: any) => {
+      console.error("Error uploading image:", error);
+      alert("Failed to upload image. Please try again.");
+      setIsImageUploading(false);
+    },
+  });
+
+  // Debounced location search
+  const debouncedLocationSearch = useCallback(
+    debounce(async (query: string) => {
+      if (query.length > 2) {
+        try {
+          const results = await geocodingGateway.forwardGeocode(query, 5);
+          setLocationSuggestions(results);
+          setShowLocationSuggestions(true);
+        } catch (error) {
+          console.error("Geocoding error:", error);
+        }
+      } else {
+        setShowLocationSuggestions(false);
+      }
+    }, 800),
+    []
+  );
+
+  // Handle location selection
+  const handleLocationSelect = (location: any, setFieldValue: any) => {
+    const formattedAddress =
+      location.displayName || location.name || "Unknown location";
+
+    setFieldValue("addressName", formattedAddress);
+    setFieldValue("latitude", parseFloat(location.latitude));
+    setFieldValue("longitude", parseFloat(location.longitude));
+    setShowLocationSuggestions(false);
+  };
+
+  const updateEventMutation = useMutation({
+    mutationFn: async (values: FormValues) => {
+      const updateData = {
+        name: values.name,
+        description: values.description,
+        image: imageKey || "",
+        start_date: `${values.startDate}T${values.startTime}:00Z`,
+        end_date: `${values.endDate}T${values.endTime}:00Z`,
+        address_name: values.locationName,
+        longitude: values.longitude!,
+        latitude: values.latitude!,
+        address_complement: values.addressComplement,
+        is_private: values.isPrivate,
+        auto_accept: values.autoAccept,
+        is_active: values.isActive,
+      };
+      return eventGateway.updateEvent(event.id, updateData);
+    },
+    onSuccess: () => {
+      setShowSuccess(true);
+    },
+    onError: (error: any) => {
+      setErrorMessage(
+        error.message || "Failed to update event. Please try again."
+      );
+      setShowError(true);
+    },
+  });
+
+  const getAddressFromGeocode = () => {
+    console.log(addressData);
+    if (addressData?.displayName) {
+      return addressData.displayName;
+    }
+    return event.location || "Localização não disponível";
+  };
 
   const initialValues: FormValues = {
-    name: editEventData.name,
-    description: editEventData.description,
-    startDate: format(editEventData.startDate, "yyyy-MM-dd"),
-    startTime: format(editEventData.startDate, "HH:mm"),
-    endDate: format(editEventData.endDate, "yyyy-MM-dd"),
-    endTime: format(editEventData.endDate, "HH:mm"),
-    locationName: editEventData.locationName,
-    location: editEventData.location,
-    autoAcceptRequests: editEventData.autoAcceptRequests,
-    isActive: editEventData.isActive,
+    name: event.name,
+    description: event.description,
+    startDate: format(new Date(event.start_date), "yyyy-MM-dd"),
+    startTime: format(new Date(event.start_date), "HH:mm"),
+    endDate: format(new Date(event.end_date), "yyyy-MM-dd"),
+    endTime: format(new Date(event.end_date), "HH:mm"),
+    locationName: event.address_name,
+    addressName: getAddressFromGeocode(),
+    addressComplement: event.address_complement || "",
+    latitude: event.latitude,
+    longitude: event.longitude,
+    autoAccept: event.auto_accept,
+    isPrivate: event.is_private,
+    isActive: event.is_active,
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedImage(file);
+      setIsImageUploading(true);
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
-    }
-  };
 
-  const handleLocationSelect = (location: string, setFieldValue: any) => {
-    setFieldValue("location", location);
-    setShowLocationSuggestions(false);
+      uploadImageMutation.mutate(file);
+    }
   };
 
   return (
@@ -142,7 +280,8 @@ export const EventEditForm = ({
       <Formik
         initialValues={initialValues}
         validationSchema={EventEditSchema}
-        onSubmit={onSave}
+        enableReinitialize={true}
+        onSubmit={(values) => updateEventMutation.mutate(values)}
       >
         {({
           values,
@@ -210,6 +349,7 @@ export const EventEditForm = ({
                           onClick={() => {
                             setImagePreview("");
                             setSelectedImage(null);
+                            setImageKey(undefined);
                           }}
                         >
                           <X className="h-4 w-4" />
@@ -228,8 +368,17 @@ export const EventEditForm = ({
                         htmlFor="eventImage"
                         className="cursor-pointer flex items-center space-x-2 px-4 py-2 border border-border rounded-md hover:bg-accent transition-colors"
                       >
-                        <ImageIcon className="h-4 w-4" />
-                        <span>Select Image</span>
+                        {isImageUploading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <ImageIcon className="h-4 w-4" />
+                            <span>Select Image</span>
+                          </>
+                        )}
                       </Label>
                     </div>
                   </div>
@@ -448,61 +597,103 @@ export const EventEditForm = ({
                   </div>
 
                   {/* Location Address */}
-                  <div className="space-y-2 relative">
+                  <div className="space-y-2">
                     <Label
-                      htmlFor="location"
+                      htmlFor="addressName"
                       className="text-sm font-medium text-foreground"
                     >
                       Address *
                     </Label>
                     <div className="relative">
                       <Input
-                        id="location"
-                        name="location"
-                        value={values.location}
+                        id="addressName"
+                        name="addressName"
+                        value={
+                          addressLoading
+                            ? "Carregando endereço..."
+                            : values.addressName
+                        }
                         onChange={(e) => {
                           handleChange(e);
-                          setShowLocationSuggestions(e.target.value.length > 2);
+                          debouncedLocationSearch(e.target.value);
                         }}
                         onBlur={handleBlur}
-                        onFocus={() =>
-                          setShowLocationSuggestions(values.location.length > 2)
-                        }
                         placeholder="Enter full address"
+                        disabled={addressLoading}
                         className={cn(
                           "w-full pr-10",
-                          errors.location &&
-                            touched.location &&
+                          errors.addressName &&
+                            touched.addressName &&
                             "border-red-500"
                         )}
                       />
                       <MapPin className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
+
+                      {/* Location Suggestions */}
+                      {showLocationSuggestions &&
+                        locationSuggestions.length > 0 && (
+                          <div className="absolute z-50 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                            {locationSuggestions.map((location, index) => {
+                              const { road, suburb, city, state } = location;
+                              const formattedAddress = `${road || ""}${
+                                road && suburb ? ", " : ""
+                              }${suburb || ""}${
+                                (road || suburb) && city ? ", " : ""
+                              }${city}${state ? ` - ${state}` : ""}`;
+
+                              return (
+                                <div
+                                  key={index}
+                                  className="px-4 py-2 hover:bg-accent cursor-pointer text-sm"
+                                  onClick={() =>
+                                    handleLocationSelect(
+                                      location,
+                                      setFieldValue
+                                    )
+                                  }
+                                >
+                                  <div className="font-medium">
+                                    {location.displayName ||
+                                      location.name ||
+                                      "Unknown location"}
+                                  </div>
+                                  {city && (
+                                    <div className="text-xs text-muted-foreground">
+                                      {city}
+                                      {state ? `, ${state}` : ""}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                     </div>
-                    {errors.location && touched.location && (
-                      <p className="text-sm text-red-500">{errors.location}</p>
-                    )}
-                    {showLocationSuggestions && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-50 max-h-40 overflow-y-auto">
-                        {locationSuggestions
-                          .filter((suggestion) =>
-                            suggestion
-                              .toLowerCase()
-                              .includes(values.location.toLowerCase())
-                          )
-                          .map((suggestion, index) => (
-                            <div
-                              key={index}
-                              className="px-3 py-2 hover:bg-accent cursor-pointer text-sm text-foreground"
-                              onClick={() =>
-                                handleLocationSelect(suggestion, setFieldValue)
-                              }
-                            >
-                              {suggestion}
-                            </div>
-                          ))}
-                      </div>
+                    {errors.addressName && touched.addressName && (
+                      <p className="text-sm text-red-500">
+                        {errors.addressName}
+                      </p>
                     )}
                   </div>
+                </div>
+
+                {/* Address Complement */}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="addressComplement"
+                    className="text-sm font-medium text-foreground"
+                  >
+                    Address Complement
+                  </Label>
+                  <Input
+                    id="addressComplement"
+                    name="addressComplement"
+                    value={values.addressComplement}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    placeholder="Apartment, suite, etc. (optional)"
+                    className="w-full"
+                  />
                 </div>
 
                 {/* Settings */}
@@ -514,17 +705,34 @@ export const EventEditForm = ({
                   {/* Auto Accept Requests */}
                   <div className="flex items-center space-x-3">
                     <Checkbox
-                      id="autoAcceptRequests"
-                      checked={values.autoAcceptRequests}
+                      id="autoAccept"
+                      checked={values.autoAccept}
                       onCheckedChange={(checked) =>
-                        setFieldValue("autoAcceptRequests", !!checked)
+                        setFieldValue("autoAccept", !!checked)
                       }
                     />
                     <Label
-                      htmlFor="autoAcceptRequests"
+                      htmlFor="autoAccept"
                       className="text-sm text-foreground cursor-pointer"
                     >
                       Join requests will be accepted automatically
+                    </Label>
+                  </div>
+
+                  {/* Private Event */}
+                  <div className="flex items-center space-x-3">
+                    <Checkbox
+                      id="isPrivate"
+                      checked={values.isPrivate}
+                      onCheckedChange={(checked) =>
+                        setFieldValue("isPrivate", !!checked)
+                      }
+                    />
+                    <Label
+                      htmlFor="isPrivate"
+                      className="text-sm text-foreground cursor-pointer"
+                    >
+                      Private event (invite only)
                     </Label>
                   </div>
 
@@ -551,9 +759,19 @@ export const EventEditForm = ({
                   <Button
                     type="submit"
                     className="bg-primary hover:bg-primary/90"
+                    disabled={updateEventMutation.isPending}
                   >
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Changes
+                    {updateEventMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Changes
+                      </>
+                    )}
                   </Button>
                 </div>
               </CardContent>
@@ -561,6 +779,18 @@ export const EventEditForm = ({
           </form>
         )}
       </Formik>
+
+      <SuccessSnackbar
+        visible={showSuccess}
+        onDismiss={() => setShowSuccess(false)}
+        message="Event updated successfully!"
+      />
+
+      <ErrorSnackbar
+        visible={showError}
+        onDismiss={() => setShowError(false)}
+        message={errorMessage}
+      />
     </div>
   );
 };

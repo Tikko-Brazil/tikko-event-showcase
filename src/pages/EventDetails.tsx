@@ -210,7 +210,7 @@ export default function EventDetails() {
         {/* Mobile: Full width image with overlay */}
         <div className="absolute inset-0 md:hidden">
           <img
-            src={event.image_url || heroImage}
+            src={event.image || heroImage}
             alt={event.name}
             className="w-full h-full object-cover"
           />
@@ -221,7 +221,7 @@ export default function EventDetails() {
           <div className="h-full flex items-center justify-center">
             <div className="relative max-w-4xl w-full mx-8 h-[80%] rounded-2xl overflow-hidden shadow-2xl">
               <img
-                src={event.image_url || heroImage}
+                src={event.image || heroImage}
                 alt={event.name}
                 className="w-full h-full object-cover"
               />

@@ -117,74 +117,6 @@ const EventManagement = () => {
     isActive: true,
   });
 
-  // Edit Event states
-  const [editEventData, setEditEventData] = useState({
-    name: "My Music Showcase 2024",
-    image: "/placeholder.svg",
-    description:
-      "An intimate evening featuring emerging artists and local musicians.",
-    startDate: new Date(2024, 6, 10, 20, 0), // Jul 10, 2024, 8:00 PM
-    endDate: new Date(2024, 6, 10, 23, 30), // Jul 10, 2024, 11:30 PM
-    locationName: "The Underground",
-    location: "The Underground, NYC",
-    autoAcceptRequests: true,
-    isActive: true,
-  });
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>(editEventData.image);
-  const [startDateOpen, setStartDateOpen] = useState(false);
-  const [endDateOpen, setEndDateOpen] = useState(false);
-  const [locationSuggestions] = useState([
-    "The Underground, NYC",
-    "Madison Square Garden, NYC",
-    "Brooklyn Bowl, NYC",
-    "Terminal 5, NYC",
-  ]);
-  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleStartTimeChange = (field: "hours" | "minutes", value: number) => {
-    const newDate = new Date(editEventData.startDate);
-    if (field === "hours") {
-      newDate.setHours(value);
-    } else {
-      newDate.setMinutes(value);
-    }
-    setEditEventData((prev) => ({ ...prev, startDate: newDate }));
-  };
-
-  const handleEndTimeChange = (field: "hours" | "minutes", value: number) => {
-    const newDate = new Date(editEventData.endDate);
-    if (field === "hours") {
-      newDate.setHours(value);
-    } else {
-      newDate.setMinutes(value);
-    }
-    setEditEventData((prev) => ({ ...prev, endDate: newDate }));
-  };
-
-  const handleSaveEvent = () => {
-    // Handle save logic here
-    console.log("Saving event data:", editEventData);
-    // Show success message or handle the save
-  };
-
-  const handleLocationSelect = (location: string) => {
-    setEditEventData((prev) => ({ ...prev, location }));
-    setShowLocationSuggestions(false);
-  };
-
   if (eventLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -754,16 +686,7 @@ const EventManagement = () => {
     />
   );
 
-  const renderEditEvent = () => (
-    <EventEditForm
-      editEventData={editEventData}
-      onSave={(values) => {
-        console.log("Saving event data:", values);
-        // Handle save logic here
-      }}
-      locationSuggestions={locationSuggestions}
-    />
-  );
+  const renderEditEvent = () => <EventEditForm event={event} />;
 
   const renderPlaceholderSection = (title: string, description: string) => (
     <div className="text-center py-12">
