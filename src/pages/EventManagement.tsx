@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { 
+import React, { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { EventInfoHeader } from "@/components/EventInfoHeader";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
   ArrowLeft,
   Calendar,
   MapPin,
@@ -29,119 +36,148 @@ import {
   Save,
   Calendar as CalendarIcon,
   Clock,
-  Image as ImageIcon
-} from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+  Image as ImageIcon,
+} from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
-  Legend
-} from 'recharts';
-import { 
+  Legend,
+} from "recharts";
+import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-  PaginationEllipsis
-} from '@/components/ui/pagination';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Slider } from '@/components/ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
-import logoLight from '@/assets/logoLight.png';
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import logoLight from "@/assets/logoLight.png";
 
 const EventManagement = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [activeSection, setActiveSection] = useState('overview');
+  const [activeSection, setActiveSection] = useState("overview");
   const [mobileOverlay, setMobileOverlay] = useState<string | null>(null);
-  const [salesTimeWindow, setSalesTimeWindow] = useState('24h');
-  const [validationTimeWindow, setValidationTimeWindow] = useState('5h');
+  const [salesTimeWindow, setSalesTimeWindow] = useState("24h");
+  const [validationTimeWindow, setValidationTimeWindow] = useState("5h");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  
+
   // Coupon states
-  const [couponFilter, setCouponFilter] = useState('all');
-  const [couponSearch, setCouponSearch] = useState('');
+  const [couponFilter, setCouponFilter] = useState("all");
+  const [couponSearch, setCouponSearch] = useState("");
   const [couponPage, setCouponPage] = useState(1);
   const [editingCoupon, setEditingCoupon] = useState<any>(null);
   const [isCreateCouponOpen, setIsCreateCouponOpen] = useState(false);
   const [newCoupon, setNewCoupon] = useState({
-    code: '',
-    type: 'percentage',
+    code: "",
+    type: "percentage",
     value: 10,
     maxUsage: 100,
     isActive: true,
     isTicketSpecific: false,
-    ticketType: ''
+    ticketType: "",
   });
 
   // Participants states
-  const [participantFilter, setParticipantFilter] = useState('all');
-  const [participantSearch, setParticipantSearch] = useState('');
+  const [participantFilter, setParticipantFilter] = useState("all");
+  const [participantSearch, setParticipantSearch] = useState("");
   const [participantPage, setParticipantPage] = useState(1);
   const participantsPerPage = 6;
 
   // Join Requests states
-  const [requestFilter, setRequestFilter] = useState('all');
-  const [requestSearch, setRequestSearch] = useState('');
+  const [requestFilter, setRequestFilter] = useState("all");
+  const [requestSearch, setRequestSearch] = useState("");
   const [requestPage, setRequestPage] = useState(1);
   const requestsPerPage = 6;
 
   // Ticket Types states
-  const [ticketTypeFilter, setTicketTypeFilter] = useState('all');
-  const [ticketTypeSearch, setTicketTypeSearch] = useState('');
+  const [ticketTypeFilter, setTicketTypeFilter] = useState("all");
+  const [ticketTypeSearch, setTicketTypeSearch] = useState("");
   const [ticketTypePage, setTicketTypePage] = useState(1);
   const [editingTicketType, setEditingTicketType] = useState<any>(null);
   const [isCreateTicketTypeOpen, setIsCreateTicketTypeOpen] = useState(false);
   const [newTicketType, setNewTicketType] = useState({
-    name: '',
-    gender: 'all',
+    name: "",
+    gender: "all",
     value: 50,
-    isActive: true
+    isActive: true,
   });
 
   // Edit Event states
   const [editEventData, setEditEventData] = useState({
-    name: 'My Music Showcase 2024',
-    image: '/placeholder.svg',
-    description: 'An intimate evening featuring emerging artists and local musicians.',
+    name: "My Music Showcase 2024",
+    image: "/placeholder.svg",
+    description:
+      "An intimate evening featuring emerging artists and local musicians.",
     startDate: new Date(2024, 6, 10, 20, 0), // Jul 10, 2024, 8:00 PM
     endDate: new Date(2024, 6, 10, 23, 30), // Jul 10, 2024, 11:30 PM
-    locationName: 'The Underground',
-    location: 'The Underground, NYC',
+    locationName: "The Underground",
+    location: "The Underground, NYC",
     autoAcceptRequests: true,
-    isActive: true
+    isActive: true,
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(editEventData.image);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
   const [locationSuggestions] = useState([
-    'The Underground, NYC',
-    'Madison Square Garden, NYC',
-    'Brooklyn Bowl, NYC',
-    'Terminal 5, NYC'
+    "The Underground, NYC",
+    "Madison Square Garden, NYC",
+    "Brooklyn Bowl, NYC",
+    "Terminal 5, NYC",
   ]);
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
 
@@ -157,246 +193,247 @@ const EventManagement = () => {
     }
   };
 
-  const handleStartTimeChange = (field: 'hours' | 'minutes', value: number) => {
+  const handleStartTimeChange = (field: "hours" | "minutes", value: number) => {
     const newDate = new Date(editEventData.startDate);
-    if (field === 'hours') {
+    if (field === "hours") {
       newDate.setHours(value);
     } else {
       newDate.setMinutes(value);
     }
-    setEditEventData(prev => ({ ...prev, startDate: newDate }));
+    setEditEventData((prev) => ({ ...prev, startDate: newDate }));
   };
 
-  const handleEndTimeChange = (field: 'hours' | 'minutes', value: number) => {
+  const handleEndTimeChange = (field: "hours" | "minutes", value: number) => {
     const newDate = new Date(editEventData.endDate);
-    if (field === 'hours') {
+    if (field === "hours") {
       newDate.setHours(value);
     } else {
       newDate.setMinutes(value);
     }
-    setEditEventData(prev => ({ ...prev, endDate: newDate }));
+    setEditEventData((prev) => ({ ...prev, endDate: newDate }));
   };
 
   const handleSaveEvent = () => {
     // Handle save logic here
-    console.log('Saving event data:', editEventData);
+    console.log("Saving event data:", editEventData);
     // Show success message or handle the save
   };
 
   const handleLocationSelect = (location: string) => {
-    setEditEventData(prev => ({ ...prev, location }));
+    setEditEventData((prev) => ({ ...prev, location }));
     setShowLocationSuggestions(false);
   };
 
   // Mock event data
   const eventData = {
     id: eventId,
-    title: 'My Music Showcase 2024',
-    date: 'Jul 10, 2024',
-    time: '8:00 PM',
-    location: 'The Underground, NYC',
-    status: 'upcoming',
-    description: 'An intimate evening featuring emerging artists and local musicians.',
+    title: "My Music Showcase 2024",
+    date: "Jul 10, 2024",
+    time: "8:00 PM",
+    location: "The Underground, NYC",
+    status: "upcoming",
+    description:
+      "An intimate evening featuring emerging artists and local musicians.",
     attendees: 45,
     capacity: 100,
     revenue: 2250,
     ticketsSold: 45,
-    ticketsAvailable: 55
+    ticketsAvailable: 55,
   };
 
   // Mock participants data
   const participantsData = [
     {
       id: 1,
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@email.com',
-      instagram: '@sarah_j',
-      ticketType: 'VIP',
+      name: "Sarah Johnson",
+      email: "sarah.johnson@email.com",
+      instagram: "@sarah_j",
+      ticketType: "VIP",
       paidValue: 80,
-      coupon: 'EARLY20',
+      coupon: "EARLY20",
       validated: true,
-      status: 'approved'
+      status: "approved",
     },
     {
       id: 2,
-      name: 'Mike Chen',
-      email: 'mike.chen@gmail.com',
-      instagram: '@mike_chen',
-      ticketType: 'General',
+      name: "Mike Chen",
+      email: "mike.chen@gmail.com",
+      instagram: "@mike_chen",
+      ticketType: "General",
       paidValue: 50,
       coupon: null,
       validated: false,
-      status: 'approved'
+      status: "approved",
     },
     {
       id: 3,
-      name: 'Emily Davis',
-      email: 'emily.davis@yahoo.com',
-      instagram: '@emily_d',
-      ticketType: 'Student',
+      name: "Emily Davis",
+      email: "emily.davis@yahoo.com",
+      instagram: "@emily_d",
+      ticketType: "Student",
       paidValue: 30,
-      coupon: 'STUDENT50',
+      coupon: "STUDENT50",
       validated: true,
-      status: 'approved'
+      status: "approved",
     },
     {
       id: 4,
-      name: 'Alex Rodriguez',
-      email: 'alex.rodriguez@hotmail.com',
-      instagram: '@alex_rod',
-      ticketType: 'VIP',
+      name: "Alex Rodriguez",
+      email: "alex.rodriguez@hotmail.com",
+      instagram: "@alex_rod",
+      ticketType: "VIP",
       paidValue: 80,
       coupon: null,
       validated: false,
-      status: 'rejected'
+      status: "rejected",
     },
     {
       id: 5,
-      name: 'Jessica Wang',
-      email: 'jessica.wang@outlook.com',
-      instagram: '@jess_wang',
-      ticketType: 'General',
+      name: "Jessica Wang",
+      email: "jessica.wang@outlook.com",
+      instagram: "@jess_wang",
+      ticketType: "General",
       paidValue: 45,
-      coupon: 'FRIEND10',
+      coupon: "FRIEND10",
       validated: true,
-      status: 'approved'
+      status: "approved",
     },
     {
       id: 6,
-      name: 'David Smith',
-      email: 'david.smith@email.com',
-      instagram: '@david_s',
-      ticketType: 'Student',
+      name: "David Smith",
+      email: "david.smith@email.com",
+      instagram: "@david_s",
+      ticketType: "Student",
       paidValue: 30,
-      coupon: 'STUDENT50',
+      coupon: "STUDENT50",
       validated: false,
-      status: 'approved'
+      status: "approved",
     },
     {
       id: 7,
-      name: 'Maria Garcia',
-      email: 'maria.garcia@gmail.com',
-      instagram: '@maria_g',
-      ticketType: 'VIP',
+      name: "Maria Garcia",
+      email: "maria.garcia@gmail.com",
+      instagram: "@maria_g",
+      ticketType: "VIP",
       paidValue: 80,
       coupon: null,
       validated: true,
-      status: 'approved'
+      status: "approved",
     },
     {
       id: 8,
-      name: 'James Wilson',
-      email: 'james.wilson@yahoo.com',
-      instagram: '@james_w',
-      ticketType: 'General',
+      name: "James Wilson",
+      email: "james.wilson@yahoo.com",
+      instagram: "@james_w",
+      ticketType: "General",
       paidValue: 50,
       coupon: null,
       validated: false,
-      status: 'rejected'
+      status: "rejected",
     },
     {
       id: 9,
-      name: 'Lisa Brown',
-      email: 'lisa.brown@hotmail.com',
-      instagram: '@lisa_b',
-      ticketType: 'Student',
+      name: "Lisa Brown",
+      email: "lisa.brown@hotmail.com",
+      instagram: "@lisa_b",
+      ticketType: "Student",
       paidValue: 25,
-      coupon: 'EARLY20',
+      coupon: "EARLY20",
       validated: true,
-      status: 'approved'
+      status: "approved",
     },
     {
       id: 10,
-      name: 'Tom Anderson',
-      email: 'tom.anderson@outlook.com',
-      instagram: '@tom_a',
-      ticketType: 'VIP',
+      name: "Tom Anderson",
+      email: "tom.anderson@outlook.com",
+      instagram: "@tom_a",
+      ticketType: "VIP",
       paidValue: 80,
       coupon: null,
       validated: false,
-      status: 'approved'
-    }
+      status: "approved",
+    },
   ];
 
   // Mock join requests data
   const joinRequestsData = [
     {
       id: 11,
-      name: 'Anna Martinez',
-      email: 'anna.martinez@email.com',
-      instagram: '@anna_m',
-      ticketType: 'VIP',
+      name: "Anna Martinez",
+      email: "anna.martinez@email.com",
+      instagram: "@anna_m",
+      ticketType: "VIP",
       paidValue: 80,
       coupon: null,
       validated: false,
-      status: 'pending'
+      status: "pending",
     },
     {
       id: 12,
-      name: 'Chris Johnson',
-      email: 'chris.johnson@gmail.com',
-      instagram: '@chris_j',
-      ticketType: 'General',
+      name: "Chris Johnson",
+      email: "chris.johnson@gmail.com",
+      instagram: "@chris_j",
+      ticketType: "General",
       paidValue: 50,
-      coupon: 'FRIEND10',
+      coupon: "FRIEND10",
       validated: false,
-      status: 'pending'
+      status: "pending",
     },
     {
       id: 13,
-      name: 'Sofia Rodriguez',
-      email: 'sofia.rodriguez@yahoo.com',
-      instagram: '@sofia_r',
-      ticketType: 'Student',
+      name: "Sofia Rodriguez",
+      email: "sofia.rodriguez@yahoo.com",
+      instagram: "@sofia_r",
+      ticketType: "Student",
       paidValue: 30,
-      coupon: 'STUDENT50',
+      coupon: "STUDENT50",
       validated: false,
-      status: 'pending'
+      status: "pending",
     },
     {
       id: 14,
-      name: 'Mark Thompson',
-      email: 'mark.thompson@hotmail.com',
-      instagram: '@mark_t',
-      ticketType: 'VIP',
+      name: "Mark Thompson",
+      email: "mark.thompson@hotmail.com",
+      instagram: "@mark_t",
+      ticketType: "VIP",
       paidValue: 80,
       coupon: null,
       validated: false,
-      status: 'pending'
+      status: "pending",
     },
     {
       id: 15,
-      name: 'Elena Popov',
-      email: 'elena.popov@outlook.com',
-      instagram: '@elena_p',
-      ticketType: 'General',
+      name: "Elena Popov",
+      email: "elena.popov@outlook.com",
+      instagram: "@elena_p",
+      ticketType: "General",
       paidValue: 45,
-      coupon: 'EARLY20',
+      coupon: "EARLY20",
       validated: false,
-      status: 'pending'
+      status: "pending",
     },
     {
       id: 16,
-      name: 'Ryan Lee',
-      email: 'ryan.lee@email.com',
-      instagram: '@ryan_l',
-      ticketType: 'Student',
+      name: "Ryan Lee",
+      email: "ryan.lee@email.com",
+      instagram: "@ryan_l",
+      ticketType: "Student",
       paidValue: 25,
-      coupon: 'STUDENT50',
+      coupon: "STUDENT50",
       validated: false,
-      status: 'pending'
-    }
+      status: "pending",
+    },
   ];
 
   const managementSections = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'edit', label: 'Edit Event', icon: Edit },
-    { id: 'analytics', label: 'Analytics', icon: TrendingUp },
-    { id: 'participants', label: 'Participants', icon: Users },
-    { id: 'tickets', label: 'Ticket Types', icon: Ticket },
-    { id: 'coupons', label: 'Coupons', icon: Gift },
-    { id: 'validate', label: 'Validate Tickets', icon: CheckCircle2 },
-    { id: 'requests', label: 'Join Requests', icon: UserPlus }
+    { id: "overview", label: "Overview", icon: BarChart3 },
+    { id: "edit", label: "Edit Event", icon: Edit },
+    { id: "analytics", label: "Analytics", icon: TrendingUp },
+    { id: "participants", label: "Participants", icon: Users },
+    { id: "tickets", label: "Ticket Types", icon: Ticket },
+    { id: "coupons", label: "Coupons", icon: Gift },
+    { id: "validate", label: "Validate Tickets", icon: CheckCircle2 },
+    { id: "requests", label: "Join Requests", icon: UserPlus },
   ];
 
   const renderOverview = () => (
@@ -426,9 +463,7 @@ const EventManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${eventData.revenue}</div>
-            <p className="text-xs text-muted-foreground">
-              +12% from last week
-            </p>
+            <p className="text-xs text-muted-foreground">+12% from last week</p>
           </CardContent>
         </Card>
 
@@ -456,9 +491,7 @@ const EventManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">78%</div>
-            <p className="text-xs text-muted-foreground">
-              +5% increase
-            </p>
+            <p className="text-xs text-muted-foreground">+5% increase</p>
           </CardContent>
         </Card>
       </div>
@@ -470,10 +503,26 @@ const EventManagement = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {[
-              { action: 'Ticket purchased', user: 'Sarah Johnson', time: '2 minutes ago' },
-              { action: 'Event shared', user: 'Mike Chen', time: '15 minutes ago' },
-              { action: 'Ticket purchased', user: 'Emily Davis', time: '1 hour ago' },
-              { action: 'Join request', user: 'Alex Rodriguez', time: '2 hours ago' }
+              {
+                action: "Ticket purchased",
+                user: "Sarah Johnson",
+                time: "2 minutes ago",
+              },
+              {
+                action: "Event shared",
+                user: "Mike Chen",
+                time: "15 minutes ago",
+              },
+              {
+                action: "Ticket purchased",
+                user: "Emily Davis",
+                time: "1 hour ago",
+              },
+              {
+                action: "Join request",
+                user: "Alex Rodriguez",
+                time: "2 hours ago",
+              },
             ].map((activity, i) => (
               <div key={i} className="flex items-center gap-3">
                 <Avatar className="h-8 w-8">
@@ -481,7 +530,9 @@ const EventManagement = () => {
                 </Avatar>
                 <div className="flex-1">
                   <p className="text-sm font-medium">{activity.action}</p>
-                  <p className="text-xs text-muted-foreground">{activity.user} • {activity.time}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {activity.user} • {activity.time}
+                  </p>
                 </div>
               </div>
             ))}
@@ -531,136 +582,144 @@ const EventManagement = () => {
       approvedRequests: 45,
       rejectedRequests: 8,
       freeTickets: 15,
-      paidTickets: 135
+      paidTickets: 135,
     };
 
     // Sales data based on selected time window
     const salesDataSets = {
-      '1h': [
-        { time: '60m', tickets: 1 },
-        { time: '50m', tickets: 0 },
-        { time: '40m', tickets: 2 },
-        { time: '30m', tickets: 1 },
-        { time: '20m', tickets: 3 },
-        { time: '10m', tickets: 2 }
+      "1h": [
+        { time: "60m", tickets: 1 },
+        { time: "50m", tickets: 0 },
+        { time: "40m", tickets: 2 },
+        { time: "30m", tickets: 1 },
+        { time: "20m", tickets: 3 },
+        { time: "10m", tickets: 2 },
       ],
-      '3h': [
-        { time: '3h', tickets: 5 },
-        { time: '2.5h', tickets: 8 },
-        { time: '2h', tickets: 12 },
-        { time: '1.5h', tickets: 15 },
-        { time: '1h', tickets: 18 },
-        { time: '30m', tickets: 9 }
+      "3h": [
+        { time: "3h", tickets: 5 },
+        { time: "2.5h", tickets: 8 },
+        { time: "2h", tickets: 12 },
+        { time: "1.5h", tickets: 15 },
+        { time: "1h", tickets: 18 },
+        { time: "30m", tickets: 9 },
       ],
-      '6h': [
-        { time: '6h', tickets: 8 },
-        { time: '5h', tickets: 12 },
-        { time: '4h', tickets: 15 },
-        { time: '3h', tickets: 22 },
-        { time: '2h', tickets: 18 },
-        { time: '1h', tickets: 25 }
+      "6h": [
+        { time: "6h", tickets: 8 },
+        { time: "5h", tickets: 12 },
+        { time: "4h", tickets: 15 },
+        { time: "3h", tickets: 22 },
+        { time: "2h", tickets: 18 },
+        { time: "1h", tickets: 25 },
       ],
-      '12h': [
-        { time: '12h', tickets: 15 },
-        { time: '10h', tickets: 22 },
-        { time: '8h', tickets: 28 },
-        { time: '6h', tickets: 35 },
-        { time: '4h', tickets: 42 },
-        { time: '2h', tickets: 48 }
+      "12h": [
+        { time: "12h", tickets: 15 },
+        { time: "10h", tickets: 22 },
+        { time: "8h", tickets: 28 },
+        { time: "6h", tickets: 35 },
+        { time: "4h", tickets: 42 },
+        { time: "2h", tickets: 48 },
       ],
-      '24h': [
-        { time: '24h', tickets: 25 },
-        { time: '20h', tickets: 35 },
-        { time: '16h', tickets: 42 },
-        { time: '12h', tickets: 55 },
-        { time: '8h', tickets: 68 },
-        { time: '4h', tickets: 75 }
-      ]
+      "24h": [
+        { time: "24h", tickets: 25 },
+        { time: "20h", tickets: 35 },
+        { time: "16h", tickets: 42 },
+        { time: "12h", tickets: 55 },
+        { time: "8h", tickets: 68 },
+        { time: "4h", tickets: 75 },
+      ],
     };
 
     // Validation data based on selected time window
     const validationDataSets = {
-      '15m': [
-        { time: '15m', validated: 5 },
-        { time: '12m', validated: 8 },
-        { time: '9m', validated: 12 },
-        { time: '6m', validated: 15 },
-        { time: '3m', validated: 18 }
+      "15m": [
+        { time: "15m", validated: 5 },
+        { time: "12m", validated: 8 },
+        { time: "9m", validated: 12 },
+        { time: "6m", validated: 15 },
+        { time: "3m", validated: 18 },
       ],
-      '30m': [
-        { time: '30m', validated: 12 },
-        { time: '25m', validated: 18 },
-        { time: '20m', validated: 25 },
-        { time: '15m', validated: 32 },
-        { time: '10m', validated: 28 },
-        { time: '5m', validated: 35 }
+      "30m": [
+        { time: "30m", validated: 12 },
+        { time: "25m", validated: 18 },
+        { time: "20m", validated: 25 },
+        { time: "15m", validated: 32 },
+        { time: "10m", validated: 28 },
+        { time: "5m", validated: 35 },
       ],
-      '1h': [
-        { time: '60m', validated: 15 },
-        { time: '50m', validated: 22 },
-        { time: '40m', validated: 28 },
-        { time: '30m', validated: 35 },
-        { time: '20m', validated: 41 },
-        { time: '10m', validated: 45 }
+      "1h": [
+        { time: "60m", validated: 15 },
+        { time: "50m", validated: 22 },
+        { time: "40m", validated: 28 },
+        { time: "30m", validated: 35 },
+        { time: "20m", validated: 41 },
+        { time: "10m", validated: 45 },
       ],
-      '2h': [
-        { time: '2h', validated: 25 },
-        { time: '100m', validated: 32 },
-        { time: '80m', validated: 38 },
-        { time: '60m', validated: 45 },
-        { time: '40m', validated: 52 },
-        { time: '20m', validated: 58 }
+      "2h": [
+        { time: "2h", validated: 25 },
+        { time: "100m", validated: 32 },
+        { time: "80m", validated: 38 },
+        { time: "60m", validated: 45 },
+        { time: "40m", validated: 52 },
+        { time: "20m", validated: 58 },
       ],
-      '5h': [
-        { time: '5h', validated: 35 },
-        { time: '4h', validated: 45 },
-        { time: '3h', validated: 55 },
-        { time: '2h', validated: 65 },
-        { time: '1h', validated: 75 },
-        { time: '30m', validated: 89 }
-      ]
+      "5h": [
+        { time: "5h", validated: 35 },
+        { time: "4h", validated: 45 },
+        { time: "3h", validated: 55 },
+        { time: "2h", validated: 65 },
+        { time: "1h", validated: 75 },
+        { time: "30m", validated: 89 },
+      ],
     };
 
     const genderData = [
-      { name: 'Male', value: 55, count: 82, fill: 'hsl(var(--primary))' },
-      { name: 'Female', value: 45, count: 68, fill: 'hsl(var(--tikko-orange))' }
+      { name: "Male", value: 55, count: 82, fill: "hsl(var(--primary))" },
+      {
+        name: "Female",
+        value: 45,
+        count: 68,
+        fill: "hsl(var(--tikko-orange))",
+      },
     ];
 
     const ageDistribution = [
-      { age: '0-17', count: 5 },
-      { age: '18-24', count: 45 },
-      { age: '25-34', count: 62 },
-      { age: '35-44', count: 28 },
-      { age: '45-54', count: 8 },
-      { age: '55+', count: 2 }
+      { age: "0-17", count: 5 },
+      { age: "18-24", count: 45 },
+      { age: "25-34", count: 62 },
+      { age: "35-44", count: 28 },
+      { age: "45-54", count: 8 },
+      { age: "55+", count: 2 },
     ];
 
     const allTicketTypes = [
-      { type: 'Early Bird', lot: 'Lot 1', amount: 50, revenue: 2000 },
-      { type: 'Regular', lot: 'Lot 2', amount: 80, revenue: 4000 },
-      { type: 'VIP', lot: 'Lot 3', amount: 20, revenue: 1500 },
-      { type: 'Student', lot: 'Lot 4', amount: 30, revenue: 900 },
-      { type: 'Group', lot: 'Lot 5', amount: 25, revenue: 1250 },
-      { type: 'Last Minute', lot: 'Lot 6', amount: 15, revenue: 900 },
-      { type: 'Premium', lot: 'Lot 7', amount: 10, revenue: 800 },
-      { type: 'Corporate', lot: 'Lot 8', amount: 12, revenue: 960 }
+      { type: "Early Bird", lot: "Lot 1", amount: 50, revenue: 2000 },
+      { type: "Regular", lot: "Lot 2", amount: 80, revenue: 4000 },
+      { type: "VIP", lot: "Lot 3", amount: 20, revenue: 1500 },
+      { type: "Student", lot: "Lot 4", amount: 30, revenue: 900 },
+      { type: "Group", lot: "Lot 5", amount: 25, revenue: 1250 },
+      { type: "Last Minute", lot: "Lot 6", amount: 15, revenue: 900 },
+      { type: "Premium", lot: "Lot 7", amount: 10, revenue: 800 },
+      { type: "Corporate", lot: "Lot 8", amount: 12, revenue: 960 },
     ];
 
     // Pagination logic
     const totalPages = Math.ceil(allTicketTypes.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const ticketTypes = allTicketTypes.slice(startIndex, startIndex + itemsPerPage);
+    const ticketTypes = allTicketTypes.slice(
+      startIndex,
+      startIndex + itemsPerPage
+    );
 
-    const TimeWindowSelector = ({ 
-      options, 
-      selected, 
-      onSelect, 
-      className = "" 
-    }: { 
-      options: string[], 
-      selected: string, 
-      onSelect: (value: string) => void, 
-      className?: string 
+    const TimeWindowSelector = ({
+      options,
+      selected,
+      onSelect,
+      className = "",
+    }: {
+      options: string[];
+      selected: string;
+      onSelect: (value: string) => void;
+      className?: string;
     }) => (
       <div className={`flex bg-muted rounded-lg p-1 ${className}`}>
         {options.map((option) => (
@@ -668,9 +727,9 @@ const EventManagement = () => {
             key={option}
             onClick={() => onSelect(option)}
             className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-              selected === option 
-                ? 'bg-background text-foreground shadow-sm' 
-                : 'text-muted-foreground hover:text-foreground'
+              selected === option
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {option}
@@ -688,36 +747,48 @@ const EventManagement = () => {
               <CardTitle className="text-sm">Total Tickets Issued</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{analyticsData.totalTickets}</div>
+              <div className="text-2xl font-bold">
+                {analyticsData.totalTickets}
+              </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Liquid Revenue</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${analyticsData.liquidRevenue.toLocaleString()}</div>
+              <div className="text-2xl font-bold">
+                ${analyticsData.liquidRevenue.toLocaleString()}
+              </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Validated Tickets</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{analyticsData.validatedTickets}</div>
-              <p className="text-xs text-muted-foreground">{analyticsData.validatedPercentage}% of total</p>
+              <div className="text-2xl font-bold">
+                {analyticsData.validatedTickets}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {analyticsData.validatedPercentage}% of total
+              </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Conversion Rate</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{analyticsData.conversionRate}%</div>
-              <p className="text-xs text-muted-foreground">{analyticsData.pageVisits} page visits</p>
+              <div className="text-2xl font-bold">
+                {analyticsData.conversionRate}%
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {analyticsData.pageVisits} page visits
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -729,8 +800,8 @@ const EventManagement = () => {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle>Tickets Sold</CardTitle>
-                <TimeWindowSelector 
-                  options={['1h', '3h', '6h', '12h', '24h']}
+                <TimeWindowSelector
+                  options={["1h", "3h", "6h", "12h", "24h"]}
                   selected={salesTimeWindow}
                   onSelect={setSalesTimeWindow}
                 />
@@ -739,30 +810,39 @@ const EventManagement = () => {
             <CardContent>
               <div className="h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={salesDataSets[salesTimeWindow as keyof typeof salesDataSets]}>
-                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                    <XAxis 
-                      dataKey="time" 
+                  <BarChart
+                    data={
+                      salesDataSets[
+                        salesTimeWindow as keyof typeof salesDataSets
+                      ]
+                    }
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="opacity-30"
+                    />
+                    <XAxis
+                      dataKey="time"
                       tick={{ fontSize: 12 }}
                       tickLine={false}
                       axisLine={false}
                     />
-                    <YAxis 
+                    <YAxis
                       tick={{ fontSize: 12 }}
                       tickLine={false}
                       axisLine={false}
                     />
-                    <Tooltip 
-                      labelStyle={{ color: 'hsl(var(--foreground))' }}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--popover))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
+                    <Tooltip
+                      labelStyle={{ color: "hsl(var(--foreground))" }}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--popover))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
                       }}
                     />
-                    <Bar 
-                      dataKey="tickets" 
-                      fill="hsl(var(--primary))" 
+                    <Bar
+                      dataKey="tickets"
+                      fill="hsl(var(--primary))"
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
@@ -776,8 +856,8 @@ const EventManagement = () => {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
                 <CardTitle>Ticket Validations</CardTitle>
-                <TimeWindowSelector 
-                  options={['15m', '30m', '1h', '2h', '5h']}
+                <TimeWindowSelector
+                  options={["15m", "30m", "1h", "2h", "5h"]}
                   selected={validationTimeWindow}
                   onSelect={setValidationTimeWindow}
                 />
@@ -786,30 +866,39 @@ const EventManagement = () => {
             <CardContent>
               <div className="h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={validationDataSets[validationTimeWindow as keyof typeof validationDataSets]}>
-                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                    <XAxis 
-                      dataKey="time" 
+                  <BarChart
+                    data={
+                      validationDataSets[
+                        validationTimeWindow as keyof typeof validationDataSets
+                      ]
+                    }
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="opacity-30"
+                    />
+                    <XAxis
+                      dataKey="time"
                       tick={{ fontSize: 12 }}
                       tickLine={false}
                       axisLine={false}
                     />
-                    <YAxis 
+                    <YAxis
                       tick={{ fontSize: 12 }}
                       tickLine={false}
                       axisLine={false}
                     />
-                    <Tooltip 
-                      labelStyle={{ color: 'hsl(var(--foreground))' }}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--popover))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
+                    <Tooltip
+                      labelStyle={{ color: "hsl(var(--foreground))" }}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--popover))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
                       }}
                     />
-                    <Bar 
-                      dataKey="validated" 
-                      fill="hsl(var(--primary))" 
+                    <Bar
+                      dataKey="validated"
+                      fill="hsl(var(--primary))"
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
@@ -843,40 +932,51 @@ const EventManagement = () => {
                         <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
-                    <Tooltip 
-                      formatter={(value, name, props) => [`${props.payload.count} people (${value}%)`, name]}
-                      labelStyle={{ color: 'hsl(var(--foreground))' }}
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--popover))', 
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                        color: 'hsl(var(--foreground))'
+                    <Tooltip
+                      formatter={(value, name, props) => [
+                        `${props.payload.count} people (${value}%)`,
+                        name,
+                      ]}
+                      labelStyle={{ color: "hsl(var(--foreground))" }}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--popover))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                        color: "hsl(var(--foreground))",
                       }}
                     />
-                    <Legend 
-                      verticalAlign="bottom" 
+                    <Legend
+                      verticalAlign="bottom"
                       height={36}
                       iconType="circle"
-                      wrapperStyle={{ fontSize: '12px', color: 'hsl(var(--foreground))' }}
+                      wrapperStyle={{
+                        fontSize: "12px",
+                        color: "hsl(var(--foreground))",
+                      }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              
+
               {/* Gender Statistics */}
               <div className="space-y-3 text-sm">
                 {genderData.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex items-center gap-2">
-                      <div 
-                        className="h-3 w-3 rounded-full" 
+                      <div
+                        className="h-3 w-3 rounded-full"
                         style={{ backgroundColor: item.fill }}
                       />
                       <span className="text-muted-foreground">{item.name}</span>
                     </div>
                     <div className="text-right">
                       <div className="font-medium">{item.count} people</div>
-                      <div className="text-xs text-muted-foreground">{item.value}%</div>
+                      <div className="text-xs text-muted-foreground">
+                        {item.value}%
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -891,16 +991,28 @@ const EventManagement = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Average Age</span>
-                <span className="text-sm font-medium">{analyticsData.avgAge}</span>
+                <span className="text-sm text-muted-foreground">
+                  Average Age
+                </span>
+                <span className="text-sm font-medium">
+                  {analyticsData.avgAge}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Avg Male Age</span>
-                <span className="text-sm font-medium">{analyticsData.avgMaleAge}</span>
+                <span className="text-sm text-muted-foreground">
+                  Avg Male Age
+                </span>
+                <span className="text-sm font-medium">
+                  {analyticsData.avgMaleAge}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Avg Female Age</span>
-                <span className="text-sm font-medium">{analyticsData.avgFemaleAge}</span>
+                <span className="text-sm text-muted-foreground">
+                  Avg Female Age
+                </span>
+                <span className="text-sm font-medium">
+                  {analyticsData.avgFemaleAge}
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -917,11 +1029,15 @@ const EventManagement = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Approved</span>
-                <Badge variant="default">{analyticsData.approvedRequests}</Badge>
+                <Badge variant="default">
+                  {analyticsData.approvedRequests}
+                </Badge>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Rejected</span>
-                <Badge variant="destructive">{analyticsData.rejectedRequests}</Badge>
+                <Badge variant="destructive">
+                  {analyticsData.rejectedRequests}
+                </Badge>
               </div>
             </CardContent>
           </Card>
@@ -937,28 +1053,28 @@ const EventManagement = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={ageDistribution}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis 
-                    dataKey="age" 
+                  <XAxis
+                    dataKey="age"
                     tick={{ fontSize: 12 }}
                     tickLine={false}
                     axisLine={false}
                   />
-                  <YAxis 
+                  <YAxis
                     tick={{ fontSize: 12 }}
                     tickLine={false}
                     axisLine={false}
                   />
-                  <Tooltip 
-                    labelStyle={{ color: 'hsl(var(--foreground))' }}
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--popover))', 
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
+                  <Tooltip
+                    labelStyle={{ color: "hsl(var(--foreground))" }}
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--popover))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px",
                     }}
                   />
-                  <Bar 
-                    dataKey="count" 
-                    fill="hsl(var(--chart-3))" 
+                  <Bar
+                    dataKey="count"
+                    fill="hsl(var(--chart-3))"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
@@ -972,7 +1088,9 @@ const EventManagement = () => {
           <CardHeader>
             <CardTitle>Tickets by Type</CardTitle>
             <CardDescription>
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, allTicketTypes.length)} of {allTicketTypes.length} ticket types
+              Showing {startIndex + 1} to{" "}
+              {Math.min(startIndex + itemsPerPage, allTicketTypes.length)} of{" "}
+              {allTicketTypes.length} ticket types
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -984,28 +1102,39 @@ const EventManagement = () => {
                 <span className="col-span-3">Amount</span>
                 <span className="col-span-3">Revenue</span>
               </div>
-              
+
               <div className="space-y-2">
                 {ticketTypes.map((ticket, i) => (
-                  <div key={i} className="grid grid-cols-12 gap-2 md:gap-4 text-sm py-3 border-b border-border/50 last:border-0 items-center">
+                  <div
+                    key={i}
+                    className="grid grid-cols-12 gap-2 md:gap-4 text-sm py-3 border-b border-border/50 last:border-0 items-center"
+                  >
                     {/* Type - Takes majority of width on mobile */}
                     <div className="col-span-5 md:col-span-4">
-                      <span className="font-medium text-xs md:text-sm">{ticket.type}</span>
+                      <span className="font-medium text-xs md:text-sm">
+                        {ticket.type}
+                      </span>
                     </div>
-                    
+
                     {/* Lot */}
                     <div className="col-span-2 md:col-span-2">
-                      <span className="text-xs md:text-sm text-muted-foreground">{ticket.lot}</span>
+                      <span className="text-xs md:text-sm text-muted-foreground">
+                        {ticket.lot}
+                      </span>
                     </div>
-                    
+
                     {/* Amount */}
                     <div className="col-span-2 md:col-span-3">
-                      <span className="text-xs md:text-sm">{ticket.amount}</span>
+                      <span className="text-xs md:text-sm">
+                        {ticket.amount}
+                      </span>
                     </div>
-                    
+
                     {/* Revenue */}
                     <div className="col-span-3 md:col-span-3">
-                      <span className="text-xs md:text-sm font-medium">${ticket.revenue}</span>
+                      <span className="text-xs md:text-sm font-medium">
+                        ${ticket.revenue}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -1015,9 +1144,11 @@ const EventManagement = () => {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between pt-4">
                   <p className="text-xs md:text-sm text-muted-foreground">
-                    {startIndex + 1}-{Math.min(startIndex + itemsPerPage, allTicketTypes.length)} of {allTicketTypes.length}
+                    {startIndex + 1}-
+                    {Math.min(startIndex + itemsPerPage, allTicketTypes.length)}{" "}
+                    of {allTicketTypes.length}
                   </p>
-                  
+
                   <div className="flex items-center gap-2">
                     {/* Desktop pagination with labels */}
                     <div className="hidden md:flex items-center gap-2">
@@ -1036,7 +1167,8 @@ const EventManagement = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                          if (currentPage < totalPages)
+                            setCurrentPage(currentPage + 1);
                         }}
                         disabled={currentPage >= totalPages}
                       >
@@ -1044,7 +1176,7 @@ const EventManagement = () => {
                         <ChevronRight className="h-4 w-4 ml-1" />
                       </Button>
                     </div>
-                    
+
                     {/* Mobile pagination with icons only */}
                     <div className="flex md:hidden items-center gap-2">
                       <Button
@@ -1062,7 +1194,8 @@ const EventManagement = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                          if (currentPage < totalPages)
+                            setCurrentPage(currentPage + 1);
                         }}
                         disabled={currentPage >= totalPages}
                         className="h-8 w-8 p-0"
@@ -1090,14 +1223,18 @@ const EventManagement = () => {
                     <div className="h-3 w-3 rounded-full bg-green-500" />
                     <span className="text-sm">Paid Tickets</span>
                   </div>
-                  <span className="text-sm font-medium">{analyticsData.paidTickets}</span>
+                  <span className="text-sm font-medium">
+                    {analyticsData.paidTickets}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full bg-blue-500" />
                     <span className="text-sm">Free Tickets</span>
                   </div>
-                  <span className="text-sm font-medium">{analyticsData.freeTickets}</span>
+                  <span className="text-sm font-medium">
+                    {analyticsData.freeTickets}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -1125,44 +1262,195 @@ const EventManagement = () => {
 
   // Mock coupons data
   const allCoupons = [
-    { id: 1, code: 'EARLY20', type: 'percentage', value: 20, usage: 45, maxUsage: 100, isActive: true, isTicketSpecific: false, ticketType: null },
-    { id: 2, code: 'STUDENT50', type: 'fixed', value: 50, usage: 23, maxUsage: 50, isActive: true, isTicketSpecific: true, ticketType: 'Student' },
-    { id: 3, code: 'NEWUSER15', type: 'percentage', value: 15, usage: 67, maxUsage: 200, isActive: true, isTicketSpecific: false, ticketType: null },
-    { id: 4, code: 'VIP100', type: 'fixed', value: 100, usage: 12, maxUsage: 25, isActive: false, isTicketSpecific: true, ticketType: 'VIP' },
-    { id: 5, code: 'FLASH25', type: 'percentage', value: 25, usage: 89, maxUsage: 100, isActive: false, isTicketSpecific: false, ticketType: null },
-    { id: 6, code: 'GROUP30', type: 'fixed', value: 30, usage: 34, maxUsage: 75, isActive: true, isTicketSpecific: true, ticketType: 'Group' },
-    { id: 7, code: 'WELCOME10', type: 'percentage', value: 10, usage: 156, maxUsage: 300, isActive: true, isTicketSpecific: false, ticketType: null },
-    { id: 8, code: 'LASTMIN40', type: 'fixed', value: 40, usage: 8, maxUsage: 20, isActive: true, isTicketSpecific: true, ticketType: 'Last Minute' }
+    {
+      id: 1,
+      code: "EARLY20",
+      type: "percentage",
+      value: 20,
+      usage: 45,
+      maxUsage: 100,
+      isActive: true,
+      isTicketSpecific: false,
+      ticketType: null,
+    },
+    {
+      id: 2,
+      code: "STUDENT50",
+      type: "fixed",
+      value: 50,
+      usage: 23,
+      maxUsage: 50,
+      isActive: true,
+      isTicketSpecific: true,
+      ticketType: "Student",
+    },
+    {
+      id: 3,
+      code: "NEWUSER15",
+      type: "percentage",
+      value: 15,
+      usage: 67,
+      maxUsage: 200,
+      isActive: true,
+      isTicketSpecific: false,
+      ticketType: null,
+    },
+    {
+      id: 4,
+      code: "VIP100",
+      type: "fixed",
+      value: 100,
+      usage: 12,
+      maxUsage: 25,
+      isActive: false,
+      isTicketSpecific: true,
+      ticketType: "VIP",
+    },
+    {
+      id: 5,
+      code: "FLASH25",
+      type: "percentage",
+      value: 25,
+      usage: 89,
+      maxUsage: 100,
+      isActive: false,
+      isTicketSpecific: false,
+      ticketType: null,
+    },
+    {
+      id: 6,
+      code: "GROUP30",
+      type: "fixed",
+      value: 30,
+      usage: 34,
+      maxUsage: 75,
+      isActive: true,
+      isTicketSpecific: true,
+      ticketType: "Group",
+    },
+    {
+      id: 7,
+      code: "WELCOME10",
+      type: "percentage",
+      value: 10,
+      usage: 156,
+      maxUsage: 300,
+      isActive: true,
+      isTicketSpecific: false,
+      ticketType: null,
+    },
+    {
+      id: 8,
+      code: "LASTMIN40",
+      type: "fixed",
+      value: 40,
+      usage: 8,
+      maxUsage: 20,
+      isActive: true,
+      isTicketSpecific: true,
+      ticketType: "Last Minute",
+    },
   ];
 
-  const ticketTypes = ['Early Bird', 'Regular', 'VIP', 'Student', 'Group', 'Last Minute', 'Premium', 'Corporate'];
+  const ticketTypes = [
+    "Early Bird",
+    "Regular",
+    "VIP",
+    "Student",
+    "Group",
+    "Last Minute",
+    "Premium",
+    "Corporate",
+  ];
 
   // Mock ticket types data
   const allTicketTypes = [
-    { id: 1, name: 'Early Bird', gender: 'all', value: 40, totalSold: 25, isActive: true },
-    { id: 2, name: 'Regular', gender: 'all', value: 60, totalSold: 48, isActive: true },
-    { id: 3, name: 'VIP', gender: 'all', value: 120, totalSold: 12, isActive: true },
-    { id: 4, name: 'Student', gender: 'all', value: 30, totalSold: 18, isActive: true },
-    { id: 5, name: 'Female Only', gender: 'female', value: 50, totalSold: 22, isActive: true },
-    { id: 6, name: 'Male Only', gender: 'male', value: 50, totalSold: 19, isActive: false },
-    { id: 7, name: 'Group', gender: 'all', value: 45, totalSold: 30, isActive: true },
-    { id: 8, name: 'Last Minute', gender: 'all', value: 80, totalSold: 8, isActive: false }
+    {
+      id: 1,
+      name: "Early Bird",
+      gender: "all",
+      value: 40,
+      totalSold: 25,
+      isActive: true,
+    },
+    {
+      id: 2,
+      name: "Regular",
+      gender: "all",
+      value: 60,
+      totalSold: 48,
+      isActive: true,
+    },
+    {
+      id: 3,
+      name: "VIP",
+      gender: "all",
+      value: 120,
+      totalSold: 12,
+      isActive: true,
+    },
+    {
+      id: 4,
+      name: "Student",
+      gender: "all",
+      value: 30,
+      totalSold: 18,
+      isActive: true,
+    },
+    {
+      id: 5,
+      name: "Female Only",
+      gender: "female",
+      value: 50,
+      totalSold: 22,
+      isActive: true,
+    },
+    {
+      id: 6,
+      name: "Male Only",
+      gender: "male",
+      value: 50,
+      totalSold: 19,
+      isActive: false,
+    },
+    {
+      id: 7,
+      name: "Group",
+      gender: "all",
+      value: 45,
+      totalSold: 30,
+      isActive: true,
+    },
+    {
+      id: 8,
+      name: "Last Minute",
+      gender: "all",
+      value: 80,
+      totalSold: 8,
+      isActive: false,
+    },
   ];
 
   const renderCoupons = () => {
     // Filter coupons based on search and filter
-    const filteredCoupons = allCoupons.filter(coupon => {
-      const matchesSearch = coupon.code.toLowerCase().includes(couponSearch.toLowerCase());
-      const matchesFilter = couponFilter === 'all' || 
-        (couponFilter === 'active' && coupon.isActive) ||
-        (couponFilter === 'inactive' && !coupon.isActive);
+    const filteredCoupons = allCoupons.filter((coupon) => {
+      const matchesSearch = coupon.code
+        .toLowerCase()
+        .includes(couponSearch.toLowerCase());
+      const matchesFilter =
+        couponFilter === "all" ||
+        (couponFilter === "active" && coupon.isActive) ||
+        (couponFilter === "inactive" && !coupon.isActive);
       return matchesSearch && matchesFilter;
     });
 
     // Pagination for coupons
     const totalCouponPages = Math.ceil(filteredCoupons.length / itemsPerPage);
     const startIndex = (couponPage - 1) * itemsPerPage;
-    const paginatedCoupons = filteredCoupons.slice(startIndex, startIndex + itemsPerPage);
+    const paginatedCoupons = filteredCoupons.slice(
+      startIndex,
+      startIndex + itemsPerPage
+    );
 
     const handleEditCoupon = (coupon: any) => {
       setEditingCoupon({ ...coupon });
@@ -1170,22 +1458,22 @@ const EventManagement = () => {
 
     const handleSaveEdit = () => {
       // In a real app, this would save to backend
-      console.log('Saving coupon:', editingCoupon);
+      console.log("Saving coupon:", editingCoupon);
       setEditingCoupon(null);
     };
 
     const handleCreateCoupon = () => {
       // In a real app, this would save to backend
-      console.log('Creating coupon:', newCoupon);
+      console.log("Creating coupon:", newCoupon);
       setIsCreateCouponOpen(false);
       setNewCoupon({
-        code: '',
-        type: 'percentage',
+        code: "",
+        type: "percentage",
         value: 10,
         maxUsage: 100,
         isActive: true,
         isTicketSpecific: false,
-        ticketType: ''
+        ticketType: "",
       });
     };
 
@@ -1194,8 +1482,11 @@ const EventManagement = () => {
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <h2 className="text-2xl font-bold">Coupons Management</h2>
-          
-          <Dialog open={isCreateCouponOpen} onOpenChange={setIsCreateCouponOpen}>
+
+          <Dialog
+            open={isCreateCouponOpen}
+            onOpenChange={setIsCreateCouponOpen}
+          >
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -1209,14 +1500,19 @@ const EventManagement = () => {
                   Configure your new discount coupon settings.
                 </DialogDescription>
               </DialogHeader>
-              
+
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="code">Coupon Code</Label>
                   <Input
                     id="code"
                     value={newCoupon.code}
-                    onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })}
+                    onChange={(e) =>
+                      setNewCoupon({
+                        ...newCoupon,
+                        code: e.target.value.toUpperCase(),
+                      })
+                    }
                     placeholder="DISCOUNT20"
                     className="uppercase"
                   />
@@ -1224,23 +1520,32 @@ const EventManagement = () => {
 
                 <div>
                   <Label>Discount Type</Label>
-                  <Select value={newCoupon.type} onValueChange={(value) => setNewCoupon({ ...newCoupon, type: value })}>
+                  <Select
+                    value={newCoupon.type}
+                    onValueChange={(value) =>
+                      setNewCoupon({ ...newCoupon, type: value })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="percentage">Percentage Discount</SelectItem>
+                      <SelectItem value="percentage">
+                        Percentage Discount
+                      </SelectItem>
                       <SelectItem value="fixed">Fixed Amount (BRL)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                {newCoupon.type === 'percentage' ? (
+                {newCoupon.type === "percentage" ? (
                   <div>
                     <Label>Discount Percentage: {newCoupon.value}%</Label>
                     <Slider
                       value={[newCoupon.value]}
-                      onValueChange={(value) => setNewCoupon({ ...newCoupon, value: value[0] })}
+                      onValueChange={(value) =>
+                        setNewCoupon({ ...newCoupon, value: value[0] })
+                      }
                       max={100}
                       min={1}
                       step={1}
@@ -1254,7 +1559,12 @@ const EventManagement = () => {
                       id="value"
                       type="number"
                       value={newCoupon.value}
-                      onChange={(e) => setNewCoupon({ ...newCoupon, value: parseInt(e.target.value) || 0 })}
+                      onChange={(e) =>
+                        setNewCoupon({
+                          ...newCoupon,
+                          value: parseInt(e.target.value) || 0,
+                        })
+                      }
                       placeholder="50"
                     />
                   </div>
@@ -1264,7 +1574,9 @@ const EventManagement = () => {
                   <Label>Max Usage: {newCoupon.maxUsage}</Label>
                   <Slider
                     value={[newCoupon.maxUsage]}
-                    onValueChange={(value) => setNewCoupon({ ...newCoupon, maxUsage: value[0] })}
+                    onValueChange={(value) =>
+                      setNewCoupon({ ...newCoupon, maxUsage: value[0] })
+                    }
                     max={1000}
                     min={1}
                     step={1}
@@ -1276,7 +1588,9 @@ const EventManagement = () => {
                   <Checkbox
                     id="active"
                     checked={newCoupon.isActive}
-                    onCheckedChange={(checked) => setNewCoupon({ ...newCoupon, isActive: !!checked })}
+                    onCheckedChange={(checked) =>
+                      setNewCoupon({ ...newCoupon, isActive: !!checked })
+                    }
                   />
                   <Label htmlFor="active">Active</Label>
                 </div>
@@ -1285,21 +1599,35 @@ const EventManagement = () => {
                   <Checkbox
                     id="ticketSpecific"
                     checked={newCoupon.isTicketSpecific}
-                    onCheckedChange={(checked) => setNewCoupon({ ...newCoupon, isTicketSpecific: !!checked })}
+                    onCheckedChange={(checked) =>
+                      setNewCoupon({
+                        ...newCoupon,
+                        isTicketSpecific: !!checked,
+                      })
+                    }
                   />
-                  <Label htmlFor="ticketSpecific">Apply to specific ticket type only</Label>
+                  <Label htmlFor="ticketSpecific">
+                    Apply to specific ticket type only
+                  </Label>
                 </div>
 
                 {newCoupon.isTicketSpecific && (
                   <div>
                     <Label>Ticket Type</Label>
-                    <Select value={newCoupon.ticketType} onValueChange={(value) => setNewCoupon({ ...newCoupon, ticketType: value })}>
+                    <Select
+                      value={newCoupon.ticketType}
+                      onValueChange={(value) =>
+                        setNewCoupon({ ...newCoupon, ticketType: value })
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select ticket type" />
                       </SelectTrigger>
                       <SelectContent>
                         {ticketTypes.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1308,12 +1636,13 @@ const EventManagement = () => {
               </div>
 
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsCreateCouponOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsCreateCouponOpen(false)}
+                >
                   Cancel
                 </Button>
-                <Button onClick={handleCreateCoupon}>
-                  Create Coupon
-                </Button>
+                <Button onClick={handleCreateCoupon}>Create Coupon</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -1330,7 +1659,7 @@ const EventManagement = () => {
               className="pl-10"
             />
           </div>
-          
+
           <Select value={couponFilter} onValueChange={setCouponFilter}>
             <SelectTrigger className="w-[180px]">
               <Filter className="h-4 w-4 mr-2" />
@@ -1349,7 +1678,9 @@ const EventManagement = () => {
           <CardHeader>
             <CardTitle>Coupons List</CardTitle>
             <CardDescription>
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, filteredCoupons.length)} of {filteredCoupons.length} coupons
+              Showing {startIndex + 1} to{" "}
+              {Math.min(startIndex + itemsPerPage, filteredCoupons.length)} of{" "}
+              {filteredCoupons.length} coupons
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -1362,57 +1693,70 @@ const EventManagement = () => {
                 <span className="col-span-2">Status</span>
                 <span className="col-span-1">Actions</span>
               </div>
-              
+
               <div className="space-y-2">
                 {paginatedCoupons.map((coupon) => (
-                  <div key={coupon.id} className="grid grid-cols-12 gap-2 md:gap-4 text-sm py-3 border-b border-border/50 last:border-0 items-center">
+                  <div
+                    key={coupon.id}
+                    className="grid grid-cols-12 gap-2 md:gap-4 text-sm py-3 border-b border-border/50 last:border-0 items-center"
+                  >
                     {/* Code - Takes majority of width on mobile */}
                     <div className="col-span-6 md:col-span-4">
-                      <span className="font-mono font-medium text-xs md:text-sm break-all">{coupon.code}</span>
+                      <span className="font-mono font-medium text-xs md:text-sm break-all">
+                        {coupon.code}
+                      </span>
                       {coupon.isTicketSpecific && (
-                        <div className="text-xs text-muted-foreground mt-1">→ {coupon.ticketType}</div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          → {coupon.ticketType}
+                        </div>
                       )}
                     </div>
-                    
+
                     {/* Value */}
                     <div className="col-span-2 md:col-span-2">
                       <span className="text-xs md:text-sm">
-                        {coupon.type === 'percentage' ? `${coupon.value}%` : `R$ ${coupon.value}`}
+                        {coupon.type === "percentage"
+                          ? `${coupon.value}%`
+                          : `R$ ${coupon.value}`}
                       </span>
                     </div>
-                    
+
                     {/* Usage */}
                     <div className="col-span-2 md:col-span-3">
                       <div className="text-xs md:text-sm">
                         {coupon.usage}/{coupon.maxUsage}
                       </div>
                       <div className="w-full bg-muted rounded-full h-1 mt-1">
-                        <div 
-                          className="bg-primary h-1 rounded-full" 
-                          style={{ width: `${(coupon.usage / coupon.maxUsage) * 100}%` }}
+                        <div
+                          className="bg-primary h-1 rounded-full"
+                          style={{
+                            width: `${(coupon.usage / coupon.maxUsage) * 100}%`,
+                          }}
                         />
                       </div>
                     </div>
-                    
+
                     {/* Status - Different for mobile vs desktop */}
                     <div className="col-span-1 md:col-span-2">
                       {/* Mobile: Visual indicator only */}
                       <div className="md:hidden">
-                        <div 
+                        <div
                           className={`w-3 h-3 rounded-full ${
-                            coupon.isActive ? 'bg-green-500' : 'bg-gray-400'
+                            coupon.isActive ? "bg-green-500" : "bg-gray-400"
                           }`}
-                          title={coupon.isActive ? 'Active' : 'Inactive'}
+                          title={coupon.isActive ? "Active" : "Inactive"}
                         />
                       </div>
                       {/* Desktop: Badge with text */}
                       <div className="hidden md:block">
-                        <Badge variant={coupon.isActive ? "default" : "secondary"}>
-                          {coupon.isActive ? 'Active' : 'Inactive'}
+                        <Badge
+                          variant={coupon.isActive ? "default" : "secondary"}
+                        >
+                          {coupon.isActive ? "Active" : "Inactive"}
                         </Badge>
                       </div>
                     </div>
-                    
+
                     {/* Actions */}
                     <div className="col-span-1 md:col-span-1">
                       <Button
@@ -1432,9 +1776,14 @@ const EventManagement = () => {
               {totalCouponPages > 1 && (
                 <div className="flex items-center justify-between pt-4">
                   <p className="text-xs md:text-sm text-muted-foreground">
-                    {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredCoupons.length)} of {filteredCoupons.length}
+                    {startIndex + 1}-
+                    {Math.min(
+                      startIndex + itemsPerPage,
+                      filteredCoupons.length
+                    )}{" "}
+                    of {filteredCoupons.length}
                   </p>
-                  
+
                   <div className="flex items-center gap-2">
                     {/* Desktop pagination with labels */}
                     <div className="hidden md:flex items-center gap-2">
@@ -1453,7 +1802,8 @@ const EventManagement = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          if (couponPage < totalCouponPages) setCouponPage(couponPage + 1);
+                          if (couponPage < totalCouponPages)
+                            setCouponPage(couponPage + 1);
                         }}
                         disabled={couponPage >= totalCouponPages}
                       >
@@ -1461,7 +1811,7 @@ const EventManagement = () => {
                         <ChevronRight className="h-4 w-4 ml-1" />
                       </Button>
                     </div>
-                    
+
                     {/* Mobile pagination with icons only */}
                     <div className="flex md:hidden items-center gap-2">
                       <Button
@@ -1479,7 +1829,8 @@ const EventManagement = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          if (couponPage < totalCouponPages) setCouponPage(couponPage + 1);
+                          if (couponPage < totalCouponPages)
+                            setCouponPage(couponPage + 1);
                         }}
                         disabled={couponPage >= totalCouponPages}
                         className="h-8 w-8 p-0"
@@ -1496,7 +1847,10 @@ const EventManagement = () => {
 
         {/* Edit Coupon Dialog */}
         {editingCoupon && (
-          <Dialog open={!!editingCoupon} onOpenChange={() => setEditingCoupon(null)}>
+          <Dialog
+            open={!!editingCoupon}
+            onOpenChange={() => setEditingCoupon(null)}
+          >
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Edit Coupon: {editingCoupon.code}</DialogTitle>
@@ -1504,13 +1858,15 @@ const EventManagement = () => {
                   Modify coupon settings and restrictions.
                 </DialogDescription>
               </DialogHeader>
-              
+
               <div className="space-y-4">
                 <div>
                   <Label>Max Usage: {editingCoupon.maxUsage}</Label>
                   <Slider
                     value={[editingCoupon.maxUsage]}
-                    onValueChange={(value) => setEditingCoupon({ ...editingCoupon, maxUsage: value[0] })}
+                    onValueChange={(value) =>
+                      setEditingCoupon({ ...editingCoupon, maxUsage: value[0] })
+                    }
                     max={1000}
                     min={1}
                     step={1}
@@ -1522,7 +1878,9 @@ const EventManagement = () => {
                   <Switch
                     id="editActive"
                     checked={editingCoupon.isActive}
-                    onCheckedChange={(checked) => setEditingCoupon({ ...editingCoupon, isActive: checked })}
+                    onCheckedChange={(checked) =>
+                      setEditingCoupon({ ...editingCoupon, isActive: checked })
+                    }
                   />
                   <Label htmlFor="editActive">Active</Label>
                 </div>
@@ -1531,24 +1889,38 @@ const EventManagement = () => {
                   <Switch
                     id="editTicketSpecific"
                     checked={editingCoupon.isTicketSpecific}
-                    onCheckedChange={(checked) => setEditingCoupon({ ...editingCoupon, isTicketSpecific: checked })}
+                    onCheckedChange={(checked) =>
+                      setEditingCoupon({
+                        ...editingCoupon,
+                        isTicketSpecific: checked,
+                      })
+                    }
                   />
-                  <Label htmlFor="editTicketSpecific">Apply to specific ticket type only</Label>
+                  <Label htmlFor="editTicketSpecific">
+                    Apply to specific ticket type only
+                  </Label>
                 </div>
 
                 {editingCoupon.isTicketSpecific && (
                   <div>
                     <Label>Ticket Type</Label>
-                    <Select 
-                      value={editingCoupon.ticketType || ''} 
-                      onValueChange={(value) => setEditingCoupon({ ...editingCoupon, ticketType: value })}
+                    <Select
+                      value={editingCoupon.ticketType || ""}
+                      onValueChange={(value) =>
+                        setEditingCoupon({
+                          ...editingCoupon,
+                          ticketType: value,
+                        })
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select ticket type" />
                       </SelectTrigger>
                       <SelectContent>
                         {ticketTypes.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                          <SelectItem key={type} value={type}>
+                            {type}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -1557,7 +1929,10 @@ const EventManagement = () => {
               </div>
 
               <DialogFooter>
-                <Button variant="outline" onClick={() => setEditingCoupon(null)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingCoupon(null)}
+                >
                   Cancel
                 </Button>
                 <Button onClick={handleSaveEdit}>
@@ -1574,13 +1949,21 @@ const EventManagement = () => {
 
   const renderParticipants = () => {
     // Filter participants based on status and search
-    const filteredParticipants = participantsData.filter(participant => {
-      const matchesStatus = participantFilter === 'all' || participant.status === participantFilter;
-      const matchesSearch = participantSearch === '' || 
-        participant.name.toLowerCase().includes(participantSearch.toLowerCase()) ||
-        participant.email.toLowerCase().includes(participantSearch.toLowerCase()) ||
-        participant.instagram.toLowerCase().includes(participantSearch.toLowerCase());
-      
+    const filteredParticipants = participantsData.filter((participant) => {
+      const matchesStatus =
+        participantFilter === "all" || participant.status === participantFilter;
+      const matchesSearch =
+        participantSearch === "" ||
+        participant.name
+          .toLowerCase()
+          .includes(participantSearch.toLowerCase()) ||
+        participant.email
+          .toLowerCase()
+          .includes(participantSearch.toLowerCase()) ||
+        participant.instagram
+          .toLowerCase()
+          .includes(participantSearch.toLowerCase());
+
       return matchesStatus && matchesSearch;
     });
 
@@ -1588,8 +1971,14 @@ const EventManagement = () => {
     const totalParticipants = filteredParticipants.length;
     const totalPages = Math.ceil(totalParticipants / participantsPerPage);
     const startIndex = (participantPage - 1) * participantsPerPage;
-    const endIndex = Math.min(startIndex + participantsPerPage, totalParticipants);
-    const paginatedParticipants = filteredParticipants.slice(startIndex, endIndex);
+    const endIndex = Math.min(
+      startIndex + participantsPerPage,
+      totalParticipants
+    );
+    const paginatedParticipants = filteredParticipants.slice(
+      startIndex,
+      endIndex
+    );
 
     const handleRefund = (participantId: number) => {
       // Mock refund logic
@@ -1619,8 +2008,11 @@ const EventManagement = () => {
               className="pl-9"
             />
           </div>
-          
-          <Select value={participantFilter} onValueChange={setParticipantFilter}>
+
+          <Select
+            value={participantFilter}
+            onValueChange={setParticipantFilter}
+          >
             <SelectTrigger className="w-full sm:w-[180px]">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Filter by status" />
@@ -1642,15 +2034,28 @@ const EventManagement = () => {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12">
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {participant.name.split(' ').map(n => n[0]).join('')}
+                        {participant.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="font-semibold text-sm leading-none">{participant.name}</h3>
-                      <p className="text-xs text-muted-foreground mt-1">{participant.email}</p>
+                      <h3 className="font-semibold text-sm leading-none">
+                        {participant.name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {participant.email}
+                      </p>
                     </div>
                   </div>
-                  <Badge variant={participant.status === 'approved' ? 'default' : 'destructive'}>
+                  <Badge
+                    variant={
+                      participant.status === "approved"
+                        ? "default"
+                        : "destructive"
+                    }
+                  >
                     {participant.status}
                   </Badge>
                 </div>
@@ -1660,17 +2065,19 @@ const EventManagement = () => {
                     <span className="text-muted-foreground">Instagram:</span>
                     <span className="font-medium">{participant.instagram}</span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Ticket Type:</span>
                     <Badge variant="outline">{participant.ticketType}</Badge>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Paid Value:</span>
-                    <span className="font-medium">R${participant.paidValue}</span>
+                    <span className="font-medium">
+                      R${participant.paidValue}
+                    </span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Coupon:</span>
                     <span className="font-medium">
@@ -1681,7 +2088,7 @@ const EventManagement = () => {
                       )}
                     </span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Validated:</span>
                     <div className="flex items-center gap-1">
@@ -1691,7 +2098,7 @@ const EventManagement = () => {
                         <div className="h-4 w-4 rounded-full border-2 border-muted-foreground" />
                       )}
                       <span className="text-xs">
-                        {participant.validated ? 'Yes' : 'No'}
+                        {participant.validated ? "Yes" : "No"}
                       </span>
                     </div>
                   </div>
@@ -1700,7 +2107,11 @@ const EventManagement = () => {
                 <div className="mt-4 pt-4 border-t">
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="sm" className="w-full">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="w-full"
+                      >
                         <DollarSign className="h-4 w-4 mr-2" />
                         Refund Ticket
                       </Button>
@@ -1709,12 +2120,13 @@ const EventManagement = () => {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Confirm Refund</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to refund the ticket for {participant.name}? This action cannot be undone.
+                          Are you sure you want to refund the ticket for{" "}
+                          {participant.name}? This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction 
+                        <AlertDialogAction
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           onClick={() => handleRefund(participant.id)}
                         >
@@ -1735,7 +2147,7 @@ const EventManagement = () => {
             <p className="text-xs md:text-sm text-muted-foreground">
               {startIndex + 1}-{endIndex} of {totalParticipants} participants
             </p>
-            
+
             <div className="flex items-center gap-2">
               {/* Desktop pagination with labels */}
               <div className="hidden md:flex items-center gap-2">
@@ -1743,7 +2155,8 @@ const EventManagement = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (participantPage > 1) setParticipantPage(participantPage - 1);
+                    if (participantPage > 1)
+                      setParticipantPage(participantPage - 1);
                   }}
                   disabled={participantPage <= 1}
                 >
@@ -1754,7 +2167,8 @@ const EventManagement = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (participantPage < totalPages) setParticipantPage(participantPage + 1);
+                    if (participantPage < totalPages)
+                      setParticipantPage(participantPage + 1);
                   }}
                   disabled={participantPage >= totalPages}
                 >
@@ -1762,14 +2176,15 @@ const EventManagement = () => {
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
-              
+
               {/* Mobile pagination with icons only */}
               <div className="flex md:hidden items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (participantPage > 1) setParticipantPage(participantPage - 1);
+                    if (participantPage > 1)
+                      setParticipantPage(participantPage - 1);
                   }}
                   disabled={participantPage <= 1}
                   className="h-8 w-8 p-0"
@@ -1780,7 +2195,8 @@ const EventManagement = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (participantPage < totalPages) setParticipantPage(participantPage + 1);
+                    if (participantPage < totalPages)
+                      setParticipantPage(participantPage + 1);
                   }}
                   disabled={participantPage >= totalPages}
                   className="h-8 w-8 p-0"
@@ -1797,12 +2213,13 @@ const EventManagement = () => {
 
   const renderJoinRequests = () => {
     // Filter join requests based on status and search
-    const filteredRequests = joinRequestsData.filter(request => {
-      const matchesSearch = requestSearch === '' || 
+    const filteredRequests = joinRequestsData.filter((request) => {
+      const matchesSearch =
+        requestSearch === "" ||
         request.name.toLowerCase().includes(requestSearch.toLowerCase()) ||
         request.email.toLowerCase().includes(requestSearch.toLowerCase()) ||
         request.instagram.toLowerCase().includes(requestSearch.toLowerCase());
-      
+
       return matchesSearch;
     });
 
@@ -1857,12 +2274,19 @@ const EventManagement = () => {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12">
                       <AvatarFallback className="bg-yellow-500 text-yellow-50">
-                        {request.name.split(' ').map(n => n[0]).join('')}
+                        {request.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="font-semibold text-sm leading-none">{request.name}</h3>
-                      <p className="text-xs text-muted-foreground mt-1">{request.email}</p>
+                      <h3 className="font-semibold text-sm leading-none">
+                        {request.name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {request.email}
+                      </p>
                     </div>
                   </div>
                   <Badge variant="secondary">Pending</Badge>
@@ -1873,17 +2297,17 @@ const EventManagement = () => {
                     <span className="text-muted-foreground">Instagram:</span>
                     <span className="font-medium">{request.instagram}</span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Ticket Type:</span>
                     <Badge variant="outline">{request.ticketType}</Badge>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Paid Value:</span>
                     <span className="font-medium">R${request.paidValue}</span>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Coupon:</span>
                     <span className="font-medium">
@@ -1908,12 +2332,13 @@ const EventManagement = () => {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Reject Join Request</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to reject {request.name}'s join request? They will be notified of this decision.
+                          Are you sure you want to reject {request.name}'s join
+                          request? They will be notified of this decision.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction 
+                        <AlertDialogAction
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           onClick={() => handleRejectRequest(request.id)}
                         >
@@ -1922,7 +2347,7 @@ const EventManagement = () => {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                  
+
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button size="sm" className="flex-1">
@@ -1934,12 +2359,16 @@ const EventManagement = () => {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Accept Join Request</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to accept {request.name}'s join request? They will be added to the approved participants list.
+                          Are you sure you want to accept {request.name}'s join
+                          request? They will be added to the approved
+                          participants list.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleAcceptRequest(request.id)}>
+                        <AlertDialogAction
+                          onClick={() => handleAcceptRequest(request.id)}
+                        >
                           Accept
                         </AlertDialogAction>
                       </AlertDialogFooter>
@@ -1957,7 +2386,9 @@ const EventManagement = () => {
             <UserPlus className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-medium mb-2">No join requests</h3>
             <p className="text-muted-foreground">
-              {requestSearch ? 'No requests match your search.' : 'All join requests have been processed.'}
+              {requestSearch
+                ? "No requests match your search."
+                : "All join requests have been processed."}
             </p>
           </div>
         )}
@@ -1968,7 +2399,7 @@ const EventManagement = () => {
             <p className="text-xs md:text-sm text-muted-foreground">
               {startIndex + 1}-{endIndex} of {totalRequests} requests
             </p>
-            
+
             <div className="flex items-center gap-2">
               {/* Desktop pagination with labels */}
               <div className="hidden md:flex items-center gap-2">
@@ -1987,7 +2418,8 @@ const EventManagement = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (requestPage < totalPages) setRequestPage(requestPage + 1);
+                    if (requestPage < totalPages)
+                      setRequestPage(requestPage + 1);
                   }}
                   disabled={requestPage >= totalPages}
                 >
@@ -1995,7 +2427,7 @@ const EventManagement = () => {
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
-              
+
               {/* Mobile pagination with icons only */}
               <div className="flex md:hidden items-center gap-2">
                 <Button
@@ -2013,7 +2445,8 @@ const EventManagement = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (requestPage < totalPages) setRequestPage(requestPage + 1);
+                    if (requestPage < totalPages)
+                      setRequestPage(requestPage + 1);
                   }}
                   disabled={requestPage >= totalPages}
                   className="h-8 w-8 p-0"
@@ -2029,20 +2462,31 @@ const EventManagement = () => {
   };
 
   const renderTicketTypes = () => {
-    console.log('renderTicketTypes called - allTicketTypes:', allTicketTypes.length);
+    console.log(
+      "renderTicketTypes called - allTicketTypes:",
+      allTicketTypes.length
+    );
     // Filter ticket types based on search and filter
-    const filteredTicketTypes = allTicketTypes.filter(ticketType => {
-      const matchesSearch = ticketType.name.toLowerCase().includes(ticketTypeSearch.toLowerCase());
-      const matchesFilter = ticketTypeFilter === 'all' || 
-        (ticketTypeFilter === 'active' && ticketType.isActive) ||
-        (ticketTypeFilter === 'inactive' && !ticketType.isActive);
+    const filteredTicketTypes = allTicketTypes.filter((ticketType) => {
+      const matchesSearch = ticketType.name
+        .toLowerCase()
+        .includes(ticketTypeSearch.toLowerCase());
+      const matchesFilter =
+        ticketTypeFilter === "all" ||
+        (ticketTypeFilter === "active" && ticketType.isActive) ||
+        (ticketTypeFilter === "inactive" && !ticketType.isActive);
       return matchesSearch && matchesFilter;
     });
 
     // Pagination for ticket types
-    const totalTicketTypePages = Math.ceil(filteredTicketTypes.length / itemsPerPage);
+    const totalTicketTypePages = Math.ceil(
+      filteredTicketTypes.length / itemsPerPage
+    );
     const startIndex = (ticketTypePage - 1) * itemsPerPage;
-    const paginatedTicketTypes = filteredTicketTypes.slice(startIndex, startIndex + itemsPerPage);
+    const paginatedTicketTypes = filteredTicketTypes.slice(
+      startIndex,
+      startIndex + itemsPerPage
+    );
 
     const handleEditTicketType = (ticketType: any) => {
       setEditingTicketType({ ...ticketType });
@@ -2050,25 +2494,25 @@ const EventManagement = () => {
 
     const handleSaveEdit = () => {
       // In a real app, this would save to backend
-      console.log('Saving ticket type:', editingTicketType);
+      console.log("Saving ticket type:", editingTicketType);
       setEditingTicketType(null);
     };
 
     const handleCreateTicketType = () => {
       // In a real app, this would save to backend
-      console.log('Creating ticket type:', newTicketType);
+      console.log("Creating ticket type:", newTicketType);
       setIsCreateTicketTypeOpen(false);
       setNewTicketType({
-        name: '',
-        gender: 'all',
+        name: "",
+        gender: "all",
         value: 50,
-        isActive: true
+        isActive: true,
       });
     };
 
     const handleDeleteTicketType = (id: number) => {
       // In a real app, this would delete from backend
-      console.log('Deleting ticket type:', id);
+      console.log("Deleting ticket type:", id);
     };
 
     return (
@@ -2076,12 +2520,15 @@ const EventManagement = () => {
         {/* Header Actions */}
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <h2 className="text-2xl font-bold">Ticket Types Management</h2>
-          
-          <Dialog open={isCreateTicketTypeOpen} onOpenChange={setIsCreateTicketTypeOpen}>
+
+          <Dialog
+            open={isCreateTicketTypeOpen}
+            onOpenChange={setIsCreateTicketTypeOpen}
+          >
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                Create Ticket Type  
+                Create Ticket Type
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
@@ -2091,14 +2538,19 @@ const EventManagement = () => {
                   Configure your new ticket type settings.
                 </DialogDescription>
               </DialogHeader>
-              
+
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="name">Ticket Type Name</Label>
                   <Input
                     id="name"
                     value={newTicketType.name}
-                    onChange={(e) => setNewTicketType({ ...newTicketType, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewTicketType({
+                        ...newTicketType,
+                        name: e.target.value,
+                      })
+                    }
                     placeholder="Early Bird"
                   />
                 </div>
@@ -2113,11 +2565,21 @@ const EventManagement = () => {
                           id="gender-all"
                           name="gender"
                           value="all"
-                          checked={newTicketType.gender === 'all'}
-                          onChange={(e) => setNewTicketType({ ...newTicketType, gender: e.target.value })}
+                          checked={newTicketType.gender === "all"}
+                          onChange={(e) =>
+                            setNewTicketType({
+                              ...newTicketType,
+                              gender: e.target.value,
+                            })
+                          }
                           className="h-4 w-4"
                         />
-                        <Label htmlFor="gender-all" className="text-sm font-normal">All</Label>
+                        <Label
+                          htmlFor="gender-all"
+                          className="text-sm font-normal"
+                        >
+                          All
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <input
@@ -2125,11 +2587,21 @@ const EventManagement = () => {
                           id="gender-male"
                           name="gender"
                           value="male"
-                          checked={newTicketType.gender === 'male'}
-                          onChange={(e) => setNewTicketType({ ...newTicketType, gender: e.target.value })}
+                          checked={newTicketType.gender === "male"}
+                          onChange={(e) =>
+                            setNewTicketType({
+                              ...newTicketType,
+                              gender: e.target.value,
+                            })
+                          }
                           className="h-4 w-4"
                         />
-                        <Label htmlFor="gender-male" className="text-sm font-normal">Male</Label>
+                        <Label
+                          htmlFor="gender-male"
+                          className="text-sm font-normal"
+                        >
+                          Male
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <input
@@ -2137,11 +2609,21 @@ const EventManagement = () => {
                           id="gender-female"
                           name="gender"
                           value="female"
-                          checked={newTicketType.gender === 'female'}
-                          onChange={(e) => setNewTicketType({ ...newTicketType, gender: e.target.value })}
+                          checked={newTicketType.gender === "female"}
+                          onChange={(e) =>
+                            setNewTicketType({
+                              ...newTicketType,
+                              gender: e.target.value,
+                            })
+                          }
                           className="h-4 w-4"
                         />
-                        <Label htmlFor="gender-female" className="text-sm font-normal">Female</Label>
+                        <Label
+                          htmlFor="gender-female"
+                          className="text-sm font-normal"
+                        >
+                          Female
+                        </Label>
                       </div>
                     </div>
                   </div>
@@ -2153,7 +2635,12 @@ const EventManagement = () => {
                     id="value"
                     type="number"
                     value={newTicketType.value}
-                    onChange={(e) => setNewTicketType({ ...newTicketType, value: parseInt(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setNewTicketType({
+                        ...newTicketType,
+                        value: parseInt(e.target.value) || 0,
+                      })
+                    }
                     placeholder="50"
                   />
                 </div>
@@ -2162,14 +2649,22 @@ const EventManagement = () => {
                   <Checkbox
                     id="active"
                     checked={newTicketType.isActive}
-                    onCheckedChange={(checked) => setNewTicketType({ ...newTicketType, isActive: !!checked })}
+                    onCheckedChange={(checked) =>
+                      setNewTicketType({
+                        ...newTicketType,
+                        isActive: !!checked,
+                      })
+                    }
                   />
                   <Label htmlFor="active">Active</Label>
                 </div>
               </div>
 
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsCreateTicketTypeOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsCreateTicketTypeOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button onClick={handleCreateTicketType}>
@@ -2191,7 +2686,7 @@ const EventManagement = () => {
               className="pl-10"
             />
           </div>
-          
+
           <Select value={ticketTypeFilter} onValueChange={setTicketTypeFilter}>
             <SelectTrigger className="w-[180px]">
               <Filter className="h-4 w-4 mr-2" />
@@ -2214,12 +2709,17 @@ const EventManagement = () => {
                   <div>
                     <CardTitle className="text-lg">{ticketType.name}</CardTitle>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant={ticketType.isActive ? "default" : "secondary"}>
-                        {ticketType.isActive ? 'Active' : 'Inactive'}
+                      <Badge
+                        variant={ticketType.isActive ? "default" : "secondary"}
+                      >
+                        {ticketType.isActive ? "Active" : "Inactive"}
                       </Badge>
                       <Badge variant="outline">
-                        {ticketType.gender === 'all' ? 'All Genders' : 
-                         ticketType.gender === 'male' ? 'Male Only' : 'Female Only'}
+                        {ticketType.gender === "all"
+                          ? "All Genders"
+                          : ticketType.gender === "male"
+                          ? "Male Only"
+                          : "Female Only"}
                       </Badge>
                     </div>
                   </div>
@@ -2247,11 +2747,17 @@ const EventManagement = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Price</span>
-                    <span className="text-lg font-bold">R$ {ticketType.value}</span>
+                    <span className="text-lg font-bold">
+                      R$ {ticketType.value}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Sold</span>
-                    <span className="text-sm font-medium">{ticketType.totalSold}</span>
+                    <span className="text-sm text-muted-foreground">
+                      Total Sold
+                    </span>
+                    <span className="text-sm font-medium">
+                      {ticketType.totalSold}
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -2263,9 +2769,11 @@ const EventManagement = () => {
         {totalTicketTypePages > 1 && (
           <div className="flex items-center justify-between pt-4">
             <p className="text-xs md:text-sm text-muted-foreground">
-              {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredTicketTypes.length)} of {filteredTicketTypes.length} ticket types
+              {startIndex + 1}-
+              {Math.min(startIndex + itemsPerPage, filteredTicketTypes.length)}{" "}
+              of {filteredTicketTypes.length} ticket types
             </p>
-            
+
             <div className="flex items-center gap-2">
               {/* Desktop pagination with labels */}
               <div className="hidden md:flex items-center gap-2">
@@ -2273,7 +2781,8 @@ const EventManagement = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (ticketTypePage > 1) setTicketTypePage(ticketTypePage - 1);
+                    if (ticketTypePage > 1)
+                      setTicketTypePage(ticketTypePage - 1);
                   }}
                   disabled={ticketTypePage <= 1}
                 >
@@ -2284,7 +2793,8 @@ const EventManagement = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (ticketTypePage < totalTicketTypePages) setTicketTypePage(ticketTypePage + 1);
+                    if (ticketTypePage < totalTicketTypePages)
+                      setTicketTypePage(ticketTypePage + 1);
                   }}
                   disabled={ticketTypePage >= totalTicketTypePages}
                 >
@@ -2292,14 +2802,15 @@ const EventManagement = () => {
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
-              
+
               {/* Mobile pagination with icons only */}
               <div className="flex md:hidden items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (ticketTypePage > 1) setTicketTypePage(ticketTypePage - 1);
+                    if (ticketTypePage > 1)
+                      setTicketTypePage(ticketTypePage - 1);
                   }}
                   disabled={ticketTypePage <= 1}
                   className="h-8 w-8 p-0"
@@ -2310,7 +2821,8 @@ const EventManagement = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    if (ticketTypePage < totalTicketTypePages) setTicketTypePage(ticketTypePage + 1);
+                    if (ticketTypePage < totalTicketTypePages)
+                      setTicketTypePage(ticketTypePage + 1);
                   }}
                   disabled={ticketTypePage >= totalTicketTypePages}
                   className="h-8 w-8 p-0"
@@ -2324,22 +2836,32 @@ const EventManagement = () => {
 
         {/* Edit Ticket Type Dialog */}
         {editingTicketType && (
-          <Dialog open={!!editingTicketType} onOpenChange={() => setEditingTicketType(null)}>
+          <Dialog
+            open={!!editingTicketType}
+            onOpenChange={() => setEditingTicketType(null)}
+          >
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle>Edit Ticket Type: {editingTicketType.name}</DialogTitle>
+                <DialogTitle>
+                  Edit Ticket Type: {editingTicketType.name}
+                </DialogTitle>
                 <DialogDescription>
                   Modify ticket type settings and pricing.
                 </DialogDescription>
               </DialogHeader>
-              
+
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="editName">Ticket Type Name</Label>
                   <Input
                     id="editName"
                     value={editingTicketType.name}
-                    onChange={(e) => setEditingTicketType({ ...editingTicketType, name: e.target.value })}
+                    onChange={(e) =>
+                      setEditingTicketType({
+                        ...editingTicketType,
+                        name: e.target.value,
+                      })
+                    }
                     placeholder="Early Bird"
                   />
                 </div>
@@ -2354,11 +2876,21 @@ const EventManagement = () => {
                           id="edit-gender-all"
                           name="edit-gender"
                           value="all"
-                          checked={editingTicketType.gender === 'all'}
-                          onChange={(e) => setEditingTicketType({ ...editingTicketType, gender: e.target.value })}
+                          checked={editingTicketType.gender === "all"}
+                          onChange={(e) =>
+                            setEditingTicketType({
+                              ...editingTicketType,
+                              gender: e.target.value,
+                            })
+                          }
                           className="h-4 w-4"
                         />
-                        <Label htmlFor="edit-gender-all" className="text-sm font-normal">All</Label>
+                        <Label
+                          htmlFor="edit-gender-all"
+                          className="text-sm font-normal"
+                        >
+                          All
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <input
@@ -2366,11 +2898,21 @@ const EventManagement = () => {
                           id="edit-gender-male"
                           name="edit-gender"
                           value="male"
-                          checked={editingTicketType.gender === 'male'}
-                          onChange={(e) => setEditingTicketType({ ...editingTicketType, gender: e.target.value })}
+                          checked={editingTicketType.gender === "male"}
+                          onChange={(e) =>
+                            setEditingTicketType({
+                              ...editingTicketType,
+                              gender: e.target.value,
+                            })
+                          }
                           className="h-4 w-4"
                         />
-                        <Label htmlFor="edit-gender-male" className="text-sm font-normal">Male</Label>
+                        <Label
+                          htmlFor="edit-gender-male"
+                          className="text-sm font-normal"
+                        >
+                          Male
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <input
@@ -2378,11 +2920,21 @@ const EventManagement = () => {
                           id="edit-gender-female"
                           name="edit-gender"
                           value="female"
-                          checked={editingTicketType.gender === 'female'}
-                          onChange={(e) => setEditingTicketType({ ...editingTicketType, gender: e.target.value })}
+                          checked={editingTicketType.gender === "female"}
+                          onChange={(e) =>
+                            setEditingTicketType({
+                              ...editingTicketType,
+                              gender: e.target.value,
+                            })
+                          }
                           className="h-4 w-4"
                         />
-                        <Label htmlFor="edit-gender-female" className="text-sm font-normal">Female</Label>
+                        <Label
+                          htmlFor="edit-gender-female"
+                          className="text-sm font-normal"
+                        >
+                          Female
+                        </Label>
                       </div>
                     </div>
                   </div>
@@ -2394,7 +2946,12 @@ const EventManagement = () => {
                     id="editValue"
                     type="number"
                     value={editingTicketType.value}
-                    onChange={(e) => setEditingTicketType({ ...editingTicketType, value: parseInt(e.target.value) || 0 })}
+                    onChange={(e) =>
+                      setEditingTicketType({
+                        ...editingTicketType,
+                        value: parseInt(e.target.value) || 0,
+                      })
+                    }
                     placeholder="50"
                   />
                 </div>
@@ -2403,19 +2960,25 @@ const EventManagement = () => {
                   <Switch
                     id="editActive"
                     checked={editingTicketType.isActive}
-                    onCheckedChange={(checked) => setEditingTicketType({ ...editingTicketType, isActive: checked })}
+                    onCheckedChange={(checked) =>
+                      setEditingTicketType({
+                        ...editingTicketType,
+                        isActive: checked,
+                      })
+                    }
                   />
                   <Label htmlFor="editActive">Active</Label>
                 </div>
               </div>
 
               <DialogFooter>
-                <Button variant="outline" onClick={() => setEditingTicketType(null)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingTicketType(null)}
+                >
                   Cancel
                 </Button>
-                <Button onClick={handleSaveEdit}>
-                  Save Changes
-                </Button>
+                <Button onClick={handleSaveEdit}>Save Changes</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -2428,7 +2991,9 @@ const EventManagement = () => {
     <div className="max-w-4xl mx-auto">
       <Card className="shadow-card border-border/50">
         <CardHeader>
-          <CardTitle className="text-2xl text-foreground">Event Information</CardTitle>
+          <CardTitle className="text-2xl text-foreground">
+            Event Information
+          </CardTitle>
           <CardDescription className="text-muted-foreground">
             Edit your event's basic information
           </CardDescription>
@@ -2436,13 +3001,18 @@ const EventManagement = () => {
         <CardContent className="space-y-6">
           {/* Event Name */}
           <div className="space-y-2">
-            <Label htmlFor="eventName" className="text-sm font-medium text-foreground">
+            <Label
+              htmlFor="eventName"
+              className="text-sm font-medium text-foreground"
+            >
               Event Name *
             </Label>
             <Input
               id="eventName"
               value={editEventData.name}
-              onChange={(e) => setEditEventData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) =>
+                setEditEventData((prev) => ({ ...prev, name: e.target.value }))
+              }
               placeholder="Enter event name"
               className="w-full"
             />
@@ -2466,7 +3036,7 @@ const EventManagement = () => {
                     size="sm"
                     className="absolute top-2 right-2"
                     onClick={() => {
-                      setImagePreview('');
+                      setImagePreview("");
                       setSelectedImage(null);
                     }}
                   >
@@ -2495,13 +3065,21 @@ const EventManagement = () => {
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-foreground">
+            <Label
+              htmlFor="description"
+              className="text-sm font-medium text-foreground"
+            >
               Description *
             </Label>
             <Textarea
               id="description"
               value={editEventData.description}
-              onChange={(e) => setEditEventData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setEditEventData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               placeholder="Describe your event..."
               className="min-h-[100px] resize-y"
             />
@@ -2525,7 +3103,9 @@ const EventManagement = () => {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {editEventData.startDate ? format(editEventData.startDate, "MM/dd/yyyy") : "Select date"}
+                      {editEventData.startDate
+                        ? format(editEventData.startDate, "MM/dd/yyyy")
+                        : "Select date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -2536,8 +3116,13 @@ const EventManagement = () => {
                         if (date) {
                           const newDate = new Date(date);
                           newDate.setHours(editEventData.startDate.getHours());
-                          newDate.setMinutes(editEventData.startDate.getMinutes());
-                          setEditEventData(prev => ({ ...prev, startDate: newDate }));
+                          newDate.setMinutes(
+                            editEventData.startDate.getMinutes()
+                          );
+                          setEditEventData((prev) => ({
+                            ...prev,
+                            startDate: newDate,
+                          }));
                         }
                         setStartDateOpen(false);
                       }}
@@ -2554,7 +3139,12 @@ const EventManagement = () => {
                       min="0"
                       max="23"
                       value={editEventData.startDate.getHours()}
-                      onChange={(e) => handleStartTimeChange('hours', parseInt(e.target.value) || 0)}
+                      onChange={(e) =>
+                        handleStartTimeChange(
+                          "hours",
+                          parseInt(e.target.value) || 0
+                        )
+                      }
                       className="w-16 text-center"
                     />
                     <span className="text-muted-foreground">:</span>
@@ -2563,7 +3153,12 @@ const EventManagement = () => {
                       min="0"
                       max="59"
                       value={editEventData.startDate.getMinutes()}
-                      onChange={(e) => handleStartTimeChange('minutes', parseInt(e.target.value) || 0)}
+                      onChange={(e) =>
+                        handleStartTimeChange(
+                          "minutes",
+                          parseInt(e.target.value) || 0
+                        )
+                      }
                       className="w-16 text-center"
                     />
                   </div>
@@ -2587,7 +3182,9 @@ const EventManagement = () => {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {editEventData.endDate ? format(editEventData.endDate, "MM/dd/yyyy") : "Select date"}
+                      {editEventData.endDate
+                        ? format(editEventData.endDate, "MM/dd/yyyy")
+                        : "Select date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -2598,8 +3195,13 @@ const EventManagement = () => {
                         if (date) {
                           const newDate = new Date(date);
                           newDate.setHours(editEventData.endDate.getHours());
-                          newDate.setMinutes(editEventData.endDate.getMinutes());
-                          setEditEventData(prev => ({ ...prev, endDate: newDate }));
+                          newDate.setMinutes(
+                            editEventData.endDate.getMinutes()
+                          );
+                          setEditEventData((prev) => ({
+                            ...prev,
+                            endDate: newDate,
+                          }));
                         }
                         setEndDateOpen(false);
                       }}
@@ -2616,7 +3218,12 @@ const EventManagement = () => {
                       min="0"
                       max="23"
                       value={editEventData.endDate.getHours()}
-                      onChange={(e) => handleEndTimeChange('hours', parseInt(e.target.value) || 0)}
+                      onChange={(e) =>
+                        handleEndTimeChange(
+                          "hours",
+                          parseInt(e.target.value) || 0
+                        )
+                      }
                       className="w-16 text-center"
                     />
                     <span className="text-muted-foreground">:</span>
@@ -2625,7 +3232,12 @@ const EventManagement = () => {
                       min="0"
                       max="59"
                       value={editEventData.endDate.getMinutes()}
-                      onChange={(e) => handleEndTimeChange('minutes', parseInt(e.target.value) || 0)}
+                      onChange={(e) =>
+                        handleEndTimeChange(
+                          "minutes",
+                          parseInt(e.target.value) || 0
+                        )
+                      }
                       className="w-16 text-center"
                     />
                   </div>
@@ -2638,13 +3250,21 @@ const EventManagement = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Location Name */}
             <div className="space-y-2">
-              <Label htmlFor="locationName" className="text-sm font-medium text-foreground">
+              <Label
+                htmlFor="locationName"
+                className="text-sm font-medium text-foreground"
+              >
                 Location Name *
               </Label>
               <Input
                 id="locationName"
                 value={editEventData.locationName}
-                onChange={(e) => setEditEventData(prev => ({ ...prev, locationName: e.target.value }))}
+                onChange={(e) =>
+                  setEditEventData((prev) => ({
+                    ...prev,
+                    locationName: e.target.value,
+                  }))
+                }
                 placeholder="Ex: Aurora Concert Hall"
                 className="w-full"
               />
@@ -2652,7 +3272,10 @@ const EventManagement = () => {
 
             {/* Location Address */}
             <div className="space-y-2 relative">
-              <Label htmlFor="location" className="text-sm font-medium text-foreground">
+              <Label
+                htmlFor="location"
+                className="text-sm font-medium text-foreground"
+              >
                 Address *
               </Label>
               <div className="relative">
@@ -2660,10 +3283,17 @@ const EventManagement = () => {
                   id="location"
                   value={editEventData.location}
                   onChange={(e) => {
-                    setEditEventData(prev => ({ ...prev, location: e.target.value }));
+                    setEditEventData((prev) => ({
+                      ...prev,
+                      location: e.target.value,
+                    }));
                     setShowLocationSuggestions(e.target.value.length > 2);
                   }}
-                  onFocus={() => setShowLocationSuggestions(editEventData.location.length > 2)}
+                  onFocus={() =>
+                    setShowLocationSuggestions(
+                      editEventData.location.length > 2
+                    )
+                  }
                   placeholder="Enter full address"
                   className="w-full pr-10"
                 />
@@ -2672,8 +3302,10 @@ const EventManagement = () => {
               {showLocationSuggestions && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-lg z-50 max-h-40 overflow-y-auto">
                   {locationSuggestions
-                    .filter(suggestion => 
-                      suggestion.toLowerCase().includes(editEventData.location.toLowerCase())
+                    .filter((suggestion) =>
+                      suggestion
+                        .toLowerCase()
+                        .includes(editEventData.location.toLowerCase())
                     )
                     .map((suggestion, index) => (
                       <div
@@ -2692,17 +3324,23 @@ const EventManagement = () => {
           {/* Settings */}
           <div className="space-y-4 pt-4 border-t border-border">
             <h3 className="text-lg font-medium text-foreground">Settings</h3>
-            
+
             {/* Auto Accept Requests */}
             <div className="flex items-center space-x-3">
               <Checkbox
                 id="autoAccept"
                 checked={editEventData.autoAcceptRequests}
-                onCheckedChange={(checked) => 
-                  setEditEventData(prev => ({ ...prev, autoAcceptRequests: !!checked }))
+                onCheckedChange={(checked) =>
+                  setEditEventData((prev) => ({
+                    ...prev,
+                    autoAcceptRequests: !!checked,
+                  }))
                 }
               />
-              <Label htmlFor="autoAccept" className="text-sm text-foreground cursor-pointer">
+              <Label
+                htmlFor="autoAccept"
+                className="text-sm text-foreground cursor-pointer"
+              >
                 Join requests will be accepted automatically
               </Label>
             </div>
@@ -2712,11 +3350,14 @@ const EventManagement = () => {
               <Checkbox
                 id="isActive"
                 checked={editEventData.isActive}
-                onCheckedChange={(checked) => 
-                  setEditEventData(prev => ({ ...prev, isActive: !!checked }))
+                onCheckedChange={(checked) =>
+                  setEditEventData((prev) => ({ ...prev, isActive: !!checked }))
                 }
               />
-              <Label htmlFor="isActive" className="text-sm text-foreground cursor-pointer">
+              <Label
+                htmlFor="isActive"
+                className="text-sm text-foreground cursor-pointer"
+              >
                 Event is active
               </Label>
             </div>
@@ -2724,7 +3365,10 @@ const EventManagement = () => {
 
           {/* Save Button */}
           <div className="flex justify-end pt-4">
-            <Button onClick={handleSaveEvent} className="bg-primary hover:bg-primary/90">
+            <Button
+              onClick={handleSaveEvent}
+              className="bg-primary hover:bg-primary/90"
+            >
               <Save className="h-4 w-4 mr-2" />
               Save Changes
             </Button>
@@ -2745,21 +3389,24 @@ const EventManagement = () => {
 
   const renderContent = () => {
     switch (activeSection) {
-      case 'overview':
+      case "overview":
         return renderOverview();
-      case 'edit':
+      case "edit":
         return renderEditEvent();
-      case 'analytics':
+      case "analytics":
         return renderAnalytics();
-      case 'participants':
+      case "participants":
         return renderParticipants();
-      case 'tickets':
+      case "tickets":
         return renderTicketTypes();
-      case 'coupons':
+      case "coupons":
         return renderCoupons();
-      case 'validate':
-        return renderPlaceholderSection('Validate Tickets', 'Scan and validate tickets at the event entrance.');
-      case 'requests':
+      case "validate":
+        return renderPlaceholderSection(
+          "Validate Tickets",
+          "Scan and validate tickets at the event entrance."
+        );
+      case "requests":
         return renderJoinRequests();
       default:
         return renderOverview();
@@ -2773,29 +3420,41 @@ const EventManagement = () => {
         <div className="min-h-screen bg-background">
           <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-14 items-center justify-between px-4">
-              <Button variant="ghost" size="sm" onClick={() => setMobileOverlay(null)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMobileOverlay(null)}
+              >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <h1 className="font-semibold">
-                {managementSections.find(s => s.id === mobileOverlay)?.label}
+                {managementSections.find((s) => s.id === mobileOverlay)?.label}
               </h1>
               <div className="w-10" />
             </div>
           </header>
-          
-           <main className="p-4">
-              {mobileOverlay === 'overview' ? renderOverview() : 
-               mobileOverlay === 'edit' ? renderEditEvent() :
-               mobileOverlay === 'analytics' ? renderAnalytics() :
-               mobileOverlay === 'participants' ? renderParticipants() :
-               mobileOverlay === 'tickets' ? renderTicketTypes() :
-               mobileOverlay === 'coupons' ? renderCoupons() :
-               mobileOverlay === 'requests' ? renderJoinRequests() :
-               renderPlaceholderSection(
-                 managementSections.find(s => s.id === mobileOverlay)?.label || '',
-                 `Manage your event ${mobileOverlay}.`
-               )}
-           </main>
+
+          <main className="p-4">
+            {mobileOverlay === "overview"
+              ? renderOverview()
+              : mobileOverlay === "edit"
+              ? renderEditEvent()
+              : mobileOverlay === "analytics"
+              ? renderAnalytics()
+              : mobileOverlay === "participants"
+              ? renderParticipants()
+              : mobileOverlay === "tickets"
+              ? renderTicketTypes()
+              : mobileOverlay === "coupons"
+              ? renderCoupons()
+              : mobileOverlay === "requests"
+              ? renderJoinRequests()
+              : renderPlaceholderSection(
+                  managementSections.find((s) => s.id === mobileOverlay)
+                    ?.label || "",
+                  `Manage your event ${mobileOverlay}.`
+                )}
+          </main>
         </div>
       );
     }
@@ -2805,7 +3464,11 @@ const EventManagement = () => {
         {/* Mobile Header */}
         <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex h-14 items-center justify-between px-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/dashboard")}
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <img src={logoLight} alt="Tikko" className="h-6" />
@@ -2816,23 +3479,14 @@ const EventManagement = () => {
         </header>
 
         {/* Event Header */}
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-3 mb-3">
-            <Badge variant="outline">{eventData.status}</Badge>
-            <span className="text-sm text-muted-foreground">Event ID: {eventData.id}</span>
-          </div>
-          <h1 className="text-xl font-bold mb-2">{eventData.title}</h1>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>{eventData.date}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <MapPin className="h-4 w-4" />
-              <span>{eventData.location}</span>
-            </div>
-          </div>
-        </div>
+        <EventInfoHeader
+          status={eventData.status}
+          id={eventData.id}
+          title={eventData.title}
+          date={eventData.date}
+          time={eventData.time}
+          location={eventData.location}
+        />
 
         {/* Quick Stats */}
         <div className="p-4 space-y-4">
@@ -2842,19 +3496,23 @@ const EventManagement = () => {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-primary">{eventData.attendees}</p>
+                    <p className="text-2xl font-bold text-primary">
+                      {eventData.attendees}
+                    </p>
                     <p className="text-sm text-muted-foreground">Attendees</p>
                   </div>
                   <Users className="h-8 w-8 text-primary/60" />
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-green-600">${eventData.revenue}</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      ${eventData.revenue}
+                    </p>
                     <p className="text-sm text-muted-foreground">Revenue</p>
                   </div>
                   <DollarSign className="h-8 w-8 text-green-500/60" />
@@ -2879,7 +3537,9 @@ const EventManagement = () => {
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
                     <Icon className="h-8 w-8 text-primary" />
                   </div>
-                  <span className="text-sm font-medium text-center">{section.label}</span>
+                  <span className="text-sm font-medium text-center">
+                    {section.label}
+                  </span>
                 </button>
               );
             })}
@@ -2895,7 +3555,7 @@ const EventManagement = () => {
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+            <Button variant="ghost" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
@@ -2912,23 +3572,14 @@ const EventManagement = () => {
         {/* Desktop Sidebar */}
         <aside className="w-64 border-r bg-card/50 backdrop-blur-sm">
           {/* Event Info */}
-          <div className="p-4 border-b">
-            <div className="flex items-center gap-2 mb-2">
-              <Badge variant="outline">{eventData.status}</Badge>
-              <span className="text-xs text-muted-foreground">ID: {eventData.id}</span>
-            </div>
-            <h2 className="font-semibold mb-2">{eventData.title}</h2>
-            <div className="space-y-1 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-3 w-3" />
-                <span>{eventData.date} • {eventData.time}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-3 w-3" />
-                <span>{eventData.location}</span>
-              </div>
-            </div>
-          </div>
+          <EventInfoHeader
+            status={eventData.status}
+            id={eventData.id}
+            title={eventData.title}
+            date={eventData.date}
+            time={eventData.time}
+            location={eventData.location}
+          />
 
           <nav className="p-4 space-y-2">
             {managementSections.map((section) => {
@@ -2937,7 +3588,7 @@ const EventManagement = () => {
               return (
                 <Button
                   key={section.id}
-                  variant={isActive ? 'default' : 'ghost'}
+                  variant={isActive ? "default" : "ghost"}
                   className="w-full justify-start"
                   onClick={() => setActiveSection(section.id)}
                 >
@@ -2954,7 +3605,8 @@ const EventManagement = () => {
           <div className="mb-6">
             <h1 className="text-3xl font-bold mb-2">Event Management</h1>
             <p className="text-muted-foreground">
-              Manage your event settings, view analytics, and interact with participants.
+              Manage your event settings, view analytics, and interact with
+              participants.
             </p>
           </div>
           {renderContent()}
