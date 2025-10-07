@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Home, 
-  Search, 
-  Calendar, 
-  Ticket, 
-  User, 
-  Settings, 
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { EventGateway } from "@/lib/EventGateway";
+import {
+  Home,
+  Search,
+  Calendar,
+  Ticket,
+  User,
+  Settings,
   Bell,
   Heart,
   MessageCircle,
@@ -24,196 +32,215 @@ import {
   Edit,
   UserPlus,
   DollarSign,
-  CheckCircle2
-} from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { useNavigate } from 'react-router-dom';
-import logoLight from '@/assets/logoLight.png';
+  CheckCircle2,
+} from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
+import logoLight from "@/assets/logoLight.png";
 
-type TabType = 'feed' | 'explore' | 'my-events' | 'my-tickets' | 'profile';
+type TabType = "feed" | "explore" | "my-events" | "my-tickets" | "profile";
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('feed');
+  const [activeTab, setActiveTab] = useState<TabType>("feed");
   const isMobile = useIsMobile();
+
+  // API Gateways
+  const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+
+  // Fetch user events
+  const { data: userEventsResponse, isLoading: isLoadingUserEvents } = useQuery(
+    {
+      queryKey: ["userEvents"],
+      queryFn: () => eventGateway.getUserEvents(),
+      enabled: activeTab === "my-events",
+    }
+  );
+
+  const userEvents = userEventsResponse?.events || [];
   const navigate = useNavigate();
 
   const tabs = [
-    { id: 'feed' as TabType, label: 'Feed', icon: Activity },
-    { id: 'explore' as TabType, label: 'Explore', icon: Home },
-    { id: 'my-events' as TabType, label: 'My Events', icon: Calendar },
-    { id: 'my-tickets' as TabType, label: 'My Tickets', icon: Ticket },
-    { id: 'profile' as TabType, label: 'Profile', icon: User },
+    { id: "feed" as TabType, label: "Feed", icon: Activity },
+    { id: "explore" as TabType, label: "Explore", icon: Home },
+    { id: "my-events" as TabType, label: "My Events", icon: Calendar },
+    { id: "my-tickets" as TabType, label: "My Tickets", icon: Ticket },
+    { id: "profile" as TabType, label: "Profile", icon: User },
   ];
 
   const mockEvents = [
     {
       id: 1,
-      title: 'Summer Music Festival 2024',
-      date: 'Jun 15, 2024',
-      time: '6:00 PM',
-      location: 'Central Park, NY',
-      price: '$45',
-      image: '/placeholder.svg',
+      title: "Summer Music Festival 2024",
+      date: "Jun 15, 2024",
+      time: "6:00 PM",
+      location: "Central Park, NY",
+      price: "$45",
+      image: "/placeholder.svg",
       attendees: 234,
-      liked: false
+      liked: false,
     },
     {
       id: 2,
-      title: 'Tech Conference 2024',
-      date: 'Jun 20, 2024',
-      time: '9:00 AM',
-      location: 'Convention Center, SF',
-      price: '$125',
-      image: '/placeholder.svg',
+      title: "Tech Conference 2024",
+      date: "Jun 20, 2024",
+      time: "9:00 AM",
+      location: "Convention Center, SF",
+      price: "$125",
+      image: "/placeholder.svg",
       attendees: 567,
-      liked: true
+      liked: true,
     },
     {
       id: 3,
-      title: 'Art Gallery Opening',
-      date: 'Jun 25, 2024',
-      time: '7:00 PM',
-      location: 'Downtown Gallery, LA',
-      price: 'Free',
-      image: '/placeholder.svg',
+      title: "Art Gallery Opening",
+      date: "Jun 25, 2024",
+      time: "7:00 PM",
+      location: "Downtown Gallery, LA",
+      price: "Free",
+      image: "/placeholder.svg",
       attendees: 89,
-      liked: false
-    }
+      liked: false,
+    },
   ];
 
   const mockMyEvents = [
     {
       id: 1,
-      title: 'My Music Showcase 2024',
-      date: 'Jul 10, 2024',
-      time: '8:00 PM',
-      location: 'The Underground, NYC',
-      status: 'upcoming',
+      title: "My Music Showcase 2024",
+      date: "Jul 10, 2024",
+      time: "8:00 PM",
+      location: "The Underground, NYC",
+      status: "upcoming",
       attendees: 45,
       isOwner: true,
-      type: 'owned'
+      type: "owned",
     },
     {
       id: 2,
-      title: 'Photography Workshop',
-      date: 'Jul 20, 2024',
-      time: '2:00 PM',
-      location: 'Studio Space, LA',
-      status: 'upcoming',
+      title: "Photography Workshop",
+      date: "Jul 20, 2024",
+      time: "2:00 PM",
+      location: "Studio Space, LA",
+      status: "upcoming",
       attendees: 12,
       isOwner: true,
-      type: 'owned'
+      type: "owned",
     },
     {
       id: 3,
-      title: 'Jazz Night',
-      date: 'Jun 5, 2024',
-      time: '9:00 PM',
-      location: 'Blue Note, NYC',
-      status: 'attended',
+      title: "Jazz Night",
+      date: "Jun 5, 2024",
+      time: "9:00 PM",
+      location: "Blue Note, NYC",
+      status: "attended",
       attendees: 200,
       isOwner: false,
-      type: 'attended'
+      type: "attended",
     },
     {
       id: 4,
-      title: 'Art Exhibition Opening',
-      date: 'May 15, 2024',
-      time: '6:00 PM',
-      location: 'Modern Gallery, SF',
-      status: 'past',
+      title: "Art Exhibition Opening",
+      date: "May 15, 2024",
+      time: "6:00 PM",
+      location: "Modern Gallery, SF",
+      status: "past",
       attendees: 150,
       isOwner: false,
-      type: 'attended'
-    }
+      type: "attended",
+    },
   ];
 
   const mockMyTickets = [
     {
       id: 1,
-      eventTitle: 'Summer Music Festival 2024',
-      ticketType: 'VIP Access',
-      date: 'Jun 15, 2024',
-      time: '6:00 PM',
-      location: 'Central Park, NY',
-      status: 'active',
-      qrCode: 'QR_123456789'
+      eventTitle: "Summer Music Festival 2024",
+      ticketType: "VIP Access",
+      date: "Jun 15, 2024",
+      time: "6:00 PM",
+      location: "Central Park, NY",
+      status: "active",
+      qrCode: "QR_123456789",
     },
     {
       id: 2,
-      eventTitle: 'Tech Conference 2024',
-      ticketType: 'General Admission',
-      date: 'Jun 20, 2024',
-      time: '9:00 AM',
-      location: 'Convention Center, SF',
-      status: 'active',
-      qrCode: 'QR_987654321'
+      eventTitle: "Tech Conference 2024",
+      ticketType: "General Admission",
+      date: "Jun 20, 2024",
+      time: "9:00 AM",
+      location: "Convention Center, SF",
+      status: "active",
+      qrCode: "QR_987654321",
     },
     {
       id: 3,
-      eventTitle: 'Jazz Night',
-      ticketType: 'Premium',
-      date: 'Jun 5, 2024',
-      time: '9:00 PM',
-      location: 'Blue Note, NYC',
-      status: 'used',
-      qrCode: 'QR_456123789'
+      eventTitle: "Jazz Night",
+      ticketType: "Premium",
+      date: "Jun 5, 2024",
+      time: "9:00 PM",
+      location: "Blue Note, NYC",
+      status: "used",
+      qrCode: "QR_456123789",
     },
     {
       id: 4,
-      eventTitle: 'Food Festival',
-      ticketType: 'Early Bird',
-      date: 'May 20, 2024',
-      time: '11:00 AM',
-      location: 'City Square, Chicago',
-      status: 'expired',
-      qrCode: 'QR_789456123'
-    }
+      eventTitle: "Food Festival",
+      ticketType: "Early Bird",
+      date: "May 20, 2024",
+      time: "11:00 AM",
+      location: "City Square, Chicago",
+      status: "expired",
+      qrCode: "QR_789456123",
+    },
   ];
 
   const mockFeedPosts = [
     {
       id: 1,
-      type: 'attendance',
-      user: { name: 'Sarah Johnson', avatar: '/placeholder.svg' },
-      content: 'Just got tickets for the Summer Music Festival! 🎵',
-      event: 'Summer Music Festival 2024',
-      timestamp: '2 hours ago',
+      type: "attendance",
+      user: { name: "Sarah Johnson", avatar: "/placeholder.svg" },
+      content: "Just got tickets for the Summer Music Festival! 🎵",
+      event: "Summer Music Festival 2024",
+      timestamp: "2 hours ago",
       likes: 24,
-      comments: 5
+      comments: 5,
     },
     {
       id: 2,
-      type: 'news',
-      title: 'New Venue Opening in Downtown',
-      content: 'The Grand Theater announces its opening with a spectacular lineup of events this fall.',
-      timestamp: '4 hours ago',
+      type: "news",
+      title: "New Venue Opening in Downtown",
+      content:
+        "The Grand Theater announces its opening with a spectacular lineup of events this fall.",
+      timestamp: "4 hours ago",
       likes: 89,
-      comments: 12
+      comments: 12,
     },
     {
       id: 3,
-      type: 'post',
-      user: { name: 'Mike Chen', avatar: '/placeholder.svg' },
-      content: 'Amazing performance at the Jazz Club last night! The energy was incredible. Already looking forward to next week\'s show.',
-      timestamp: '1 day ago',
+      type: "post",
+      user: { name: "Mike Chen", avatar: "/placeholder.svg" },
+      content:
+        "Amazing performance at the Jazz Club last night! The energy was incredible. Already looking forward to next week's show.",
+      timestamp: "1 day ago",
       likes: 45,
-      comments: 8
+      comments: 8,
     },
     {
       id: 4,
-      type: 'attendance',
-      user: { name: 'Emily Davis', avatar: '/placeholder.svg' },
-      content: 'Who else is going to the Tech Conference next week?',
-      event: 'Tech Conference 2024',
-      timestamp: '1 day ago',
+      type: "attendance",
+      user: { name: "Emily Davis", avatar: "/placeholder.svg" },
+      content: "Who else is going to the Tech Conference next week?",
+      event: "Tech Conference 2024",
+      timestamp: "1 day ago",
       likes: 15,
-      comments: 3
-    }
+      comments: 3,
+    },
   ];
 
-  const renderEventCard = (event: typeof mockEvents[0]) => (
-    <Card key={event.id} className="group hover:shadow-lg transition-all duration-300 border-0 bg-card/50 backdrop-blur-sm">
+  const renderEventCard = (event: (typeof mockEvents)[0]) => (
+    <Card
+      key={event.id}
+      className="group hover:shadow-lg transition-all duration-300 border-0 bg-card/50 backdrop-blur-sm"
+    >
       <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-t-lg relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-4 left-4 text-white">
@@ -226,7 +253,9 @@ const Dashboard = () => {
       <CardContent className="p-4">
         <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
           <Clock className="h-4 w-4" />
-          <span>{event.date} • {event.time}</span>
+          <span>
+            {event.date} • {event.time}
+          </span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground text-sm mb-3">
           <MapPin className="h-4 w-4" />
@@ -235,7 +264,11 @@ const Dashboard = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" className="h-8">
-              <Heart className={`h-4 w-4 mr-1 ${event.liked ? 'fill-red-500 text-red-500' : ''}`} />
+              <Heart
+                className={`h-4 w-4 mr-1 ${
+                  event.liked ? "fill-red-500 text-red-500" : ""
+                }`}
+              />
               {event.attendees}
             </Button>
             <Button variant="ghost" size="sm" className="h-8">
@@ -246,9 +279,7 @@ const Dashboard = () => {
               <Share2 className="h-4 w-4" />
             </Button>
           </div>
-          <Button size="sm">
-            Buy Tickets
-          </Button>
+          <Button size="sm">Buy Tickets</Button>
         </div>
       </CardContent>
     </Card>
@@ -256,7 +287,7 @@ const Dashboard = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'feed':
+      case "feed":
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -268,9 +299,12 @@ const Dashboard = () => {
             </div>
             <div className="space-y-4">
               {mockFeedPosts.map((post) => (
-                <Card key={post.id} className="group hover:shadow-lg transition-all duration-300">
+                <Card
+                  key={post.id}
+                  className="group hover:shadow-lg transition-all duration-300"
+                >
                   <CardContent className="p-6">
-                    {post.type === 'attendance' && (
+                    {post.type === "attendance" && (
                       <div className="flex items-start gap-4">
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={post.user?.avatar} />
@@ -283,32 +317,50 @@ const Dashboard = () => {
                               {post.event}
                             </Badge>
                           </div>
-                          <p className="text-muted-foreground mb-3">{post.content}</p>
+                          <p className="text-muted-foreground mb-3">
+                            {post.content}
+                          </p>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <span>{post.timestamp}</span>
-                            <Button variant="ghost" size="sm" className="h-8 p-0">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 p-0"
+                            >
                               <Heart className="h-4 w-4 mr-1" />
                               {post.likes}
                             </Button>
-                            <Button variant="ghost" size="sm" className="h-8 p-0">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 p-0"
+                            >
                               <MessageCircle className="h-4 w-4 mr-1" />
                               {post.comments}
                             </Button>
-                            <Button variant="ghost" size="sm" className="h-8 p-0">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 p-0"
+                            >
                               <Share2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
                       </div>
                     )}
-                    {post.type === 'news' && (
+                    {post.type === "news" && (
                       <div>
                         <div className="flex items-center gap-2 mb-2">
                           <Badge variant="outline">News</Badge>
-                          <span className="text-sm text-muted-foreground">{post.timestamp}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {post.timestamp}
+                          </span>
                         </div>
                         <h4 className="font-semibold mb-2">{post.title}</h4>
-                        <p className="text-muted-foreground mb-3">{post.content}</p>
+                        <p className="text-muted-foreground mb-3">
+                          {post.content}
+                        </p>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <Button variant="ghost" size="sm" className="h-8 p-0">
                             <Heart className="h-4 w-4 mr-1" />
@@ -324,7 +376,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                     )}
-                    {post.type === 'post' && (
+                    {post.type === "post" && (
                       <div className="flex items-start gap-4">
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={post.user?.avatar} />
@@ -333,19 +385,35 @@ const Dashboard = () => {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <h4 className="font-semibold">{post.user?.name}</h4>
-                            <span className="text-sm text-muted-foreground">{post.timestamp}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {post.timestamp}
+                            </span>
                           </div>
-                          <p className="text-muted-foreground mb-3">{post.content}</p>
+                          <p className="text-muted-foreground mb-3">
+                            {post.content}
+                          </p>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                            <Button variant="ghost" size="sm" className="h-8 p-0">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 p-0"
+                            >
                               <Heart className="h-4 w-4 mr-1" />
                               {post.likes}
                             </Button>
-                            <Button variant="ghost" size="sm" className="h-8 p-0">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 p-0"
+                            >
                               <MessageCircle className="h-4 w-4 mr-1" />
                               {post.comments}
                             </Button>
-                            <Button variant="ghost" size="sm" className="h-8 p-0">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 p-0"
+                            >
                               <Share2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -358,7 +426,7 @@ const Dashboard = () => {
             </div>
           </div>
         );
-      case 'explore':
+      case "explore":
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -373,75 +441,159 @@ const Dashboard = () => {
             </div>
           </div>
         );
-      case 'my-events':
+      case "my-events":
         return (
           <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">My Events</h2>
-            <Button onClick={() => navigate('/create-event')}>Create Event</Button>
-          </div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {mockMyEvents.map((event) => (
-                <Card key={event.id} className="group hover:shadow-lg transition-all duration-300 border-0 bg-card/50 backdrop-blur-sm">
-                  <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-t-lg relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute top-4 right-4">
-                      <Badge variant={event.status === 'upcoming' ? 'default' : event.status === 'past' ? 'secondary' : 'outline'}>
-                        {event.status}
-                      </Badge>
-                    </div>
-                    <div className="absolute bottom-4 left-4 text-white">
-                      <Badge variant="secondary" className="mb-2">
-                        {event.type === 'owned' ? 'Owned' : 'Attended'}
-                      </Badge>
-                      <h3 className="font-semibold text-lg">{event.title}</h3>
-                    </div>
-                  </div>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
-                      <Clock className="h-4 w-4" />
-                      <span>{event.date} • {event.time}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm mb-3">
-                      <MapPin className="h-4 w-4" />
-                      <span>{event.location}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-sm">
-                        <UserPlus className="h-4 w-4" />
-                        <span>{event.attendees} attendees</span>
-                      </div>
-                      {event.isOwner && (
-                        <Button 
-                          size="sm" 
-                          onClick={() => navigate(`/event-management/${event.id}`)}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Manage
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">My Events</h2>
+              <Button onClick={() => navigate("/create-event")}>
+                Create Event
+              </Button>
             </div>
+
+            {isLoadingUserEvents ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {[...Array(6)].map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <div className="aspect-video bg-muted rounded-t-lg" />
+                    <CardContent className="p-4 space-y-2">
+                      <div className="h-4 bg-muted rounded w-3/4" />
+                      <div className="h-3 bg-muted rounded w-1/2" />
+                      <div className="h-3 bg-muted rounded w-2/3" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : userEvents.length === 0 ? (
+              <div className="text-center py-12">
+                <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No events found</h3>
+                <p className="text-muted-foreground mb-4">
+                  You haven't created or joined any events yet.
+                </p>
+                <Button onClick={() => navigate("/create-event")}>
+                  Create Your First Event
+                </Button>
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {userEvents.map((userEvent) => {
+                  const event = userEvent.event;
+                  const eventDate = new Date(event.start_date);
+                  const isUpcoming = eventDate > new Date();
+
+                  return (
+                    <Card
+                      key={event.id}
+                      className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-border/50 hover:border-primary/30 cursor-pointer"
+                      onClick={() => navigate(`/event/${event.id}`)}
+                    >
+                      <div className="aspect-video relative overflow-hidden">
+                        <img
+                          src={event.image || "/placeholder-event.jpg"}
+                          alt={event.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <div className="absolute top-4 right-4">
+                          <Badge variant={isUpcoming ? "default" : "secondary"}>
+                            {isUpcoming ? "Upcoming" : "Past"}
+                          </Badge>
+                        </div>
+                        <div className="absolute top-4 left-4">
+                          <Badge variant="secondary">{userEvent.role}</Badge>
+                        </div>
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <h4 className="text-2xl font-bold text-white mb-2">
+                            {event.name}
+                          </h4>
+                        </div>
+                      </div>
+
+                      <CardContent className="p-6">
+                        <div className="space-y-3 mb-4">
+                          <div className="flex items-center justify-between text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4" />
+                              <span className="text-sm">
+                                {eventDate.toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              <span className="text-sm">
+                                {eventDate.toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <MapPin className="w-4 h-4" />
+                            <span className="text-sm">
+                              {event.address_name}
+                            </span>
+                          </div>
+                        </div>
+
+                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                          {event.description}
+                        </p>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {!event.is_paid && (
+                              <Badge variant="outline">Free</Badge>
+                            )}
+                          </div>
+                          {userEvent.role !== "Guest" && (
+                            <Button
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/event-management/${event.id}`);
+                              }}
+                              className="group"
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Manage
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
           </div>
         );
-      case 'my-tickets':
+      case "my-tickets":
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">My Tickets</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {mockMyTickets.map((ticket) => (
-                <Card key={ticket.id} className="group hover:shadow-lg transition-all duration-300">
+                <Card
+                  key={ticket.id}
+                  className="group hover:shadow-lg transition-all duration-300"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="font-semibold text-lg mb-1">{ticket.eventTitle}</h3>
-                        <Badge variant={
-                          ticket.status === 'active' ? 'default' : 
-                          ticket.status === 'used' ? 'secondary' : 'outline'
-                        }>
+                        <h3 className="font-semibold text-lg mb-1">
+                          {ticket.eventTitle}
+                        </h3>
+                        <Badge
+                          variant={
+                            ticket.status === "active"
+                              ? "default"
+                              : ticket.status === "used"
+                              ? "secondary"
+                              : "outline"
+                          }
+                        >
                           {ticket.status}
                         </Badge>
                       </div>
@@ -449,7 +601,7 @@ const Dashboard = () => {
                         <QrCode className="h-8 w-8 text-muted-foreground" />
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2 text-sm text-muted-foreground mb-4">
                       <div className="flex items-center gap-2">
                         <Ticket className="h-4 w-4" />
@@ -457,19 +609,21 @@ const Dashboard = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4" />
-                        <span>{ticket.date} • {ticket.time}</span>
+                        <span>
+                          {ticket.date} • {ticket.time}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4" />
                         <span>{ticket.location}</span>
                       </div>
                     </div>
-                    
+
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" className="flex-1">
                         View Details
                       </Button>
-                      {ticket.status === 'active' && (
+                      {ticket.status === "active" && (
                         <Button size="sm" className="flex-1">
                           Show QR
                         </Button>
@@ -481,7 +635,7 @@ const Dashboard = () => {
             </div>
           </div>
         );
-      case 'profile':
+      case "profile":
         return (
           <div className="space-y-6">
             <div className="flex items-center gap-4">
@@ -493,9 +647,15 @@ const Dashboard = () => {
                 <h2 className="text-2xl font-bold">John Doe</h2>
                 <p className="text-muted-foreground">Event enthusiast</p>
                 <div className="flex gap-4 mt-2 text-sm">
-                  <span><strong>12</strong> Events</span>
-                  <span><strong>48</strong> Tickets</span>
-                  <span><strong>156</strong> Following</span>
+                  <span>
+                    <strong>12</strong> Events
+                  </span>
+                  <span>
+                    <strong>48</strong> Tickets
+                  </span>
+                  <span>
+                    <strong>156</strong> Following
+                  </span>
                 </div>
               </div>
             </div>
@@ -551,9 +711,7 @@ const Dashboard = () => {
         </header>
 
         {/* Mobile Content */}
-        <main className="pb-20 px-4 py-6">
-          {renderContent()}
-        </main>
+        <main className="pb-20 px-4 py-6">{renderContent()}</main>
 
         {/* Mobile Bottom Navigation */}
         <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -566,11 +724,13 @@ const Dashboard = () => {
                   key={tab.id}
                   variant="ghost"
                   className={`flex flex-col gap-1 h-auto py-2 px-3 ${
-                    isActive ? 'text-primary' : 'text-muted-foreground'
+                    isActive ? "text-primary" : "text-muted-foreground"
                   }`}
                   onClick={() => setActiveTab(tab.id)}
                 >
-                  <Icon className={`h-5 w-5 ${isActive ? 'fill-primary/10' : ''}`} />
+                  <Icon
+                    className={`h-5 w-5 ${isActive ? "fill-primary/10" : ""}`}
+                  />
                   <span className="text-xs">{tab.label}</span>
                 </Button>
               );
@@ -590,10 +750,7 @@ const Dashboard = () => {
             <img src={logoLight} alt="Tikko" className="h-8" />
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search events..."
-                className="pl-10 w-80"
-              />
+              <Input placeholder="Search events..." className="pl-10 w-80" />
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -618,7 +775,7 @@ const Dashboard = () => {
               return (
                 <Button
                   key={tab.id}
-                  variant={isActive ? 'default' : 'ghost'}
+                  variant={isActive ? "default" : "ghost"}
                   className="w-full justify-start"
                   onClick={() => setActiveTab(tab.id)}
                 >
@@ -631,9 +788,7 @@ const Dashboard = () => {
         </aside>
 
         {/* Desktop Main Content */}
-        <main className="flex-1 overflow-auto p-6">
-          {renderContent()}
-        </main>
+        <main className="flex-1 overflow-auto p-6">{renderContent()}</main>
 
         {/* Desktop Right Sidebar */}
         <aside className="w-80 border-l bg-card/50 backdrop-blur-sm p-6">
@@ -643,12 +798,14 @@ const Dashboard = () => {
                 <CardTitle className="text-lg">Trending Events</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {['Music Festival', 'Tech Conference', 'Art Exhibition'].map((event, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-primary" />
-                    <span className="text-sm">{event}</span>
-                  </div>
-                ))}
+                {["Music Festival", "Tech Conference", "Art Exhibition"].map(
+                  (event, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <span className="text-sm">{event}</span>
+                    </div>
+                  )
+                )}
               </CardContent>
             </Card>
 
@@ -658,9 +815,9 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 {[
-                  { name: 'Event Organizer Pro', type: 'Organization' },
-                  { name: 'Music Venue NYC', type: 'Venue' },
-                  { name: 'Tech Meetup Group', type: 'Community' }
+                  { name: "Event Organizer Pro", type: "Organization" },
+                  { name: "Music Venue NYC", type: "Venue" },
+                  { name: "Tech Meetup Group", type: "Community" },
                 ].map((suggestion, i) => (
                   <div key={i} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -669,10 +826,14 @@ const Dashboard = () => {
                       </Avatar>
                       <div>
                         <p className="text-sm font-medium">{suggestion.name}</p>
-                        <p className="text-xs text-muted-foreground">{suggestion.type}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {suggestion.type}
+                        </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">Follow</Button>
+                    <Button variant="outline" size="sm">
+                      Follow
+                    </Button>
                   </div>
                 ))}
               </CardContent>

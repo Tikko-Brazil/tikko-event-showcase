@@ -4,13 +4,20 @@ interface Event {
   id: number;
   name: string;
   description: string;
+  is_paid: boolean;
   start_date: string;
   end_date: string;
   address_name: string;
-  location: string;
-  latitude: number;
   longitude: number;
-  image_url: string;
+  latitude: number;
+  address_complement: string;
+  is_private: boolean;
+  auto_accept: boolean;
+  company_id: number;
+  ticket_pricing_id: number;
+  is_active: boolean;
+  image: string;
+  location: string;
   created_at: string;
   updated_at: string;
 }
@@ -98,6 +105,15 @@ interface UploadUrlResponse {
   key: string;
 }
 
+interface UserEventResponse {
+  events: {
+    event: Event;
+    role: string;
+    has_sold_tickets: boolean;
+    is_admin: boolean;
+  }[];
+}
+
 export class EventGateway {
   private baseUrl: string;
   private fetchWithAuth: (
@@ -180,11 +196,11 @@ export class EventGateway {
     return this.handleResponse<EventStats>(response);
   }
 
-  async getUserEvents(): Promise<Event[]> {
+  async getUserEvents(): Promise<UserEventResponse> {
     const response = await this.fetchWithAuth(
       `${this.baseUrl}/private/event/user`
     );
-    return this.handleResponse<Event[]>(response);
+    return this.handleResponse<UserEventResponse>(response);
   }
 
   async assignRole(id: number, data: AssignRoleRequest): Promise<void> {
