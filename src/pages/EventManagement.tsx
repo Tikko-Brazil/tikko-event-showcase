@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { EventInfoHeader } from "@/components/EventInfoHeader";
 import { EventOverview } from "@/components/EventOverview";
@@ -9,19 +10,9 @@ import { EventParticipants } from "@/components/EventParticipants";
 import { EventTicketTypes } from "@/components/EventTicketTypes";
 import { EventCoupons } from "@/components/EventCoupons";
 import { EventJoinRequests } from "@/components/EventJoinRequests";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   ArrowLeft,
-  Calendar,
-  MapPin,
   Users,
   DollarSign,
   BarChart3,
@@ -31,27 +22,53 @@ import {
   UserPlus,
   Gift,
   Edit,
-  Eye,
   FileText,
   TrendingUp,
-  ChevronLeft,
-  ChevronRight,
-  Search,
-  Plus,
-  Filter,
-  X,
-  Save,
-  Calendar as CalendarIcon,
-  Clock,
-  Image as ImageIcon,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import logoLight from "@/assets/logoLight.png";
+
+import { EventGateway } from "@/lib/EventGateway";
+
+const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
 const EventManagement = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  // Fetch event data
+  const {
+    data: eventData,
+    isLoading: eventLoading,
+    error: eventError,
+  } = useQuery({
+    queryKey: ["event-with-pricing", eventId],
+    queryFn: () => eventGateway.getEventWithTicketPricing(Number(eventId)),
+    enabled: !!eventId,
+  });
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("pt-BR", {
+      weekday: "long",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return `${start.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })} - ${end.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`;
+  };
   const [activeSection, setActiveSection] = useState("overview");
   const [mobileOverlay, setMobileOverlay] = useState<string | null>(null);
   const [salesTimeWindow, setSalesTimeWindow] = useState("24h");
@@ -168,16 +185,43 @@ const EventManagement = () => {
     setShowLocationSuggestions(false);
   };
 
-  // Mock event data
-  const eventData = {
+  if (eventLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading event...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (eventError || !eventData) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-center">
+            <p className="text-destructive mb-4">Failed to load event</p>
+            <Button onClick={() => navigate("/")}>Go Back</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const { event } = eventData;
+
+  // Mock event data for components that still need it
+  const mockEventData = {
     id: eventId,
-    title: "My Music Showcase 2024",
-    date: "Jul 10, 2024",
-    time: "8:00 PM",
-    location: "The Underground, NYC",
+    title: event.name,
+    date: formatDate(event.start_date),
+    time: formatTime(event.start_date, event.end_date),
+    location: event.address_name || event.location,
     status: "upcoming",
-    description:
-      "An intimate evening featuring emerging artists and local musicians.",
+    description: event.description,
     attendees: 45,
     capacity: 100,
     revenue: 2250,
@@ -413,7 +457,7 @@ const EventManagement = () => {
     { id: "requests", label: "Join Requests", icon: UserPlus },
   ];
 
-  const renderOverview = () => <EventOverview eventData={eventData} />;
+  const renderOverview = () => <EventOverview eventData={mockEventData} />;
 
   const renderAnalytics = () => (
     <EventAnalytics
@@ -823,12 +867,12 @@ const EventManagement = () => {
 
         {/* Event Header */}
         <EventInfoHeader
-          status={eventData.status}
-          id={eventData.id}
-          title={eventData.title}
-          date={eventData.date}
-          time={eventData.time}
-          location={eventData.location}
+          status="upcoming"
+          id={event.id}
+          title={event.name}
+          date={formatDate(event.start_date)}
+          time={formatTime(event.start_date, event.end_date)}
+          location={event.address_name || event.location}
         />
 
         {/* Quick Stats */}
@@ -839,9 +883,7 @@ const EventManagement = () => {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-2xl font-bold text-primary">
-                      {eventData.attendees}
-                    </p>
+                    <p className="text-2xl font-bold text-primary">133</p>
                     <p className="text-sm text-muted-foreground">Attendees</p>
                   </div>
                   <Users className="h-8 w-8 text-primary/60" />
@@ -854,7 +896,7 @@ const EventManagement = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-2xl font-bold text-green-600">
-                      ${eventData.revenue}
+                      R$ 400,33
                     </p>
                     <p className="text-sm text-muted-foreground">Revenue</p>
                   </div>
@@ -916,12 +958,12 @@ const EventManagement = () => {
         <aside className="w-64 border-r bg-card/50 backdrop-blur-sm">
           {/* Event Info */}
           <EventInfoHeader
-            status={eventData.status}
-            id={eventData.id}
-            title={eventData.title}
-            date={eventData.date}
-            time={eventData.time}
-            location={eventData.location}
+            status="upcoming"
+            id={event.id}
+            title={event.name}
+            date={formatDate(event.start_date)}
+            time={formatTime(event.start_date, event.end_date)}
+            location={event.address_name || event.location}
           />
 
           <nav className="p-4 space-y-2">

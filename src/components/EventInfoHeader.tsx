@@ -3,14 +3,21 @@ import { Calendar, MapPin } from "lucide-react";
 
 interface EventInfoHeaderProps {
   status: string;
-  id: string;
+  id: number;
   title: string;
   date: string;
   time?: string;
   location: string;
 }
 
-export const EventInfoHeader = ({ status, id, title, date, time, location }: EventInfoHeaderProps) => {
+export const EventInfoHeader = ({
+  status,
+  id,
+  title,
+  date,
+  time,
+  location,
+}: EventInfoHeaderProps) => {
   return (
     <div className="p-4 border-b">
       <div className="flex items-center gap-3 mb-3 md:gap-2 md:mb-2">
@@ -20,11 +27,17 @@ export const EventInfoHeader = ({ status, id, title, date, time, location }: Eve
           <span className="hidden md:inline">ID: {id}</span>
         </span>
       </div>
-      <h1 className="text-xl font-bold mb-2 md:text-base md:font-semibold">{title}</h1>
+      <h1 className="text-xl font-bold mb-2 md:text-base md:font-semibold">
+        {title}
+      </h1>
       <div className="flex items-center gap-4 text-sm text-muted-foreground md:space-y-1 md:flex-col md:items-start md:gap-0">
         <div className="flex items-center gap-1 md:gap-2">
           <Calendar className="h-4 w-4 md:h-3 md:w-3" />
-          <span>{date}{time && ` • ${time}`}</span>
+          <span>
+            {date}
+            <br></br>
+            {time && `${time}`}
+          </span>
         </div>
         <div className="flex items-center gap-1 md:gap-2">
           <MapPin className="h-4 w-4 md:h-3 md:w-3" />
