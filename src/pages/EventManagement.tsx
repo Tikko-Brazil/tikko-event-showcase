@@ -7,6 +7,8 @@ import { EventEditForm } from "@/components/EventEditForm";
 import { EventAnalytics } from "@/components/EventAnalytics";
 import { EventParticipants } from "@/components/EventParticipants";
 import { EventTicketTypes } from "@/components/EventTicketTypes";
+import { EventCoupons } from "@/components/EventCoupons";
+import { EventJoinRequests } from "@/components/EventJoinRequests";
 import {
   Card,
   CardContent,
@@ -44,69 +46,6 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from "recharts";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-  PaginationEllipsis,
-} from "@/components/ui/pagination";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 import logoLight from "@/assets/logoLight.png";
 
 const EventManagement = () => {
@@ -428,6 +367,39 @@ const EventManagement = () => {
       validated: false,
       status: "pending",
     },
+    {
+      id: 17,
+      name: "Ryan Lee",
+      email: "ryan.lee@email.com",
+      instagram: "@ryan_l",
+      ticketType: "Student",
+      paidValue: 25,
+      coupon: "STUDENT50",
+      validated: false,
+      status: "pending",
+    },
+    {
+      id: 18,
+      name: "Ryan Lee",
+      email: "ryan.lee@email.com",
+      instagram: "@ryan_l",
+      ticketType: "Student",
+      paidValue: 25,
+      coupon: "STUDENT50",
+      validated: false,
+      status: "pending",
+    },
+    {
+      id: 19,
+      name: "Ryan Lee",
+      email: "ryan.lee@email.com",
+      instagram: "@ryan_l",
+      ticketType: "Student",
+      paidValue: 25,
+      coupon: "STUDENT50",
+      validated: false,
+      status: "pending",
+    },
   ];
 
   const managementSections = [
@@ -626,521 +598,45 @@ const EventManagement = () => {
     },
   ];
 
-  const renderCoupons = () => {
-    // Filter coupons based on search and filter
-    const filteredCoupons = allCoupons.filter((coupon) => {
-      const matchesSearch = coupon.code
-        .toLowerCase()
-        .includes(couponSearch.toLowerCase());
-      const matchesFilter =
-        couponFilter === "all" ||
-        (couponFilter === "active" && coupon.isActive) ||
-        (couponFilter === "inactive" && !coupon.isActive);
-      return matchesSearch && matchesFilter;
-    });
-
-    // Pagination for coupons
-    const totalCouponPages = Math.ceil(filteredCoupons.length / itemsPerPage);
-    const startIndex = (couponPage - 1) * itemsPerPage;
-    const paginatedCoupons = filteredCoupons.slice(
-      startIndex,
-      startIndex + itemsPerPage
-    );
-
-    const handleEditCoupon = (coupon: any) => {
-      setEditingCoupon({ ...coupon });
-    };
-
-    const handleSaveEdit = () => {
-      // In a real app, this would save to backend
-      console.log("Saving coupon:", editingCoupon);
-      setEditingCoupon(null);
-    };
-
-    const handleCreateCoupon = () => {
-      // In a real app, this would save to backend
-      console.log("Creating coupon:", newCoupon);
-      setIsCreateCouponOpen(false);
-      setNewCoupon({
-        code: "",
-        type: "percentage",
-        value: 10,
-        maxUsage: 100,
-        isActive: true,
-        isTicketSpecific: false,
-        ticketType: "",
-      });
-    };
-
-    return (
-      <div className="space-y-6">
-        {/* Header Actions */}
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <h2 className="text-2xl font-bold">Coupons Management</h2>
-
-          <Dialog
-            open={isCreateCouponOpen}
-            onOpenChange={setIsCreateCouponOpen}
-          >
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Coupon
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Create New Coupon</DialogTitle>
-                <DialogDescription>
-                  Configure your new discount coupon settings.
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="code">Coupon Code</Label>
-                  <Input
-                    id="code"
-                    value={newCoupon.code}
-                    onChange={(e) =>
-                      setNewCoupon({
-                        ...newCoupon,
-                        code: e.target.value.toUpperCase(),
-                      })
-                    }
-                    placeholder="DISCOUNT20"
-                    className="uppercase"
-                  />
-                </div>
-
-                <div>
-                  <Label>Discount Type</Label>
-                  <Select
-                    value={newCoupon.type}
-                    onValueChange={(value) =>
-                      setNewCoupon({ ...newCoupon, type: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="percentage">
-                        Percentage Discount
-                      </SelectItem>
-                      <SelectItem value="fixed">Fixed Amount (BRL)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {newCoupon.type === "percentage" ? (
-                  <div>
-                    <Label>Discount Percentage: {newCoupon.value}%</Label>
-                    <Slider
-                      value={[newCoupon.value]}
-                      onValueChange={(value) =>
-                        setNewCoupon({ ...newCoupon, value: value[0] })
-                      }
-                      max={100}
-                      min={1}
-                      step={1}
-                      className="mt-2"
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <Label htmlFor="value">Fixed Amount (BRL)</Label>
-                    <Input
-                      id="value"
-                      type="number"
-                      value={newCoupon.value}
-                      onChange={(e) =>
-                        setNewCoupon({
-                          ...newCoupon,
-                          value: parseInt(e.target.value) || 0,
-                        })
-                      }
-                      placeholder="50"
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <Label>Max Usage: {newCoupon.maxUsage}</Label>
-                  <Slider
-                    value={[newCoupon.maxUsage]}
-                    onValueChange={(value) =>
-                      setNewCoupon({ ...newCoupon, maxUsage: value[0] })
-                    }
-                    max={1000}
-                    min={1}
-                    step={1}
-                    className="mt-2"
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="active"
-                    checked={newCoupon.isActive}
-                    onCheckedChange={(checked) =>
-                      setNewCoupon({ ...newCoupon, isActive: !!checked })
-                    }
-                  />
-                  <Label htmlFor="active">Active</Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="ticketSpecific"
-                    checked={newCoupon.isTicketSpecific}
-                    onCheckedChange={(checked) =>
-                      setNewCoupon({
-                        ...newCoupon,
-                        isTicketSpecific: !!checked,
-                      })
-                    }
-                  />
-                  <Label htmlFor="ticketSpecific">
-                    Apply to specific ticket type only
-                  </Label>
-                </div>
-
-                {newCoupon.isTicketSpecific && (
-                  <div>
-                    <Label>Ticket Type</Label>
-                    <Select
-                      value={newCoupon.ticketType}
-                      onValueChange={(value) =>
-                        setNewCoupon({ ...newCoupon, ticketType: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select ticket type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ticketTypes.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
-
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsCreateCouponOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleCreateCoupon}>Create Coupon</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {/* Filters and Search */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search coupons..."
-              value={couponSearch}
-              onChange={(e) => setCouponSearch(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          <Select value={couponFilter} onValueChange={setCouponFilter}>
-            <SelectTrigger className="w-[180px]">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Coupons</SelectItem>
-              <SelectItem value="active">Active Only</SelectItem>
-              <SelectItem value="inactive">Inactive Only</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Coupons Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Coupons List</CardTitle>
-            <CardDescription>
-              Showing {startIndex + 1} to{" "}
-              {Math.min(startIndex + itemsPerPage, filteredCoupons.length)} of{" "}
-              {filteredCoupons.length} coupons
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Desktop Header - Hidden on mobile */}
-              <div className="hidden md:grid md:grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
-                <span className="col-span-4">Code</span>
-                <span className="col-span-2">Value</span>
-                <span className="col-span-3">Usage</span>
-                <span className="col-span-2">Status</span>
-                <span className="col-span-1">Actions</span>
-              </div>
-
-              <div className="space-y-2">
-                {paginatedCoupons.map((coupon) => (
-                  <div
-                    key={coupon.id}
-                    className="grid grid-cols-12 gap-2 md:gap-4 text-sm py-3 border-b border-border/50 last:border-0 items-center"
-                  >
-                    {/* Code - Takes majority of width on mobile */}
-                    <div className="col-span-6 md:col-span-4">
-                      <span className="font-mono font-medium text-xs md:text-sm break-all">
-                        {coupon.code}
-                      </span>
-                      {coupon.isTicketSpecific && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          → {coupon.ticketType}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Value */}
-                    <div className="col-span-2 md:col-span-2">
-                      <span className="text-xs md:text-sm">
-                        {coupon.type === "percentage"
-                          ? `${coupon.value}%`
-                          : `R$ ${coupon.value}`}
-                      </span>
-                    </div>
-
-                    {/* Usage */}
-                    <div className="col-span-2 md:col-span-3">
-                      <div className="text-xs md:text-sm">
-                        {coupon.usage}/{coupon.maxUsage}
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-1 mt-1">
-                        <div
-                          className="bg-primary h-1 rounded-full"
-                          style={{
-                            width: `${(coupon.usage / coupon.maxUsage) * 100}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Status - Different for mobile vs desktop */}
-                    <div className="col-span-1 md:col-span-2">
-                      {/* Mobile: Visual indicator only */}
-                      <div className="md:hidden">
-                        <div
-                          className={`w-3 h-3 rounded-full ${
-                            coupon.isActive ? "bg-green-500" : "bg-gray-400"
-                          }`}
-                          title={coupon.isActive ? "Active" : "Inactive"}
-                        />
-                      </div>
-                      {/* Desktop: Badge with text */}
-                      <div className="hidden md:block">
-                        <Badge
-                          variant={coupon.isActive ? "default" : "secondary"}
-                        >
-                          {coupon.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="col-span-1 md:col-span-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditCoupon(coupon)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Edit className="h-3 w-3 md:h-4 md:w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Pagination */}
-              {totalCouponPages > 1 && (
-                <div className="flex items-center justify-between pt-4">
-                  <p className="text-xs md:text-sm text-muted-foreground">
-                    {startIndex + 1}-
-                    {Math.min(
-                      startIndex + itemsPerPage,
-                      filteredCoupons.length
-                    )}{" "}
-                    of {filteredCoupons.length}
-                  </p>
-
-                  <div className="flex items-center gap-2">
-                    {/* Desktop pagination with labels */}
-                    <div className="hidden md:flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (couponPage > 1) setCouponPage(couponPage - 1);
-                        }}
-                        disabled={couponPage <= 1}
-                      >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        Previous
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (couponPage < totalCouponPages)
-                            setCouponPage(couponPage + 1);
-                        }}
-                        disabled={couponPage >= totalCouponPages}
-                      >
-                        Next
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </div>
-
-                    {/* Mobile pagination with icons only */}
-                    <div className="flex md:hidden items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (couponPage > 1) setCouponPage(couponPage - 1);
-                        }}
-                        disabled={couponPage <= 1}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (couponPage < totalCouponPages)
-                            setCouponPage(couponPage + 1);
-                        }}
-                        disabled={couponPage >= totalCouponPages}
-                        className="h-8 w-8 p-0"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Edit Coupon Dialog */}
-        {editingCoupon && (
-          <Dialog
-            open={!!editingCoupon}
-            onOpenChange={() => setEditingCoupon(null)}
-          >
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Edit Coupon: {editingCoupon.code}</DialogTitle>
-                <DialogDescription>
-                  Modify coupon settings and restrictions.
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                <div>
-                  <Label>Max Usage: {editingCoupon.maxUsage}</Label>
-                  <Slider
-                    value={[editingCoupon.maxUsage]}
-                    onValueChange={(value) =>
-                      setEditingCoupon({ ...editingCoupon, maxUsage: value[0] })
-                    }
-                    max={1000}
-                    min={1}
-                    step={1}
-                    className="mt-2"
-                  />
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="editActive"
-                    checked={editingCoupon.isActive}
-                    onCheckedChange={(checked) =>
-                      setEditingCoupon({ ...editingCoupon, isActive: checked })
-                    }
-                  />
-                  <Label htmlFor="editActive">Active</Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="editTicketSpecific"
-                    checked={editingCoupon.isTicketSpecific}
-                    onCheckedChange={(checked) =>
-                      setEditingCoupon({
-                        ...editingCoupon,
-                        isTicketSpecific: checked,
-                      })
-                    }
-                  />
-                  <Label htmlFor="editTicketSpecific">
-                    Apply to specific ticket type only
-                  </Label>
-                </div>
-
-                {editingCoupon.isTicketSpecific && (
-                  <div>
-                    <Label>Ticket Type</Label>
-                    <Select
-                      value={editingCoupon.ticketType || ""}
-                      onValueChange={(value) =>
-                        setEditingCoupon({
-                          ...editingCoupon,
-                          ticketType: value,
-                        })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select ticket type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ticketTypes.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
-
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setEditingCoupon(null)}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleSaveEdit}>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
-      </div>
-    );
-  };
+  const renderCoupons = () => (
+    <EventCoupons
+      allCoupons={allCoupons}
+      couponSearch={couponSearch}
+      setCouponSearch={setCouponSearch}
+      couponFilter={couponFilter}
+      setCouponFilter={setCouponFilter}
+      couponPage={couponPage}
+      setCouponPage={setCouponPage}
+      itemsPerPage={itemsPerPage}
+      isCreateCouponOpen={isCreateCouponOpen}
+      setIsCreateCouponOpen={setIsCreateCouponOpen}
+      newCoupon={newCoupon}
+      setNewCoupon={setNewCoupon}
+      editingCoupon={editingCoupon}
+      setEditingCoupon={setEditingCoupon}
+      ticketTypes={ticketTypes}
+      onCreateCoupon={() => {
+        console.log("Creating coupon:", newCoupon);
+        setIsCreateCouponOpen(false);
+        setNewCoupon({
+          code: "",
+          type: "percentage",
+          value: 10,
+          maxUsage: 100,
+          isActive: true,
+          isTicketSpecific: false,
+          ticketType: "",
+        });
+      }}
+      onEditCoupon={(coupon) => {
+        setEditingCoupon({ ...coupon });
+      }}
+      onSaveEdit={() => {
+        console.log("Saving coupon:", editingCoupon);
+        setEditingCoupon(null);
+      }}
+    />
+  );
 
   const renderParticipants = () => (
     <EventParticipants
@@ -1158,255 +654,22 @@ const EventManagement = () => {
     />
   );
 
-  const renderJoinRequests = () => {
-    // Filter join requests based on status and search
-    const filteredRequests = joinRequestsData.filter((request) => {
-      const matchesSearch =
-        requestSearch === "" ||
-        request.name.toLowerCase().includes(requestSearch.toLowerCase()) ||
-        request.email.toLowerCase().includes(requestSearch.toLowerCase()) ||
-        request.instagram.toLowerCase().includes(requestSearch.toLowerCase());
-
-      return matchesSearch;
-    });
-
-    // Pagination
-    const totalRequests = filteredRequests.length;
-    const totalPages = Math.ceil(totalRequests / requestsPerPage);
-    const startIndex = (requestPage - 1) * requestsPerPage;
-    const endIndex = Math.min(startIndex + requestsPerPage, totalRequests);
-    const paginatedRequests = filteredRequests.slice(startIndex, endIndex);
-
-    const handleAcceptRequest = (requestId: number) => {
-      // Mock accept logic
-      console.log(`Accepting join request ${requestId}`);
-    };
-
-    const handleRejectRequest = (requestId: number) => {
-      // Mock reject logic
-      console.log(`Rejecting join request ${requestId}`);
-    };
-
-    return (
-      <div className="space-y-6">
-        {/* Header and Controls */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Join Requests</h2>
-            <p className="text-muted-foreground">
-              Review and approve pending join requests from ticket purchasers
-            </p>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search join requests..."
-              value={requestSearch}
-              onChange={(e) => setRequestSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-        </div>
-
-        {/* Join Requests Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {paginatedRequests.map((request) => (
-            <Card key={request.id} className="relative">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-yellow-500 text-yellow-50">
-                        {request.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h3 className="font-semibold text-sm leading-none">
-                        {request.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {request.email}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant="secondary">Pending</Badge>
-                </div>
-
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Instagram:</span>
-                    <span className="font-medium">{request.instagram}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Ticket Type:</span>
-                    <Badge variant="outline">{request.ticketType}</Badge>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Paid Value:</span>
-                    <span className="font-medium">R${request.paidValue}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Coupon:</span>
-                    <span className="font-medium">
-                      {request.coupon ? (
-                        <Badge variant="secondary">{request.coupon}</Badge>
-                      ) : (
-                        <span className="text-muted-foreground">None</span>
-                      )}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-4 pt-4 border-t flex gap-2">
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="flex-1">
-                        <X className="h-4 w-4 mr-2" />
-                        Reject
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Reject Join Request</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to reject {request.name}'s join
-                          request? They will be notified of this decision.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          onClick={() => handleRejectRequest(request.id)}
-                        >
-                          Reject
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button size="sm" className="flex-1">
-                        <CheckCircle2 className="h-4 w-4 mr-2" />
-                        Accept
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Accept Join Request</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to accept {request.name}'s join
-                          request? They will be added to the approved
-                          participants list.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleAcceptRequest(request.id)}
-                        >
-                          Accept
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Empty state */}
-        {filteredRequests.length === 0 && (
-          <div className="text-center py-12">
-            <UserPlus className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium mb-2">No join requests</h3>
-            <p className="text-muted-foreground">
-              {requestSearch
-                ? "No requests match your search."
-                : "All join requests have been processed."}
-            </p>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-4">
-            <p className="text-xs md:text-sm text-muted-foreground">
-              {startIndex + 1}-{endIndex} of {totalRequests} requests
-            </p>
-
-            <div className="flex items-center gap-2">
-              {/* Desktop pagination with labels */}
-              <div className="hidden md:flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (requestPage > 1) setRequestPage(requestPage - 1);
-                  }}
-                  disabled={requestPage <= 1}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (requestPage < totalPages)
-                      setRequestPage(requestPage + 1);
-                  }}
-                  disabled={requestPage >= totalPages}
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-
-              {/* Mobile pagination with icons only */}
-              <div className="flex md:hidden items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (requestPage > 1) setRequestPage(requestPage - 1);
-                  }}
-                  disabled={requestPage <= 1}
-                  className="h-8 w-8 p-0"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (requestPage < totalPages)
-                      setRequestPage(requestPage + 1);
-                  }}
-                  disabled={requestPage >= totalPages}
-                  className="h-8 w-8 p-0"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
+  const renderJoinRequests = () => (
+    <EventJoinRequests
+      joinRequestsData={joinRequestsData}
+      requestSearch={requestSearch}
+      setRequestSearch={setRequestSearch}
+      requestPage={requestPage}
+      setRequestPage={setRequestPage}
+      requestsPerPage={requestsPerPage}
+      onAcceptRequest={(requestId) => {
+        console.log(`Accepting join request ${requestId}`);
+      }}
+      onRejectRequest={(requestId) => {
+        console.log(`Rejecting join request ${requestId}`);
+      }}
+    />
+  );
 
   const renderTicketTypes = () => (
     <EventTicketTypes
