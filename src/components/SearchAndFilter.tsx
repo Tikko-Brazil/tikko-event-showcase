@@ -1,3 +1,4 @@
+import React from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Filter } from "lucide-react";
@@ -14,6 +15,7 @@ interface SearchAndFilterProps {
   filterValue: string;
   onFilterChange: (value: string) => void;
   filterOptions: FilterOption[];
+  searchInputRef?: React.RefObject<HTMLInputElement>;
 }
 
 export const SearchAndFilter = ({
@@ -23,11 +25,13 @@ export const SearchAndFilter = ({
   filterValue,
   onFilterChange,
   filterOptions,
+  searchInputRef,
 }: SearchAndFilterProps) => (
   <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
     <div className="relative flex-1">
       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       <Input
+        ref={searchInputRef}
         placeholder={searchPlaceholder}
         value={searchValue}
         onChange={(e) => onSearchChange(e.target.value)}

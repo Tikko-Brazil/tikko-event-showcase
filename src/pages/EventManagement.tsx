@@ -92,12 +92,6 @@ const EventManagement = () => {
     ticketType: "",
   });
 
-  // Participants states
-  const [participantFilter, setParticipantFilter] = useState("all");
-  const [participantSearch, setParticipantSearch] = useState("");
-  const [participantPage, setParticipantPage] = useState(1);
-  const participantsPerPage = 6;
-
   // Join Requests states
   const [requestFilter, setRequestFilter] = useState("all");
   const [requestSearch, setRequestSearch] = useState("");
@@ -615,19 +609,7 @@ const EventManagement = () => {
   );
 
   const renderParticipants = () => (
-    <EventParticipants
-      participantsData={participantsData}
-      participantSearch={participantSearch}
-      setParticipantSearch={setParticipantSearch}
-      participantFilter={participantFilter}
-      setParticipantFilter={setParticipantFilter}
-      participantPage={participantPage}
-      setParticipantPage={setParticipantPage}
-      participantsPerPage={participantsPerPage}
-      onRefund={(participantId) => {
-        console.log(`Refunding participant ${participantId}`);
-      }}
-    />
+    <EventParticipants eventId={parseInt(eventId!)} />
   );
 
   const renderJoinRequests = () => (
