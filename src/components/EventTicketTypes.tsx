@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useState, useCallback, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { debounce } from "lodash";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,78 +20,93 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Edit, X } from "lucide-react";
 import { SearchAndFilter } from "./SearchAndFilter";
 import { Pagination } from "./Pagination";
-
-interface TicketType {
-  id: number;
-  name: string;
-  gender: string;
-  value: number;
-  isActive: boolean;
-  totalSold: number;
-}
-
-interface NewTicketType {
-  name: string;
-  gender: string;
-  value: number;
-  isActive: boolean;
-}
+import { TicketPricingGateway } from "@/lib/TicketPricingGateway";
 
 interface EventTicketTypesProps {
-  allTicketTypes: TicketType[];
-  ticketTypeSearch: string;
-  setTicketTypeSearch: (value: string) => void;
-  ticketTypeFilter: string;
-  setTicketTypeFilter: (value: string) => void;
-  ticketTypePage: number;
-  setTicketTypePage: (page: number) => void;
-  itemsPerPage: number;
-  isCreateTicketTypeOpen: boolean;
-  setIsCreateTicketTypeOpen: (open: boolean) => void;
-  newTicketType: NewTicketType;
-  setNewTicketType: (ticketType: NewTicketType) => void;
-  editingTicketType: TicketType | null;
-  setEditingTicketType: (ticketType: TicketType | null) => void;
-  onCreateTicketType: () => void;
-  onEditTicketType: (ticketType: TicketType) => void;
-  onSaveEdit: () => void;
-  onDeleteTicketType: (id: number) => void;
+  eventId: number;
 }
 
-export const EventTicketTypes = ({
-  allTicketTypes,
-  ticketTypeSearch,
-  setTicketTypeSearch,
-  ticketTypeFilter,
-  setTicketTypeFilter,
-  ticketTypePage,
-  setTicketTypePage,
-  itemsPerPage,
-  isCreateTicketTypeOpen,
-  setIsCreateTicketTypeOpen,
-  newTicketType,
-  setNewTicketType,
-  editingTicketType,
-  setEditingTicketType,
-  onCreateTicketType,
-  onEditTicketType,
-  onSaveEdit,
-  onDeleteTicketType,
-}: EventTicketTypesProps) => {
-  // Filter ticket types based on search and filter
+export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
+  const [ticketTypeSearch, setTicketTypeSearch] = useState("");
+  const [ticketTypeFilter, setTicketTypeFilter] = useState("all");
+  const [ticketTypePage, setTicketTypePage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const itemsPerPage = 6;
+  const ticketPricingGateway = new TicketPricingGateway(
+    import.meta.env.VITE_BACKEND_BASE_URL
+  );
+
+  // Debounced search function
+  const debouncedSetSearch = useCallback(
+    debounce((searchTerm: string) => {
+      setDebouncedSearch(searchTerm);
+    }, 500),
+    []
+  );
+
+  // Update debounced search when ticketTypeSearch changes
+  React.useEffect(() => {
+    debouncedSetSearch(ticketTypeSearch);
+  }, [ticketTypeSearch, debouncedSetSearch]);
+
+  // Reset page when filter or search changes
+  React.useEffect(() => {
+    setTicketTypePage(1);
+  }, [ticketTypeFilter, debouncedSearch]);
+
+  // Get filter status for API call
+  const getFilterStatus = (filter: string) => {
+    switch (filter) {
+      case "active":
+        return "Active";
+      case "inactive":
+        return "Inactive";
+      default:
+        return "All";
+    }
+  };
+
+  // Fetch ticket pricings using React Query
+  const {
+    data: ticketPricingsData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["event-ticket-pricings", eventId, ticketTypeFilter],
+    queryFn: () =>
+      ticketPricingGateway.getTicketPricingByEvent(
+        eventId,
+        getFilterStatus(ticketTypeFilter)
+      ),
+    enabled: !!eventId,
+  });
+
+  // Restore focus after query updates
+  React.useEffect(() => {
+    if (ticketTypeSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [ticketPricingsData, ticketTypeSearch]);
+
+  const allTicketTypes = ticketPricingsData || [];
+
+  // Filter ticket types based on search
   const filteredTicketTypes = allTicketTypes.filter((ticketType) => {
-    const matchesSearch = ticketType.name
-      .toLowerCase()
-      .includes(ticketTypeSearch.toLowerCase());
-    const matchesFilter =
-      ticketTypeFilter === "all" ||
-      (ticketTypeFilter === "active" && ticketType.isActive) ||
-      (ticketTypeFilter === "inactive" && !ticketType.isActive);
-    return matchesSearch && matchesFilter;
+    const matchesSearch =
+      debouncedSearch === "" ||
+      ticketType.ticket_type
+        .toLowerCase()
+        .includes(debouncedSearch.toLowerCase()) ||
+      ticketType.gender.toLowerCase().includes(debouncedSearch.toLowerCase());
+    return matchesSearch;
   });
 
   // Pagination for ticket types
-  const totalTicketTypePages = Math.ceil(filteredTicketTypes.length / itemsPerPage);
+  const totalTicketTypePages = Math.ceil(
+    filteredTicketTypes.length / itemsPerPage
+  );
   const startIndex = (ticketTypePage - 1) * itemsPerPage;
   const paginatedTicketTypes = filteredTicketTypes.slice(
     startIndex,
@@ -94,38 +119,21 @@ export const EventTicketTypes = ({
     { value: "inactive", label: "Inactive Only" },
   ];
 
-  const GenderRadioGroup = ({
-    value,
-    onChange,
-    namePrefix,
-  }: {
-    value: string;
-    onChange: (value: string) => void;
-    namePrefix: string;
-  }) => (
-    <div className="flex items-center space-x-4">
-      {[
-        { value: "all", label: "All" },
-        { value: "male", label: "Male" },
-        { value: "female", label: "Female" },
-      ].map((option) => (
-        <div key={option.value} className="flex items-center space-x-2">
-          <input
-            type="radio"
-            id={`${namePrefix}-${option.value}`}
-            name={namePrefix}
-            value={option.value}
-            checked={value === option.value}
-            onChange={(e) => onChange(e.target.value)}
-            className="h-4 w-4"
-          />
-          <Label htmlFor={`${namePrefix}-${option.value}`} className="text-sm font-normal">
-            {option.label}
-          </Label>
-        </div>
-      ))}
-    </div>
-  );
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">Loading ticket types...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-500">Error loading ticket types</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -133,7 +141,7 @@ export const EventTicketTypes = ({
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <h2 className="text-2xl font-bold">Ticket Types Management</h2>
 
-        <Dialog open={isCreateTicketTypeOpen} onOpenChange={setIsCreateTicketTypeOpen}>
+        <Dialog>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -147,69 +155,51 @@ export const EventTicketTypes = ({
                 Configure your new ticket type settings.
               </DialogDescription>
             </DialogHeader>
-
             <div className="space-y-4">
               <div>
                 <Label htmlFor="name">Ticket Type Name</Label>
-                <Input
-                  id="name"
-                  value={newTicketType.name}
-                  onChange={(e) =>
-                    setNewTicketType({ ...newTicketType, name: e.target.value })
-                  }
-                  placeholder="Early Bird"
-                />
+                <Input id="name" placeholder="Early Bird" />
               </div>
-
               <div>
                 <Label>Gender</Label>
-                <div className="mt-2">
-                  <GenderRadioGroup
-                    value={newTicketType.gender}
-                    onChange={(value) =>
-                      setNewTicketType({ ...newTicketType, gender: value })
-                    }
-                    namePrefix="gender"
-                  />
+                <div className="flex items-center space-x-4 mt-2">
+                  <div className="flex items-center space-x-2">
+                    <input type="radio" id="all" name="gender" value="all" />
+                    <Label htmlFor="all" className="text-sm font-normal">
+                      All
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input type="radio" id="male" name="gender" value="male" />
+                    <Label htmlFor="male" className="text-sm font-normal">
+                      Male
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="female"
+                      name="gender"
+                      value="female"
+                    />
+                    <Label htmlFor="female" className="text-sm font-normal">
+                      Female
+                    </Label>
+                  </div>
                 </div>
               </div>
-
               <div>
                 <Label htmlFor="value">Ticket Value (BRL)</Label>
-                <Input
-                  id="value"
-                  type="number"
-                  value={newTicketType.value}
-                  onChange={(e) =>
-                    setNewTicketType({
-                      ...newTicketType,
-                      value: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  placeholder="50"
-                />
+                <Input id="value" type="number" placeholder="50" />
               </div>
-
               <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="active"
-                  checked={newTicketType.isActive}
-                  onCheckedChange={(checked) =>
-                    setNewTicketType({ ...newTicketType, isActive: !!checked })
-                  }
-                />
+                <Checkbox id="active" />
                 <Label htmlFor="active">Active</Label>
               </div>
             </div>
-
             <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsCreateTicketTypeOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button onClick={onCreateTicketType}>Create Ticket Type</Button>
+              <Button variant="outline">Cancel</Button>
+              <Button>Create Ticket Type</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -223,6 +213,7 @@ export const EventTicketTypes = ({
         filterValue={ticketTypeFilter}
         onFilterChange={setTicketTypeFilter}
         filterOptions={filterOptions}
+        searchInputRef={searchInputRef}
       />
 
       {/* Ticket Types Cards */}
@@ -232,33 +223,25 @@ export const EventTicketTypes = ({
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <CardTitle className="text-lg">{ticketType.name}</CardTitle>
+                  <CardTitle className="text-lg">
+                    {ticketType.ticket_type}
+                  </CardTitle>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge variant={ticketType.isActive ? "default" : "secondary"}>
-                      {ticketType.isActive ? "Active" : "Inactive"}
+                    <Badge
+                      variant={ticketType.active ? "default" : "secondary"}
+                    >
+                      {ticketType.active ? "Active" : "Inactive"}
                     </Badge>
-                    <Badge variant="outline">
-                      {ticketType.gender === "all"
-                        ? "All Genders"
-                        : ticketType.gender === "male"
-                        ? "Male Only"
-                        : "Female Only"}
-                    </Badge>
+                    <Badge variant="outline">{ticketType.gender}</Badge>
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEditTicketType(ticketType)}
-                    className="h-8 w-8 p-0"
-                  >
+                  <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                     <Edit className="h-3 w-3" />
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => onDeleteTicketType(ticketType.id)}
                     className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                   >
                     <X className="h-3 w-3" />
@@ -270,11 +253,21 @@ export const EventTicketTypes = ({
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Price</span>
-                  <span className="text-lg font-bold">R$ {ticketType.value}</span>
+                  <span className="text-lg font-bold">
+                    R$ {ticketType.price}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Total Sold</span>
-                  <span className="text-sm font-medium">{ticketType.totalSold}</span>
+                  <span className="text-sm text-muted-foreground">Lot</span>
+                  <span className="text-sm font-medium">{ticketType.lot}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">
+                    Total Sold
+                  </span>
+                  <span className="text-sm font-medium">
+                    {ticketType.sold_count}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -288,94 +281,13 @@ export const EventTicketTypes = ({
         totalPages={totalTicketTypePages}
         onPageChange={setTicketTypePage}
         startIndex={startIndex}
-        endIndex={Math.min(startIndex + itemsPerPage, filteredTicketTypes.length)}
+        endIndex={Math.min(
+          startIndex + itemsPerPage,
+          filteredTicketTypes.length
+        )}
         totalItems={filteredTicketTypes.length}
         itemName="ticket types"
       />
-
-      {/* Edit Ticket Type Dialog */}
-      {editingTicketType && (
-        <Dialog open={!!editingTicketType} onOpenChange={() => setEditingTicketType(null)}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Edit Ticket Type: {editingTicketType.name}</DialogTitle>
-              <DialogDescription>
-                Modify ticket type settings and pricing.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="editName">Ticket Type Name</Label>
-                <Input
-                  id="editName"
-                  value={editingTicketType.name}
-                  onChange={(e) =>
-                    setEditingTicketType({
-                      ...editingTicketType,
-                      name: e.target.value,
-                    })
-                  }
-                  placeholder="Early Bird"
-                />
-              </div>
-
-              <div>
-                <Label>Gender</Label>
-                <div className="mt-2">
-                  <GenderRadioGroup
-                    value={editingTicketType.gender}
-                    onChange={(value) =>
-                      setEditingTicketType({
-                        ...editingTicketType,
-                        gender: value,
-                      })
-                    }
-                    namePrefix="edit-gender"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="editValue">Ticket Value (BRL)</Label>
-                <Input
-                  id="editValue"
-                  type="number"
-                  value={editingTicketType.value}
-                  onChange={(e) =>
-                    setEditingTicketType({
-                      ...editingTicketType,
-                      value: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  placeholder="50"
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="editActive"
-                  checked={editingTicketType.isActive}
-                  onCheckedChange={(checked) =>
-                    setEditingTicketType({
-                      ...editingTicketType,
-                      isActive: checked,
-                    })
-                  }
-                />
-                <Label htmlFor="editActive">Active</Label>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setEditingTicketType(null)}>
-                Cancel
-              </Button>
-              <Button onClick={onSaveEdit}>Save Changes</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   );
 };

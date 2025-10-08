@@ -568,55 +568,18 @@ const EventManagement = () => {
     },
   ];
 
-  const renderCoupons = () => (
-    <EventCoupons eventId={parseInt(eventId!)} />
-  );
+  const renderCoupons = () => <EventCoupons eventId={parseInt(eventId!)} />;
 
   const renderParticipants = () => (
     <EventParticipants eventId={parseInt(eventId!)} />
   );
 
   const renderJoinRequests = () => (
-    <EventJoinRequests eventId={eventId} />
+    <EventJoinRequests eventId={parseInt(eventId!)} />
   );
 
   const renderTicketTypes = () => (
-    <EventTicketTypes
-      allTicketTypes={allTicketTypes}
-      ticketTypeSearch={ticketTypeSearch}
-      setTicketTypeSearch={setTicketTypeSearch}
-      ticketTypeFilter={ticketTypeFilter}
-      setTicketTypeFilter={setTicketTypeFilter}
-      ticketTypePage={ticketTypePage}
-      setTicketTypePage={setTicketTypePage}
-      itemsPerPage={itemsPerPage}
-      isCreateTicketTypeOpen={isCreateTicketTypeOpen}
-      setIsCreateTicketTypeOpen={setIsCreateTicketTypeOpen}
-      newTicketType={newTicketType}
-      setNewTicketType={setNewTicketType}
-      editingTicketType={editingTicketType}
-      setEditingTicketType={setEditingTicketType}
-      onCreateTicketType={() => {
-        console.log("Creating ticket type:", newTicketType);
-        setIsCreateTicketTypeOpen(false);
-        setNewTicketType({
-          name: "",
-          gender: "all",
-          value: 50,
-          isActive: true,
-        });
-      }}
-      onEditTicketType={(ticketType) => {
-        setEditingTicketType({ ...ticketType });
-      }}
-      onSaveEdit={() => {
-        console.log("Saving ticket type:", editingTicketType);
-        setEditingTicketType(null);
-      }}
-      onDeleteTicketType={(id) => {
-        console.log("Deleting ticket type:", id);
-      }}
-    />
+    <EventTicketTypes eventId={parseInt(eventId!)} />
   );
 
   const renderEditEvent = () => <EventEditForm event={event} />;
