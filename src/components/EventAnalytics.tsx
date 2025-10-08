@@ -27,26 +27,29 @@ import { EventGateway } from "@/lib/EventGateway";
 
 interface EventAnalyticsProps {
   eventId: number;
-  salesTimeWindow: string;
-  setSalesTimeWindow: (value: string) => void;
-  validationTimeWindow: string;
-  setValidationTimeWindow: (value: string) => void;
-  currentPage: number;
-  setCurrentPage: (page: number) => void;
-  itemsPerPage: number;
 }
 
-export const EventAnalytics = ({
-  eventId,
-  salesTimeWindow,
-  setSalesTimeWindow,
-  validationTimeWindow,
-  setValidationTimeWindow,
-  currentPage,
-  setCurrentPage,
-  itemsPerPage,
-}: EventAnalyticsProps) => {
+export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
+  const [salesTimeWindow, setSalesTimeWindow] = useState("7d");
+  const [validationTimeWindow, setValidationTimeWindow] = useState("7d");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+
+  // Convert time window to days
+  const getDaysFromTimeWindow = (timeWindow: string) => {
+    switch (timeWindow) {
+      case "7d":
+        return 7;
+      case "14d":
+        return 14;
+      case "30d":
+        return 30;
+      default:
+        return 7;
+    }
+  };
 
   // Fetch event stats from backend
   const {
@@ -54,8 +57,12 @@ export const EventAnalytics = ({
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["event-stats", eventId],
-    queryFn: () => eventGateway.getEventStats(eventId),
+    queryKey: ["event-stats", eventId, salesTimeWindow],
+    queryFn: () =>
+      eventGateway.getEventStats(
+        eventId,
+        getDaysFromTimeWindow(salesTimeWindow)
+      ),
     enabled: !!eventId,
   });
 
@@ -100,49 +107,30 @@ export const EventAnalytics = ({
     paidTickets: 135,
   };
 
-  // Sales data based on selected time window
-  const salesDataSets = {
-    "1h": [
-      { time: "60m", tickets: 1 },
-      { time: "50m", tickets: 0 },
-      { time: "40m", tickets: 2 },
-      { time: "30m", tickets: 1 },
-      { time: "20m", tickets: 3 },
-      { time: "10m", tickets: 2 },
-    ],
-    "3h": [
-      { time: "3h", tickets: 5 },
-      { time: "2.5h", tickets: 8 },
-      { time: "2h", tickets: 12 },
-      { time: "1.5h", tickets: 15 },
-      { time: "1h", tickets: 18 },
-      { time: "30m", tickets: 9 },
-    ],
-    "6h": [
-      { time: "6h", tickets: 8 },
-      { time: "5h", tickets: 12 },
-      { time: "4h", tickets: 15 },
-      { time: "3h", tickets: 22 },
-      { time: "2h", tickets: 18 },
-      { time: "1h", tickets: 25 },
-    ],
-    "12h": [
-      { time: "12h", tickets: 15 },
-      { time: "10h", tickets: 22 },
-      { time: "8h", tickets: 28 },
-      { time: "6h", tickets: 35 },
-      { time: "4h", tickets: 42 },
-      { time: "2h", tickets: 48 },
-    ],
-    "24h": [
-      { time: "24h", tickets: 25 },
-      { time: "20h", tickets: 35 },
-      { time: "16h", tickets: 42 },
-      { time: "12h", tickets: 55 },
-      { time: "8h", tickets: 68 },
-      { time: "4h", tickets: 75 },
-    ],
+  // Get sales data from event stats or fallback to mock data
+  const getSalesData = () => {
+    if (!eventStats?.daily_sales) {
+      return [
+        { time: "Day 7", tickets: 1 },
+        { time: "Day 6", tickets: 1 },
+        { time: "Day 5", tickets: 1 },
+        { time: "Day 4", tickets: 1 },
+        { time: "Day 3", tickets: 1 },
+        { time: "Day 2", tickets: 1 },
+        { time: "Day 1", tickets: 1 },
+      ];
+    }
+
+    return eventStats.daily_sales.map((sale, index) => ({
+      time: new Date(sale.date).toLocaleDateString("pt-BR", {
+        month: "short",
+        day: "numeric",
+      }),
+      tickets: sale.total_sales,
+    }));
   };
+
+  const salesData = getSalesData();
 
   // Validation data based on selected time window
   const validationDataSets = {
@@ -400,7 +388,7 @@ export const EventAnalytics = ({
             <div className="flex items-center justify-between">
               <CardTitle>Tickets Sold</CardTitle>
               <TimeWindowSelector
-                options={["1h", "3h", "6h", "12h", "24h"]}
+                options={["7d", "14d", "30d"]}
                 selected={salesTimeWindow}
                 onSelect={setSalesTimeWindow}
               />
@@ -409,11 +397,7 @@ export const EventAnalytics = ({
           <CardContent>
             <div className="h-[250px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={
-                    salesDataSets[salesTimeWindow as keyof typeof salesDataSets]
-                  }
-                >
+                <BarChart data={salesData}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                   <XAxis
                     dataKey="time"

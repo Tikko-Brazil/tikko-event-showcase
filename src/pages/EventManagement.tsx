@@ -386,16 +386,7 @@ const EventManagement = () => {
   const renderOverview = () => <EventOverview eventData={mockEventData} />;
 
   const renderAnalytics = () => (
-    <EventAnalytics
-      eventId={parseInt(eventId!)}
-      salesTimeWindow={salesTimeWindow}
-      setSalesTimeWindow={setSalesTimeWindow}
-      validationTimeWindow={validationTimeWindow}
-      setValidationTimeWindow={setValidationTimeWindow}
-      currentPage={currentPage}
-      setCurrentPage={setCurrentPage}
-      itemsPerPage={itemsPerPage}
-    />
+    <EventAnalytics eventId={parseInt(eventId!)} />
   );
 
   // Mock coupons data
