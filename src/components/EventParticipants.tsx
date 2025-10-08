@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -20,6 +20,9 @@ import { CheckCircle2, DollarSign } from "lucide-react";
 import { SearchAndFilter } from "./SearchAndFilter";
 import { Pagination } from "./Pagination";
 import { InviteGateway, InviteStatus } from "@/lib/InviteGateway";
+import { PaymentGateway } from "@/lib/PaymentGateway";
+import SuccessSnackbar from "./SuccessSnackbar";
+import ErrorSnackbar from "./ErrorSnackbar";
 
 interface EventParticipantsProps {
   eventId: number;
@@ -31,12 +34,15 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
   const [participantPage, setParticipantPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
+  const [showErrorSnackbar, setShowErrorSnackbar] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const participantsPerPage = 6;
 
-  const inviteGateway = new InviteGateway(
-    import.meta.env.VITE_BACKEND_BASE_URL
-  );
+  const inviteGateway = new InviteGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const paymentGateway = new PaymentGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const queryClient = useQueryClient();
 
   // Debounced search function
   const debouncedSetSearch = useCallback(
@@ -92,6 +98,22 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
       searchInputRef.current.focus();
     }
   }, [invitesData, participantSearch]);
+
+  // Refund mutation
+  const refundMutation = useMutation({
+    mutationFn: (invite: any) => paymentGateway.processRefund({
+      user_id: invite.user.id,
+      event_id: eventId,
+    }),
+    onSuccess: () => {
+      setShowSuccessSnackbar(true);
+      queryClient.invalidateQueries({ queryKey: ["event-invites", eventId] });
+    },
+    onError: (error: Error) => {
+      setErrorMessage(error.message || "Erro ao processar estorno");
+      setShowErrorSnackbar(true);
+    },
+  });
 
   // Calculate pagination (following coupons.tsx pattern)
   const from = (participantPage - 1) * participantsPerPage;
@@ -257,13 +279,10 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          onClick={() =>
-                            console.log(
-                              `Refunding participant ${invite.invite_id}`
-                            )
-                          }
+                          onClick={() => refundMutation.mutate(invite)}
+                          disabled={refundMutation.isPending}
                         >
-                          Refund
+                          {refundMutation.isPending ? "Processando..." : "Refund"}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -287,6 +306,18 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
           itemName="participants"
         />
       )}
+
+      <SuccessSnackbar
+        visible={showSuccessSnackbar}
+        onDismiss={() => setShowSuccessSnackbar(false)}
+        message="Estorno processado com sucesso"
+      />
+
+      <ErrorSnackbar
+        visible={showErrorSnackbar}
+        onDismiss={() => setShowErrorSnackbar(false)}
+        message={errorMessage}
+      />
     </div>
   );
 };
