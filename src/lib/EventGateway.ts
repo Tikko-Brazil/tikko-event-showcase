@@ -91,8 +91,49 @@ interface CreateEventResponse {
 
 interface EventStats {
   total_tickets_sold: number;
+  paid_tickets: number;
+  free_tickets: number;
+  total_invites: number;
+  total_pending_invites: number;
+  total_rejected_invites: number;
+  total_accepted_invites: number;
+  tickets_sold_by_pricing: {
+    ticket_pricing_id: number;
+    ticket_type: string;
+    lot: number;
+    price: number;
+    tickets_sold: number;
+    total_revenue: number;
+  }[];
   total_revenue: number;
-  tickets_by_type: Record<string, number>;
+  total_validated_tickets: number;
+  role_distribution: {
+    role_id: number;
+    role_name: string;
+    user_count: number;
+  }[];
+  total_tickets_sold_by_gender: {
+    total_female_tickets_sold: number;
+    total_male_tickets_sold: number;
+  };
+  age_stats: {
+    average_age_all: number;
+    average_age_male: number;
+    average_age_female: number;
+    age_distribution: {
+      age_range: string;
+      count: number;
+      percentage: number;
+    }[];
+  };
+  total_visits: number;
+  conversion_rate: number;
+  daily_sales: {
+    date: string;
+    total_sales: number;
+    paid_sales: number;
+    free_sales: number;
+  }[];
 }
 
 interface AssignRoleRequest {
@@ -189,10 +230,13 @@ export class EventGateway {
     }
   }
 
-  async getEventStats(id: number): Promise<EventStats> {
-    const response = await this.fetchWithAuth(
-      `${this.baseUrl}/private/event/${id}/stats`
-    );
+  async getEventStats(id: number, days?: number): Promise<EventStats> {
+    const url = new URL(`${this.baseUrl}/private/event/${id}/stats`);
+    if (days !== undefined) {
+      url.searchParams.append("days", days.toString());
+    }
+
+    const response = await this.fetchWithAuth(url.toString());
     return this.handleResponse<EventStats>(response);
   }
 
