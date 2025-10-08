@@ -1,7 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Users, DollarSign, Ticket, TrendingUp, Edit, Gift, CheckCircle2 } from "lucide-react";
+import {
+  Users,
+  DollarSign,
+  Ticket,
+  TrendingUp,
+  Edit,
+  Gift,
+  CheckCircle2,
+} from "lucide-react";
 
 interface EventData {
   attendees: number;

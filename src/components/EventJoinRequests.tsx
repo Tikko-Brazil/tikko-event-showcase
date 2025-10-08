@@ -1,61 +1,114 @@
-import React from "react";
+import React, { useState, useCallback, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { debounce } from "lodash";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { CheckCircle2, X, UserPlus, Search } from "lucide-react";
 import { Pagination } from "./Pagination";
-
-interface JoinRequest {
-  id: number;
-  name: string;
-  email: string;
-  instagram: string;
-  ticketType: string;
-  paidValue: number;
-  coupon: string | null;
-}
+import { InviteGateway, InviteStatus } from "@/lib/InviteGateway";
 
 interface EventJoinRequestsProps {
-  joinRequestsData: JoinRequest[];
-  requestSearch: string;
-  setRequestSearch: (value: string) => void;
-  requestPage: number;
-  setRequestPage: (page: number) => void;
-  requestsPerPage: number;
-  onAcceptRequest: (requestId: number) => void;
-  onRejectRequest: (requestId: number) => void;
+  eventId: number;
 }
 
-export const EventJoinRequests = ({
-  joinRequestsData,
-  requestSearch,
-  setRequestSearch,
-  requestPage,
-  setRequestPage,
-  requestsPerPage,
-  onAcceptRequest,
-  onRejectRequest,
-}: EventJoinRequestsProps) => {
-  // Filter join requests based on search
-  const filteredRequests = joinRequestsData.filter((request) => {
-    const matchesSearch =
-      requestSearch === "" ||
-      request.name.toLowerCase().includes(requestSearch.toLowerCase()) ||
-      request.email.toLowerCase().includes(requestSearch.toLowerCase()) ||
-      request.instagram.toLowerCase().includes(requestSearch.toLowerCase());
+export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
+  const [requestSearch, setRequestSearch] = useState("");
+  const [requestPage, setRequestPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-    return matchesSearch;
+  const requestsPerPage = 6;
+  const inviteGateway = new InviteGateway(
+    import.meta.env.VITE_BACKEND_BASE_URL
+  );
+
+  // Debounced search function
+  const debouncedSetSearch = useCallback(
+    debounce((searchTerm: string) => {
+      setDebouncedSearch(searchTerm);
+    }, 500),
+    []
+  );
+
+  // Update debounced search when requestSearch changes
+  React.useEffect(() => {
+    debouncedSetSearch(requestSearch);
+  }, [requestSearch, debouncedSetSearch]);
+
+  // Reset page when search changes
+  React.useEffect(() => {
+    setRequestPage(1);
+  }, [debouncedSearch]);
+
+  // Fetch pending invites using React Query
+  const {
+    data: invitesData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["event-join-requests", eventId, debouncedSearch],
+    queryFn: () =>
+      inviteGateway.getInvitesByEvent(
+        eventId,
+        InviteStatus.PENDING,
+        debouncedSearch || undefined
+      ),
+    enabled: !!eventId,
   });
 
+  // Restore focus after query updates
+  React.useEffect(() => {
+    if (requestSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [invitesData, requestSearch]);
+
+  const allRequests = invitesData?.invites || [];
+
   // Pagination
-  const totalRequests = filteredRequests.length;
+  const totalRequests = allRequests.length;
   const totalPages = Math.ceil(totalRequests / requestsPerPage);
   const startIndex = (requestPage - 1) * requestsPerPage;
   const endIndex = Math.min(startIndex + requestsPerPage, totalRequests);
-  const paginatedRequests = filteredRequests.slice(startIndex, endIndex);
+  const paginatedRequests = allRequests.slice(startIndex, endIndex);
+
+  const onAcceptRequest = (requestId: number) => {
+    console.log("Accept request:", requestId);
+  };
+
+  const onRejectRequest = (requestId: number) => {
+    console.log("Reject request:", requestId);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">Loading join requests...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-500">Error loading join requests</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -78,6 +131,7 @@ export const EventJoinRequests = ({
             value={requestSearch}
             onChange={(e) => setRequestSearch(e.target.value)}
             className="pl-9"
+            ref={searchInputRef}
           />
         </div>
       </div>
@@ -85,13 +139,13 @@ export const EventJoinRequests = ({
       {/* Join Requests Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {paginatedRequests.map((request) => (
-          <Card key={request.id} className="relative">
+          <Card key={request.invite_id} className="relative">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
                     <AvatarFallback className="bg-yellow-500 text-yellow-50">
-                      {request.name
+                      {request.user.username
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}
@@ -99,10 +153,10 @@ export const EventJoinRequests = ({
                   </Avatar>
                   <div>
                     <h3 className="font-semibold text-sm leading-none">
-                      {request.name}
+                      {request.user.username}
                     </h3>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {request.email}
+                      {request.user.email}
                     </p>
                   </div>
                 </div>
@@ -112,24 +166,32 @@ export const EventJoinRequests = ({
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Instagram:</span>
-                  <span className="font-medium">{request.instagram}</span>
+                  <span className="font-medium">
+                    {request.user.instagram_profile || "N/A"}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Ticket Type:</span>
-                  <Badge variant="outline">{request.ticketType}</Badge>
+                  <Badge variant="outline">
+                    {request.ticket_pricing.ticket_type}
+                  </Badge>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Paid Value:</span>
-                  <span className="font-medium">R${request.paidValue}</span>
+                  <span className="font-medium">
+                    R$ {request.payment_details.authorized_amount}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Coupon:</span>
                   <span className="font-medium">
-                    {request.coupon ? (
-                      <Badge variant="secondary">{request.coupon}</Badge>
+                    {request.payment_details.coupon ? (
+                      <Badge variant="secondary">
+                        {request.payment_details.coupon}
+                      </Badge>
                     ) : (
                       <span className="text-muted-foreground">None</span>
                     )}
@@ -149,15 +211,15 @@ export const EventJoinRequests = ({
                     <AlertDialogHeader>
                       <AlertDialogTitle>Reject Join Request</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to reject {request.name}'s join
-                        request? They will be notified of this decision.
+                        Are you sure you want to reject {request.user.username}
+                        's join request? They will be notified of this decision.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        onClick={() => onRejectRequest(request.id)}
+                        onClick={() => onRejectRequest(request.invite_id)}
                       >
                         Reject
                       </AlertDialogAction>
@@ -176,14 +238,16 @@ export const EventJoinRequests = ({
                     <AlertDialogHeader>
                       <AlertDialogTitle>Accept Join Request</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to accept {request.name}'s join
-                        request? They will be added to the approved
+                        Are you sure you want to accept {request.user.username}
+                        's join request? They will be added to the approved
                         participants list.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => onAcceptRequest(request.id)}>
+                      <AlertDialogAction
+                        onClick={() => onAcceptRequest(request.invite_id)}
+                      >
                         Accept
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -196,7 +260,7 @@ export const EventJoinRequests = ({
       </div>
 
       {/* Empty state */}
-      {filteredRequests.length === 0 && (
+      {allRequests.length === 0 && (
         <div className="text-center py-12">
           <UserPlus className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">No join requests</h3>
@@ -213,7 +277,7 @@ export const EventJoinRequests = ({
         currentPage={requestPage}
         totalPages={totalPages}
         onPageChange={setRequestPage}
-        startIndex={startIndex}
+        startIndex={startIndex + 1}
         endIndex={endIndex}
         totalItems={totalRequests}
         itemName="requests"

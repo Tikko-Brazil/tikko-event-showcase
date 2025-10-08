@@ -577,20 +577,7 @@ const EventManagement = () => {
   );
 
   const renderJoinRequests = () => (
-    <EventJoinRequests
-      joinRequestsData={joinRequestsData}
-      requestSearch={requestSearch}
-      setRequestSearch={setRequestSearch}
-      requestPage={requestPage}
-      setRequestPage={setRequestPage}
-      requestsPerPage={requestsPerPage}
-      onAcceptRequest={(requestId) => {
-        console.log(`Accepting join request ${requestId}`);
-      }}
-      onRejectRequest={(requestId) => {
-        console.log(`Rejecting join request ${requestId}`);
-      }}
-    />
+    <EventJoinRequests eventId={eventId} />
   );
 
   const renderTicketTypes = () => (

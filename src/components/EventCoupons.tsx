@@ -714,7 +714,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                 isActive: editingCoupon.active,
                 isTicketSpecific: !!editingCoupon.ticket_pricing_id,
                 ticketTypes: Array.isArray(editingCoupon.ticket_pricing_id)
-                  ? editingCoupon.ticket_pricing_id.map((id: number) => id.toString())
+                  ? editingCoupon.ticket_pricing_id.map((id: number) =>
+                      id.toString()
+                    )
                   : editingCoupon.ticket_pricing_id
                   ? [editingCoupon.ticket_pricing_id.toString()]
                   : [],
@@ -728,7 +730,8 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                   .required("Uso máximo é obrigatório"),
                 ticketTypes: Yup.array().when("isTicketSpecific", {
                   is: true,
-                  then: (schema) => schema.min(1, "Selecione pelo menos um tipo de ingresso"),
+                  then: (schema) =>
+                    schema.min(1, "Selecione pelo menos um tipo de ingresso"),
                   otherwise: (schema) => schema.notRequired(),
                 }),
               })}
