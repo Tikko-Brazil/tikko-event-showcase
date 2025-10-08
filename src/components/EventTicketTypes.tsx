@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,15 @@ import { Plus, Edit, X } from "lucide-react";
 import { SearchAndFilter } from "./SearchAndFilter";
 import { Pagination } from "./Pagination";
 import { TicketPricingGateway } from "@/lib/TicketPricingGateway";
+import SuccessSnackbar from "./SuccessSnackbar";
+import ErrorSnackbar from "./ErrorSnackbar";
+
+// Gender enum similar to InviteStatus
+export enum TicketGender {
+  MALE = "male",
+  FEMALE = "female",
+  ANY = "any",
+}
 
 interface EventTicketTypesProps {
   eventId: number;
@@ -31,12 +42,27 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
   const [ticketTypeFilter, setTicketTypeFilter] = useState("all");
   const [ticketTypePage, setTicketTypePage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
+  const [showErrorSnackbar, setShowErrorSnackbar] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const itemsPerPage = 6;
   const ticketPricingGateway = new TicketPricingGateway(
     import.meta.env.VITE_BACKEND_BASE_URL
   );
+  const queryClient = useQueryClient();
+
+  // Validation schema
+  const validationSchema = Yup.object({
+    ticket_type: Yup.string().required("Ticket type is required"),
+    gender: Yup.string().required("Gender is required"),
+    price: Yup.number()
+      .required("Price is required")
+      .min(0, "Price must be greater than or equal to 0"),
+  });
 
   // Debounced search function
   const debouncedSetSearch = useCallback(
@@ -81,6 +107,31 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
         getFilterStatus(ticketTypeFilter)
       ),
     enabled: !!eventId,
+  });
+
+  // Create ticket pricing mutation
+  const createTicketPricingMutation = useMutation({
+    mutationFn: async (values: any) => {
+      const ticketData = {
+        event_id: eventId,
+        ticket_type: values.ticket_type,
+        gender: values.gender,
+        price: values.price,
+      };
+      return ticketPricingGateway.createTicketPricing(ticketData);
+    },
+    onSuccess: () => {
+      setSuccessMessage("Ticket type created successfully");
+      setShowSuccessSnackbar(true);
+      setIsCreateDialogOpen(false);
+      queryClient.invalidateQueries({
+        queryKey: ["event-ticket-pricings", eventId],
+      });
+    },
+    onError: (error: any) => {
+      setErrorMessage(error.message || "Error creating ticket type");
+      setShowErrorSnackbar(true);
+    },
   });
 
   // Restore focus after query updates
@@ -141,7 +192,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <h2 className="text-2xl font-bold">Ticket Types Management</h2>
 
-        <Dialog>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -155,52 +206,108 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                 Configure your new ticket type settings.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Ticket Type Name</Label>
-                <Input id="name" placeholder="Early Bird" />
-              </div>
-              <div>
-                <Label>Gender</Label>
-                <div className="flex items-center space-x-4 mt-2">
-                  <div className="flex items-center space-x-2">
-                    <input type="radio" id="all" name="gender" value="all" />
-                    <Label htmlFor="all" className="text-sm font-normal">
-                      All
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input type="radio" id="male" name="gender" value="male" />
-                    <Label htmlFor="male" className="text-sm font-normal">
-                      Male
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      id="female"
-                      name="gender"
-                      value="female"
+            <Formik
+              initialValues={{
+                ticket_type: "",
+                gender: "",
+                price: "",
+              }}
+              validationSchema={validationSchema}
+              onSubmit={(values) => {
+                createTicketPricingMutation.mutate({
+                  ...values,
+                  price: parseFloat(values.price),
+                });
+              }}
+            >
+              {({ isSubmitting }) => (
+                <Form className="space-y-4">
+                  <div>
+                    <Label htmlFor="ticket_type">Ticket Type Name</Label>
+                    <Field
+                      as={Input}
+                      id="ticket_type"
+                      name="ticket_type"
+                      placeholder="VIP, General Admission, etc."
                     />
-                    <Label htmlFor="female" className="text-sm font-normal">
-                      Female
-                    </Label>
+                    <ErrorMessage
+                      name="ticket_type"
+                      component="div"
+                      className="text-sm text-red-500 mt-1"
+                    />
                   </div>
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="value">Ticket Value (BRL)</Label>
-                <Input id="value" type="number" placeholder="50" />
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="active" />
-                <Label htmlFor="active">Active</Label>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline">Cancel</Button>
-              <Button>Create Ticket Type</Button>
-            </DialogFooter>
+                  <div>
+                    <Label>Gender</Label>
+                    <div className="flex items-center space-x-4 mt-2">
+                      <div className="flex items-center space-x-2">
+                        <Field
+                          type="radio"
+                          id="male"
+                          name="gender"
+                          value={TicketGender.MALE}
+                          className="h-4 w-4"
+                        />
+                        <Label htmlFor="male" className="text-sm font-normal">
+                          Male
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Field
+                          type="radio"
+                          id="female"
+                          name="gender"
+                          value={TicketGender.FEMALE}
+                          className="h-4 w-4"
+                        />
+                        <Label htmlFor="female" className="text-sm font-normal">
+                          Female
+                        </Label>
+                      </div>
+                    </div>
+                    <ErrorMessage
+                      name="gender"
+                      component="div"
+                      className="text-sm text-red-500 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="price">Price (R$)</Label>
+                    <Field
+                      as={Input}
+                      id="price"
+                      name="price"
+                      type="number"
+                      step="0.01"
+                      placeholder="50.00"
+                    />
+                    <ErrorMessage
+                      name="price"
+                      component="div"
+                      className="text-sm text-red-500 mt-1"
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsCreateDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={
+                        isSubmitting || createTicketPricingMutation.isPending
+                      }
+                    >
+                      {createTicketPricingMutation.isPending
+                        ? "Creating..."
+                        : "Create Ticket Type"}
+                    </Button>
+                  </DialogFooter>
+                </Form>
+              )}
+            </Formik>
           </DialogContent>
         </Dialog>
       </div>
@@ -232,7 +339,9 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                     >
                       {ticketType.active ? "Active" : "Inactive"}
                     </Badge>
-                    <Badge variant="outline">{ticketType.gender}</Badge>
+                    <Badge variant="outline">
+                      {ticketType.gender === "male" ? "Masculino" : "Feminino"}
+                    </Badge>
                   </div>
                 </div>
                 <div className="flex gap-1">
@@ -287,6 +396,18 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
         )}
         totalItems={filteredTicketTypes.length}
         itemName="ticket types"
+      />
+
+      <SuccessSnackbar
+        visible={showSuccessSnackbar}
+        onDismiss={() => setShowSuccessSnackbar(false)}
+        message={successMessage}
+      />
+
+      <ErrorSnackbar
+        visible={showErrorSnackbar}
+        onDismiss={() => setShowErrorSnackbar(false)}
+        message={errorMessage}
       />
     </div>
   );
