@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -22,8 +23,10 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import { EventGateway } from "@/lib/EventGateway";
 
 interface EventAnalyticsProps {
+  eventId: number;
   salesTimeWindow: string;
   setSalesTimeWindow: (value: string) => void;
   validationTimeWindow: string;
@@ -34,6 +37,7 @@ interface EventAnalyticsProps {
 }
 
 export const EventAnalytics = ({
+  eventId,
   salesTimeWindow,
   setSalesTimeWindow,
   validationTimeWindow,
@@ -42,6 +46,42 @@ export const EventAnalytics = ({
   setCurrentPage,
   itemsPerPage,
 }: EventAnalyticsProps) => {
+  const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+
+  // Fetch event stats from backend
+  const {
+    data: eventStats,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["event-stats", eventId],
+    queryFn: () => eventGateway.getEventStats(eventId),
+    enabled: !!eventId,
+  });
+
+  // Console log the fetched data
+  React.useEffect(() => {
+    if (eventStats) {
+      console.log("Event Stats:", eventStats);
+    }
+  }, [eventStats]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">Loading analytics...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-500">Error loading analytics data</div>
+      </div>
+    );
+  }
+
   // Fake analytics data
   const analyticsData = {
     totalTickets: 150,
@@ -147,35 +187,104 @@ export const EventAnalytics = ({
     ],
   };
 
-  const genderData = [
-    { name: "Male", value: 55, count: 82, fill: "hsl(var(--primary))" },
-    {
-      name: "Female",
-      value: 45,
-      count: 68,
-      fill: "hsl(var(--tikko-orange))",
-    },
-  ];
+  // Calculate gender data from event stats
+  const calculateGenderData = () => {
+    if (!eventStats?.total_tickets_sold_by_gender) {
+      return [
+        { name: "Male", value: 55, count: 82, fill: "hsl(var(--primary))" },
+        {
+          name: "Female",
+          value: 45,
+          count: 68,
+          fill: "hsl(var(--tikko-orange))",
+        },
+      ];
+    }
 
-  const ageDistribution = [
-    { age: "0-17", count: 5 },
-    { age: "18-24", count: 45 },
-    { age: "25-34", count: 62 },
-    { age: "35-44", count: 28 },
-    { age: "45-54", count: 8 },
-    { age: "55+", count: 2 },
-  ];
+    const maleCount =
+      eventStats.total_tickets_sold_by_gender.total_male_tickets_sold;
+    const femaleCount =
+      eventStats.total_tickets_sold_by_gender.total_female_tickets_sold;
+    const totalCount = maleCount + femaleCount;
 
-  const allTicketTypes = [
-    { type: "Early Bird", lot: "Lot 1", amount: 50, revenue: 2000 },
-    { type: "Regular", lot: "Lot 2", amount: 80, revenue: 4000 },
-    { type: "VIP", lot: "Lot 3", amount: 20, revenue: 1500 },
-    { type: "Student", lot: "Lot 4", amount: 30, revenue: 900 },
-    { type: "Group", lot: "Lot 5", amount: 25, revenue: 1250 },
-    { type: "Last Minute", lot: "Lot 6", amount: 15, revenue: 900 },
-    { type: "Premium", lot: "Lot 7", amount: 10, revenue: 800 },
-    { type: "Corporate", lot: "Lot 8", amount: 12, revenue: 960 },
-  ];
+    if (totalCount === 0) {
+      return [
+        { name: "Male", value: 50, count: 0, fill: "hsl(var(--primary))" },
+        {
+          name: "Female",
+          value: 50,
+          count: 0,
+          fill: "hsl(var(--tikko-orange))",
+        },
+      ];
+    }
+
+    const malePercentage = Math.round((maleCount / totalCount) * 100);
+    const femalePercentage = Math.round((femaleCount / totalCount) * 100);
+
+    return [
+      {
+        name: "Male",
+        value: malePercentage,
+        count: maleCount,
+        fill: "hsl(var(--primary))",
+      },
+      {
+        name: "Female",
+        value: femalePercentage,
+        count: femaleCount,
+        fill: "hsl(var(--tikko-orange))",
+      },
+    ];
+  };
+
+  const genderData = calculateGenderData();
+
+  // Get age distribution from event stats or fallback to mock data
+  const getAgeDistribution = () => {
+    if (!eventStats?.age_stats?.age_distribution) {
+      return [
+        { age: "0-17", count: 1 },
+        { age: "18-24", count: 1 },
+        { age: "25-34", count: 1 },
+        { age: "35-44", count: 1 },
+        { age: "45-54", count: 1 },
+        { age: "55+", count: 1 },
+      ];
+    }
+
+    return eventStats.age_stats.age_distribution.map((ageGroup) => ({
+      age: ageGroup.age_range,
+      count: ageGroup.count,
+    }));
+  };
+
+  const ageDistribution = getAgeDistribution();
+
+  // Get ticket types from event stats or fallback to mock data
+  const getAllTicketTypes = () => {
+    if (!eventStats?.tickets_sold_by_pricing) {
+      return [
+        { type: "Early Bird", lot: "Lot 1", amount: 50, revenue: 2000 },
+        { type: "Regular", lot: "Lot 2", amount: 80, revenue: 4000 },
+        { type: "VIP", lot: "Lot 3", amount: 20, revenue: 1500 },
+        { type: "Student", lot: "Lot 4", amount: 30, revenue: 900 },
+        { type: "Group", lot: "Lot 5", amount: 25, revenue: 1250 },
+        { type: "Last Minute", lot: "Lot 6", amount: 15, revenue: 900 },
+        { type: "Premium", lot: "Lot 7", amount: 10, revenue: 800 },
+        { type: "Corporate", lot: "Lot 8", amount: 12, revenue: 960 },
+      ];
+    }
+
+    return eventStats.tickets_sold_by_pricing.map((pricing) => ({
+      type: pricing.ticket_type,
+      lot: `${pricing.lot}`,
+      amount: pricing.tickets_sold,
+      revenue: pricing.total_revenue,
+    }));
+  };
+
+  const allTicketTypes = getAllTicketTypes();
 
   // Pagination logic
   const totalPages = Math.ceil(allTicketTypes.length / itemsPerPage);
@@ -223,7 +332,7 @@ export const EventAnalytics = ({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {analyticsData.totalTickets}
+              {eventStats.total_tickets_sold}
             </div>
           </CardContent>
         </Card>
@@ -234,7 +343,11 @@ export const EventAnalytics = ({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${analyticsData.liquidRevenue.toLocaleString()}
+              R${" "}
+              {eventStats.total_revenue.toLocaleString("pt-BR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </div>
           </CardContent>
         </Card>
@@ -245,10 +358,17 @@ export const EventAnalytics = ({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {analyticsData.validatedTickets}
+              {eventStats.total_validated_tickets}
             </div>
             <p className="text-xs text-muted-foreground">
-              {analyticsData.validatedPercentage}% of total
+              {(
+                (100 * eventStats.total_validated_tickets) /
+                eventStats.total_tickets_sold
+              ).toLocaleString("pt-BR", {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              })}
+              % of total
             </p>
           </CardContent>
         </Card>
@@ -259,10 +379,14 @@ export const EventAnalytics = ({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {analyticsData.conversionRate}%
+              {eventStats.conversion_rate.toLocaleString("pt-BR", {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              })}
+              %
             </div>
             <p className="text-xs text-muted-foreground">
-              {analyticsData.pageVisits} page visits
+              {eventStats.total_visits} page visits
             </p>
           </CardContent>
         </Card>
@@ -457,7 +581,7 @@ export const EventAnalytics = ({
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Average Age</span>
               <span className="text-sm font-medium">
-                {analyticsData.avgAge}
+                {eventStats.age_stats.average_age_all}
               </span>
             </div>
             <div className="flex justify-between">
@@ -465,7 +589,7 @@ export const EventAnalytics = ({
                 Avg Male Age
               </span>
               <span className="text-sm font-medium">
-                {analyticsData.avgMaleAge}
+                {eventStats.age_stats.average_age_male}
               </span>
             </div>
             <div className="flex justify-between">
@@ -473,7 +597,7 @@ export const EventAnalytics = ({
                 Avg Female Age
               </span>
               <span className="text-sm font-medium">
-                {analyticsData.avgFemaleAge}
+                {eventStats.age_stats.average_age_female}
               </span>
             </div>
           </CardContent>
@@ -487,16 +611,20 @@ export const EventAnalytics = ({
           <CardContent className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Pending</span>
-              <Badge variant="outline">{analyticsData.pendingRequests}</Badge>
+              <Badge variant="outline">
+                {eventStats.total_pending_invites}
+              </Badge>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Approved</span>
-              <Badge variant="default">{analyticsData.approvedRequests}</Badge>
+              <Badge variant="default">
+                {eventStats.total_accepted_invites}
+              </Badge>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Rejected</span>
               <Badge variant="destructive">
-                {analyticsData.rejectedRequests}
+                {eventStats.total_rejected_invites}
               </Badge>
             </div>
           </CardContent>
@@ -534,7 +662,7 @@ export const EventAnalytics = ({
                 />
                 <Bar
                   dataKey="count"
-                  fill="hsl(var(--chart-3))"
+                  fill="hsl(var(--primary))"
                   radius={[4, 4, 0, 0]}
                 />
               </BarChart>
@@ -547,22 +675,16 @@ export const EventAnalytics = ({
       <Card>
         <CardHeader>
           <CardTitle>Tickets by Type</CardTitle>
-          <CardDescription>
-            Showing {startIndex + 1} to{" "}
-            {Math.min(startIndex + itemsPerPage, allTicketTypes.length)} of{" "}
-            {allTicketTypes.length} ticket types
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Desktop Header - Hidden on mobile */}
-            <div className="hidden md:grid md:grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
-              <span className="col-span-4">Type</span>
+            {/* Header - Visible on all devices */}
+            <div className="grid grid-cols-12 gap-2 md:gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+              <span className="col-span-4 md:col-span-4">Type</span>
               <span className="col-span-2">Lot</span>
-              <span className="col-span-3">Amount</span>
+              <span className="col-span-3 md:col-span-3">Amount</span>
               <span className="col-span-3">Revenue</span>
             </div>
-
             <div className="space-y-2">
               {ticketTypes.map((ticket, i) => (
                 <div
@@ -570,7 +692,7 @@ export const EventAnalytics = ({
                   className="grid grid-cols-12 gap-2 md:gap-4 text-sm py-3 border-b border-border/50 last:border-0 items-center"
                 >
                   {/* Type - Takes majority of width on mobile */}
-                  <div className="col-span-5 md:col-span-4">
+                  <div className="col-span-4 md:col-span-4">
                     <span className="font-medium text-xs md:text-sm">
                       {ticket.type}
                     </span>
@@ -584,14 +706,18 @@ export const EventAnalytics = ({
                   </div>
 
                   {/* Amount */}
-                  <div className="col-span-2 md:col-span-3">
+                  <div className="col-span-3 md:col-span-3">
                     <span className="text-xs md:text-sm">{ticket.amount}</span>
                   </div>
 
                   {/* Revenue */}
                   <div className="col-span-3 md:col-span-3">
                     <span className="text-xs md:text-sm font-medium">
-                      ${ticket.revenue}
+                      R${" "}
+                      {ticket.revenue.toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </span>
                   </div>
                 </div>
@@ -682,7 +808,7 @@ export const EventAnalytics = ({
                   <span className="text-sm">Paid Tickets</span>
                 </div>
                 <span className="text-sm font-medium">
-                  {analyticsData.paidTickets}
+                  {eventStats.paid_tickets}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -691,7 +817,7 @@ export const EventAnalytics = ({
                   <span className="text-sm">Free Tickets</span>
                 </div>
                 <span className="text-sm font-medium">
-                  {analyticsData.freeTickets}
+                  {eventStats.free_tickets}
                 </span>
               </div>
             </div>

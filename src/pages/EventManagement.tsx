@@ -387,6 +387,7 @@ const EventManagement = () => {
 
   const renderAnalytics = () => (
     <EventAnalytics
+      eventId={parseInt(eventId!)}
       salesTimeWindow={salesTimeWindow}
       setSalesTimeWindow={setSalesTimeWindow}
       validationTimeWindow={validationTimeWindow}
