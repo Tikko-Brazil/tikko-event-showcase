@@ -43,6 +43,8 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
   const [ticketTypePage, setTicketTypePage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingTicket, setEditingTicket] = useState<any>(null);
   const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
   const [showErrorSnackbar, setShowErrorSnackbar] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -55,13 +57,23 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
   );
   const queryClient = useQueryClient();
 
-  // Validation schema
-  const validationSchema = Yup.object({
+  // Validation schema for create
+  const createValidationSchema = Yup.object({
     ticket_type: Yup.string().required("Ticket type is required"),
     gender: Yup.string().required("Gender is required"),
     price: Yup.number()
       .required("Price is required")
       .min(0, "Price must be greater than or equal to 0"),
+  });
+
+  // Validation schema for edit (includes active field)
+  const editValidationSchema = Yup.object({
+    ticket_type: Yup.string().required("Ticket type is required"),
+    gender: Yup.string().required("Gender is required"),
+    price: Yup.number()
+      .required("Price is required")
+      .min(0, "Price must be greater than or equal to 0"),
+    active: Yup.boolean().required(),
   });
 
   // Debounced search function
@@ -130,6 +142,30 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
     },
     onError: (error: any) => {
       setErrorMessage(error.message || "Error creating ticket type");
+      setShowErrorSnackbar(true);
+    },
+  });
+
+  // Update ticket pricing mutation
+  const updateTicketPricingMutation = useMutation({
+    mutationFn: async (values: any) => {
+      const ticketData = {
+        ticket_type: values.ticket_type,
+        gender: values.gender,
+        price: values.price,
+        active: values.active,
+      };
+      return ticketPricingGateway.updateTicketPricing(editingTicket.id, ticketData);
+    },
+    onSuccess: () => {
+      setSuccessMessage("Ticket type updated successfully");
+      setShowSuccessSnackbar(true);
+      setIsEditDialogOpen(false);
+      setEditingTicket(null);
+      queryClient.invalidateQueries({ queryKey: ["event-ticket-pricings", eventId] });
+    },
+    onError: (error: any) => {
+      setErrorMessage(error.message || "Error updating ticket type");
       setShowErrorSnackbar(true);
     },
   });
@@ -212,7 +248,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                 gender: "",
                 price: "",
               }}
-              validationSchema={validationSchema}
+              validationSchema={createValidationSchema}
               onSubmit={(values) => {
                 createTicketPricingMutation.mutate({
                   ...values,
@@ -345,7 +381,15 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8 w-8 p-0"
+                    onClick={() => {
+                      setEditingTicket(ticketType);
+                      setIsEditDialogOpen(true);
+                    }}
+                  >
                     <Edit className="h-3 w-3" />
                   </Button>
                   <Button
@@ -397,6 +441,129 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
         totalItems={filteredTicketTypes.length}
         itemName="ticket types"
       />
+
+      {/* Edit Ticket Type Dialog */}
+      {editingTicket && (
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Ticket Type</DialogTitle>
+              <DialogDescription>
+                Modify ticket type settings and pricing.
+              </DialogDescription>
+            </DialogHeader>
+            <Formik
+              initialValues={{
+                ticket_type: editingTicket.ticket_type,
+                gender: editingTicket.gender,
+                price: editingTicket.price.toString(),
+                active: editingTicket.active,
+              }}
+              validationSchema={editValidationSchema}
+              onSubmit={(values) => {
+                updateTicketPricingMutation.mutate({
+                  ...values,
+                  price: parseFloat(values.price),
+                });
+              }}
+            >
+              {({ isSubmitting, values, setFieldValue }) => (
+                <Form className="space-y-4">
+                  <div>
+                    <Label htmlFor="edit_ticket_type">Ticket Type Name</Label>
+                    <Field
+                      as={Input}
+                      id="edit_ticket_type"
+                      name="ticket_type"
+                      placeholder="VIP, General Admission, etc."
+                    />
+                    <ErrorMessage
+                      name="ticket_type"
+                      component="div"
+                      className="text-sm text-red-500 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label>Gender</Label>
+                    <div className="flex items-center space-x-4 mt-2">
+                      <div className="flex items-center space-x-2">
+                        <Field
+                          type="radio"
+                          id="edit_male"
+                          name="gender"
+                          value={TicketGender.MALE}
+                          className="h-4 w-4"
+                        />
+                        <Label htmlFor="edit_male" className="text-sm font-normal">Male</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Field
+                          type="radio"
+                          id="edit_female"
+                          name="gender"
+                          value={TicketGender.FEMALE}
+                          className="h-4 w-4"
+                        />
+                        <Label htmlFor="edit_female" className="text-sm font-normal">Female</Label>
+                      </div>
+                    </div>
+                    <ErrorMessage
+                      name="gender"
+                      component="div"
+                      className="text-sm text-red-500 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit_price">Price (R$)</Label>
+                    <Field
+                      as={Input}
+                      id="edit_price"
+                      name="price"
+                      type="number"
+                      step="0.01"
+                      placeholder="50.00"
+                    />
+                    <ErrorMessage
+                      name="price"
+                      component="div"
+                      className="text-sm text-red-500 mt-1"
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Field
+                      type="checkbox"
+                      id="edit_active"
+                      name="active"
+                      checked={values.active}
+                      onChange={(e: any) => setFieldValue("active", e.target.checked)}
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="edit_active">Active</Label>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditDialogOpen(false);
+                        setEditingTicket(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting || updateTicketPricingMutation.isPending}
+                    >
+                      {updateTicketPricingMutation.isPending ? "Updating..." : "Update Ticket Type"}
+                    </Button>
+                  </DialogFooter>
+                </Form>
+              )}
+            </Formik>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <SuccessSnackbar
         visible={showSuccessSnackbar}
