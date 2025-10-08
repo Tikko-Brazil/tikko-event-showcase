@@ -569,43 +569,7 @@ const EventManagement = () => {
   ];
 
   const renderCoupons = () => (
-    <EventCoupons
-      allCoupons={allCoupons}
-      couponSearch={couponSearch}
-      setCouponSearch={setCouponSearch}
-      couponFilter={couponFilter}
-      setCouponFilter={setCouponFilter}
-      couponPage={couponPage}
-      setCouponPage={setCouponPage}
-      itemsPerPage={itemsPerPage}
-      isCreateCouponOpen={isCreateCouponOpen}
-      setIsCreateCouponOpen={setIsCreateCouponOpen}
-      newCoupon={newCoupon}
-      setNewCoupon={setNewCoupon}
-      editingCoupon={editingCoupon}
-      setEditingCoupon={setEditingCoupon}
-      ticketTypes={ticketTypes}
-      onCreateCoupon={() => {
-        console.log("Creating coupon:", newCoupon);
-        setIsCreateCouponOpen(false);
-        setNewCoupon({
-          code: "",
-          type: "percentage",
-          value: 10,
-          maxUsage: 100,
-          isActive: true,
-          isTicketSpecific: false,
-          ticketType: "",
-        });
-      }}
-      onEditCoupon={(coupon) => {
-        setEditingCoupon({ ...coupon });
-      }}
-      onSaveEdit={() => {
-        console.log("Saving coupon:", editingCoupon);
-        setEditingCoupon(null);
-      }}
-    />
+    <EventCoupons eventId={parseInt(eventId!)} />
   );
 
   const renderParticipants = () => (

@@ -1,29 +1,40 @@
-import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useCallback, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { debounce } from "lodash";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Plus, Edit, Save } from "lucide-react";
 import { SearchAndFilter } from "./SearchAndFilter";
 import { Pagination } from "./Pagination";
-
-interface Coupon {
-  id: number;
-  code: string;
-  type: string;
-  value: number;
-  usage: number;
-  maxUsage: number;
-  isActive: boolean;
-  isTicketSpecific: boolean;
-  ticketType: string | null;
-}
+import { CouponGateway } from "@/lib/CouponGateway";
 
 interface NewCoupon {
   code: string;
@@ -36,55 +47,80 @@ interface NewCoupon {
 }
 
 interface EventCouponsProps {
-  allCoupons: Coupon[];
-  couponSearch: string;
-  setCouponSearch: (value: string) => void;
-  couponFilter: string;
-  setCouponFilter: (value: string) => void;
-  couponPage: number;
-  setCouponPage: (page: number) => void;
-  itemsPerPage: number;
-  isCreateCouponOpen: boolean;
-  setIsCreateCouponOpen: (open: boolean) => void;
-  newCoupon: NewCoupon;
-  setNewCoupon: (coupon: NewCoupon) => void;
-  editingCoupon: Coupon | null;
-  setEditingCoupon: (coupon: Coupon | null) => void;
-  ticketTypes: string[];
-  onCreateCoupon: () => void;
-  onEditCoupon: (coupon: Coupon) => void;
-  onSaveEdit: () => void;
+  eventId: number;
 }
 
-export const EventCoupons = ({
-  allCoupons,
-  couponSearch,
-  setCouponSearch,
-  couponFilter,
-  setCouponFilter,
-  couponPage,
-  setCouponPage,
-  itemsPerPage,
-  isCreateCouponOpen,
-  setIsCreateCouponOpen,
-  newCoupon,
-  setNewCoupon,
-  editingCoupon,
-  setEditingCoupon,
-  ticketTypes,
-  onCreateCoupon,
-  onEditCoupon,
-  onSaveEdit,
-}: EventCouponsProps) => {
+export const EventCoupons = ({ eventId }: EventCouponsProps) => {
+  const [couponSearch, setCouponSearch] = useState("");
+  const [couponFilter, setCouponFilter] = useState("all");
+  const [couponPage, setCouponPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [isCreateCouponOpen, setIsCreateCouponOpen] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<any>(null);
+  const [newCoupon, setNewCoupon] = useState<NewCoupon>({
+    code: "",
+    type: "percentage",
+    value: 10,
+    maxUsage: 100,
+    isActive: true,
+    isTicketSpecific: false,
+    ticketType: "",
+  });
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const itemsPerPage = 6;
+  const couponGateway = new CouponGateway(
+    import.meta.env.VITE_BACKEND_BASE_URL
+  );
+  const ticketTypes = ["VIP", "General", "Student"]; // Mock data
+
+  // Debounced search function
+  const debouncedSetSearch = useCallback(
+    debounce((searchTerm: string) => {
+      setDebouncedSearch(searchTerm);
+    }, 500),
+    []
+  );
+
+  // Update debounced search when couponSearch changes
+  React.useEffect(() => {
+    debouncedSetSearch(couponSearch);
+  }, [couponSearch, debouncedSetSearch]);
+
+  // Reset page when filter or search changes
+  React.useEffect(() => {
+    setCouponPage(1);
+  }, [couponFilter, debouncedSearch]);
+
+  // Fetch coupons using React Query
+  const {
+    data: couponsData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["event-coupons", eventId],
+    queryFn: () => couponGateway.getEventCoupons(eventId),
+    enabled: !!eventId,
+  });
+
+  // Restore focus after query updates
+  React.useEffect(() => {
+    if (couponSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [couponsData, couponSearch]);
+
+  const allCoupons = couponsData?.coupons || [];
+
   // Filter coupons based on search and filter
   const filteredCoupons = allCoupons.filter((coupon) => {
     const matchesSearch = coupon.code
       .toLowerCase()
-      .includes(couponSearch.toLowerCase());
+      .includes(debouncedSearch.toLowerCase());
     const matchesFilter =
       couponFilter === "all" ||
-      (couponFilter === "active" && coupon.isActive) ||
-      (couponFilter === "inactive" && !coupon.isActive);
+      (couponFilter === "active" && coupon.active) ||
+      (couponFilter === "inactive" && !coupon.active);
     return matchesSearch && matchesFilter;
   });
 
@@ -98,9 +134,48 @@ export const EventCoupons = ({
 
   const filterOptions = [
     { value: "all", label: "All Coupons" },
-    { value: "active", label: "Active Only" },
-    { value: "inactive", label: "Inactive Only" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
   ];
+
+  const onCreateCoupon = () => {
+    console.log("Creating coupon:", newCoupon);
+    setIsCreateCouponOpen(false);
+    setNewCoupon({
+      code: "",
+      type: "percentage",
+      value: 10,
+      maxUsage: 100,
+      isActive: true,
+      isTicketSpecific: false,
+      ticketType: "",
+    });
+  };
+
+  const onEditCoupon = (coupon: any) => {
+    setEditingCoupon({ ...coupon });
+  };
+
+  const onSaveEdit = () => {
+    console.log("Saving coupon:", editingCoupon);
+    setEditingCoupon(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">Loading coupons...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-500">Error loading coupons</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -152,7 +227,9 @@ export const EventCoupons = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="percentage">Percentage Discount</SelectItem>
+                    <SelectItem value="percentage">
+                      Percentage Discount
+                    </SelectItem>
                     <SelectItem value="fixed">Fixed Amount (BRL)</SelectItem>
                   </SelectContent>
                 </Select>
@@ -276,27 +353,32 @@ export const EventCoupons = ({
         filterValue={couponFilter}
         onFilterChange={setCouponFilter}
         filterOptions={filterOptions}
+        searchInputRef={searchInputRef}
       />
 
       {/* Coupons Table */}
       <Card>
         <CardHeader>
           <CardTitle>Coupons List</CardTitle>
-          <CardDescription>
-            Showing {startIndex + 1} to{" "}
-            {Math.min(startIndex + itemsPerPage, filteredCoupons.length)} of{" "}
-            {filteredCoupons.length} coupons
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {/* Mobile Header - Visible only on mobile */}
+            <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground border-b pb-2 md:hidden">
+              <span className="col-span-4">Code</span>
+              <span className="col-span-2">Value</span>
+              <span className="col-span-2">Usage</span>
+              <span className="col-span-2 text-center">Status</span>
+              <span className="col-span-1 text-center">Actions</span>
+            </div>
+
             {/* Desktop Header - Hidden on mobile */}
             <div className="hidden md:grid md:grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
               <span className="col-span-4">Code</span>
               <span className="col-span-2">Value</span>
               <span className="col-span-3">Usage</span>
-              <span className="col-span-2">Status</span>
-              <span className="col-span-1">Actions</span>
+              <span className="col-span-2 text-center">Status</span>
+              <span className="col-span-1 text-center">Actions</span>
             </div>
 
             <div className="space-y-2">
@@ -306,70 +388,74 @@ export const EventCoupons = ({
                   className="grid grid-cols-12 gap-2 md:gap-4 text-sm py-3 border-b border-border/50 last:border-0 items-center"
                 >
                   {/* Code - Takes majority of width on mobile */}
-                  <div className="col-span-6 md:col-span-4">
+                  <div className="col-span-4 md:col-span-4">
                     <span className="font-mono font-medium text-xs md:text-sm break-all">
                       {coupon.code}
                     </span>
-                    {coupon.isTicketSpecific && (
+                    {/* {coupon.isTicketSpecific && (
                       <div className="text-xs text-muted-foreground mt-1">
                         → {coupon.ticketType}
                       </div>
-                    )}
+                    )} */}
                   </div>
 
                   {/* Value */}
                   <div className="col-span-2 md:col-span-2">
                     <span className="text-xs md:text-sm">
-                      {coupon.type === "percentage"
-                        ? `${coupon.value}%`
-                        : `R$ ${coupon.value}`}
+                      {coupon.discount_type === "percentage"
+                        ? `${coupon.discount_value}%`
+                        : `R$ ${coupon.discount_value}`}
                     </span>
                   </div>
 
                   {/* Usage */}
                   <div className="col-span-2 md:col-span-3">
                     <div className="text-xs md:text-sm">
-                      {coupon.usage}/{coupon.maxUsage}
+                      {coupon.used_count}/{coupon.max_uses}
                     </div>
                     <div className="w-full bg-muted rounded-full h-1 mt-1">
                       <div
                         className="bg-primary h-1 rounded-full"
                         style={{
-                          width: `${(coupon.usage / coupon.maxUsage) * 100}%`,
+                          width: `${
+                            (coupon.used_count / coupon.max_uses) * 100
+                          }%`,
                         }}
                       />
                     </div>
                   </div>
 
                   {/* Status - Different for mobile vs desktop */}
-                  <div className="col-span-1 md:col-span-2">
+                  <div className="col-span-2 md:col-span-2">
                     {/* Mobile: Visual indicator only */}
-                    <div className="md:hidden">
+                    <div className="md:hidden flex items-center justify-center">
                       <div
                         className={`w-3 h-3 rounded-full ${
-                          coupon.isActive ? "bg-green-500" : "bg-gray-400"
+                          coupon.active ? "bg-green-500" : "bg-gray-400"
                         }`}
-                        title={coupon.isActive ? "Active" : "Inactive"}
+                        title={coupon.active ? "Active" : "Inactive"}
                       />
                     </div>
                     {/* Desktop: Badge with text */}
-                    <div className="hidden md:block">
-                      <Badge variant={coupon.isActive ? "default" : "secondary"}>
-                        {coupon.isActive ? "Active" : "Inactive"}
+                    <div className="hidden md:flex md:items-center md:justify-center">
+                      <Badge variant={coupon.active ? "default" : "secondary"}>
+                        {coupon.active ? "Active" : "Inactive"}
                       </Badge>
                     </div>
                   </div>
 
                   {/* Actions */}
                   <div className="col-span-1 md:col-span-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onEditCoupon(coupon)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Edit className="h-3 w-3 md:h-4 md:w-4" />
-                    </Button>
+                    <div className="flex items-center justify-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onEditCoupon(coupon)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-3 w-3 md:h-4 md:w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -381,7 +467,10 @@ export const EventCoupons = ({
               totalPages={totalCouponPages}
               onPageChange={setCouponPage}
               startIndex={startIndex}
-              endIndex={Math.min(startIndex + itemsPerPage, filteredCoupons.length)}
+              endIndex={Math.min(
+                startIndex + itemsPerPage,
+                filteredCoupons.length
+              )}
               totalItems={filteredCoupons.length}
               itemName="coupons"
             />
@@ -391,7 +480,10 @@ export const EventCoupons = ({
 
       {/* Edit Coupon Dialog */}
       {editingCoupon && (
-        <Dialog open={!!editingCoupon} onOpenChange={() => setEditingCoupon(null)}>
+        <Dialog
+          open={!!editingCoupon}
+          onOpenChange={() => setEditingCoupon(null)}
+        >
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Edit Coupon: {editingCoupon.code}</DialogTitle>
