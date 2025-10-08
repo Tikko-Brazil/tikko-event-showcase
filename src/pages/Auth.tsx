@@ -41,9 +41,9 @@ const Auth = () => {
   const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
   useEffect(() => {
-    const token = searchParams.get('token');
+    const token = searchParams.get("token");
     if (token) {
-      setCurrentScreen('new-password');
+      setCurrentScreen("new-password");
     }
   }, [searchParams]);
 
@@ -71,7 +71,9 @@ const Auth = () => {
 
     const codeVerifier = generateCodeVerifier();
     const codeChallenge = await generateCodeChallenge(codeVerifier);
-    const redirectUri = `${window.location.origin}/auth`;
+    const redirectUri = `${window.location.origin}${
+      import.meta.env.VITE_GOOGLE_CLIENT_ID || "/auth"
+    }`;
 
     sessionStorage.setItem("codeVerifier", codeVerifier);
 
@@ -89,7 +91,9 @@ const Auth = () => {
 
   const exchangeCodeWithBackend = async (code: string) => {
     const codeVerifier = sessionStorage.getItem("codeVerifier");
-    const redirectUri = `${window.location.origin}/auth`;
+    const redirectUri = `${window.location.origin}${
+      import.meta.env.VITE_GOOGLE_CLIENT_ID || "/auth"
+    }`;
 
     try {
       const data = await authGateway.exchange({
@@ -105,7 +109,7 @@ const Auth = () => {
       sessionStorage.removeItem("codeVerifier");
 
       if (data.user.is_first_access) {
-        localStorage.setItem('isFirstAccess', 'true');
+        localStorage.setItem("isFirstAccess", "true");
         window.location.href = "/profile-completion";
       } else {
         window.location.href = "/dashboard";
@@ -266,7 +270,7 @@ const Auth = () => {
         return (
           <EmailSignup
             isPasswordReset={true}
-            resetToken={searchParams.get('token') || ''}
+            resetToken={searchParams.get("token") || ""}
             onNext={() => {
               setSuccessMessage("Senha atualizada com sucesso!");
               setShowSuccess(true);
