@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -20,6 +20,8 @@ import {
 import { CheckCircle2, X, UserPlus, Search } from "lucide-react";
 import { Pagination } from "./Pagination";
 import { InviteGateway, InviteStatus } from "@/lib/InviteGateway";
+import SuccessSnackbar from "./SuccessSnackbar";
+import ErrorSnackbar from "./ErrorSnackbar";
 
 interface EventJoinRequestsProps {
   eventId: number;
@@ -29,12 +31,17 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
   const [requestSearch, setRequestSearch] = useState("");
   const [requestPage, setRequestPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
+  const [showErrorSnackbar, setShowErrorSnackbar] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const requestsPerPage = 6;
   const inviteGateway = new InviteGateway(
     import.meta.env.VITE_BACKEND_BASE_URL
   );
+  const queryClient = useQueryClient();
 
   // Debounced search function
   const debouncedSetSearch = useCallback(
@@ -70,6 +77,48 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
     enabled: !!eventId,
   });
 
+  // Accept join request mutation
+  const acceptRequestMutation = useMutation({
+    mutationFn: async (inviteId: number) => {
+      return inviteGateway.approveOrRejectJoinRequest({
+        invite_id: inviteId,
+        approved: true,
+      });
+    },
+    onSuccess: () => {
+      setSuccessMessage("Solicitação aceita com sucesso");
+      setShowSuccessSnackbar(true);
+      queryClient.invalidateQueries({
+        queryKey: ["event-join-requests", eventId],
+      });
+    },
+    onError: (error: any) => {
+      setErrorMessage(error.message || "Erro ao aceitar solicitação");
+      setShowErrorSnackbar(true);
+    },
+  });
+
+  // Reject join request mutation
+  const rejectRequestMutation = useMutation({
+    mutationFn: async (inviteId: number) => {
+      return inviteGateway.approveOrRejectJoinRequest({
+        invite_id: inviteId,
+        approved: false,
+      });
+    },
+    onSuccess: () => {
+      setSuccessMessage("Solicitação rejeitada com sucesso");
+      setShowSuccessSnackbar(true);
+      queryClient.invalidateQueries({
+        queryKey: ["event-join-requests", eventId],
+      });
+    },
+    onError: (error: any) => {
+      setErrorMessage(error.message || "Erro ao rejeitar solicitação");
+      setShowErrorSnackbar(true);
+    },
+  });
+
   // Restore focus after query updates
   React.useEffect(() => {
     if (requestSearch && searchInputRef.current) {
@@ -87,11 +136,11 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
   const paginatedRequests = allRequests.slice(startIndex, endIndex);
 
   const onAcceptRequest = (requestId: number) => {
-    console.log("Accept request:", requestId);
+    acceptRequestMutation.mutate(requestId);
   };
 
   const onRejectRequest = (requestId: number) => {
-    console.log("Reject request:", requestId);
+    rejectRequestMutation.mutate(requestId);
   };
 
   if (isLoading) {
@@ -202,9 +251,19 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
               <div className="mt-4 pt-4 border-t flex gap-2">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="flex-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      disabled={
+                        rejectRequestMutation.isPending ||
+                        acceptRequestMutation.isPending
+                      }
+                    >
                       <X className="h-4 w-4 mr-2" />
-                      Reject
+                      {rejectRequestMutation.isPending
+                        ? "Rejeitando..."
+                        : "Reject"}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -229,9 +288,18 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
 
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size="sm" className="flex-1">
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      disabled={
+                        acceptRequestMutation.isPending ||
+                        rejectRequestMutation.isPending
+                      }
+                    >
                       <CheckCircle2 className="h-4 w-4 mr-2" />
-                      Accept
+                      {acceptRequestMutation.isPending
+                        ? "Aceitando..."
+                        : "Accept"}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -281,6 +349,18 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
         endIndex={endIndex}
         totalItems={totalRequests}
         itemName="requests"
+      />
+
+      <SuccessSnackbar
+        visible={showSuccessSnackbar}
+        onDismiss={() => setShowSuccessSnackbar(false)}
+        message={successMessage}
+      />
+
+      <ErrorSnackbar
+        visible={showErrorSnackbar}
+        onDismiss={() => setShowErrorSnackbar(false)}
+        message={errorMessage}
       />
     </div>
   );
