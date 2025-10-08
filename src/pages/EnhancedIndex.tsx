@@ -244,7 +244,7 @@ const EnhancedIndex = () => {
                 >
                   <div className="relative h-48 overflow-hidden">
                     <img
-                      src={event.image_url || heroEventImage}
+                      src={event.image || heroEventImage}
                       alt={event.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-smooth"
                     />

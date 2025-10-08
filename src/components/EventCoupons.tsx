@@ -54,9 +54,9 @@ const validationSchema = Yup.object({
   maxUsage: Yup.number()
     .min(1, "Uso máximo deve ser maior que 0")
     .required("Uso máximo é obrigatório"),
-  ticketType: Yup.string().when("isTicketSpecific", {
+  ticketTypes: Yup.array().when("isTicketSpecific", {
     is: true,
-    then: (schema) => schema.required("Tipo de ingresso é obrigatório"),
+    then: (schema) => schema.min(1, "Selecione pelo menos um tipo de ingresso"),
     otherwise: (schema) => schema.notRequired(),
   }),
 });
@@ -97,7 +97,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
         max_uses: values.maxUsage,
         active: values.isActive,
         ticket_pricing_id: values.isTicketSpecific
-          ? [parseInt(values.ticketType)]
+          ? values.ticketTypes.map((id: string) => parseInt(id))
           : null,
       };
       return couponGateway.createCoupon(couponData);
@@ -120,7 +120,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
         max_uses: values.maxUsage,
         active: values.isActive,
         ticket_pricing_id: values.isTicketSpecific
-          ? parseInt(values.ticketType)
+          ? values.ticketTypes.map((id: string) => parseInt(id))
           : null,
       };
       return couponGateway.updateCoupon(id, updateData);
@@ -264,7 +264,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                 maxUsage: 100,
                 isActive: true,
                 isTicketSpecific: false,
-                ticketType: "",
+                ticketTypes: [] as string[],
               }}
               validationSchema={validationSchema}
               onSubmit={(values, { resetForm }) => {
@@ -487,37 +487,57 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
 
                     {values.isTicketSpecific && (
                       <div>
-                        <Label>Ticket Type</Label>
-                        <Select
-                          value={values.ticketType}
-                          onValueChange={(value) =>
-                            setFieldValue("ticketType", value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select ticket type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {isLoadingTicketPricings ? (
-                              <SelectItem value="loading" disabled>
-                                Carregando...
-                              </SelectItem>
-                            ) : (
-                              ticketPricings?.map((pricing) => (
-                                <SelectItem
-                                  key={pricing.id}
-                                  value={pricing.id.toString()}
+                        <Label>Ticket Types</Label>
+                        <div className="mt-2 space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
+                          {isLoadingTicketPricings ? (
+                            <div className="text-sm text-muted-foreground">
+                              Carregando...
+                            </div>
+                          ) : ticketPricings && ticketPricings.length > 0 ? (
+                            ticketPricings.map((pricing) => (
+                              <div
+                                key={pricing.id}
+                                className="flex items-center space-x-2"
+                              >
+                                <Checkbox
+                                  id={`pricing-${pricing.id}`}
+                                  checked={values.ticketTypes.includes(
+                                    pricing.id.toString()
+                                  )}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setFieldValue("ticketTypes", [
+                                        ...values.ticketTypes,
+                                        pricing.id.toString(),
+                                      ]);
+                                    } else {
+                                      setFieldValue(
+                                        "ticketTypes",
+                                        values.ticketTypes.filter(
+                                          (id) => id !== pricing.id.toString()
+                                        )
+                                      );
+                                    }
+                                  }}
+                                />
+                                <Label
+                                  htmlFor={`pricing-${pricing.id}`}
+                                  className="text-sm font-normal cursor-pointer"
                                 >
                                   {pricing.ticket_type} - {pricing.gender} (Lote{" "}
                                   {pricing.lot})
-                                </SelectItem>
-                              ))
-                            )}
-                          </SelectContent>
-                        </Select>
-                        {touched.ticketType && errors.ticketType && (
+                                </Label>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-sm text-muted-foreground">
+                              Nenhum tipo de ingresso disponível
+                            </div>
+                          )}
+                        </div>
+                        {touched.ticketTypes && errors.ticketTypes && (
                           <div className="text-red-500 text-sm mt-1">
-                            {String(errors.ticketType)}
+                            {String(errors.ticketTypes)}
                           </div>
                         )}
                       </div>
@@ -693,7 +713,11 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                 maxUsage: editingCoupon.max_uses,
                 isActive: editingCoupon.active,
                 isTicketSpecific: !!editingCoupon.ticket_pricing_id,
-                ticketType: editingCoupon.ticket_pricing_id?.toString() || "",
+                ticketTypes: Array.isArray(editingCoupon.ticket_pricing_id)
+                  ? editingCoupon.ticket_pricing_id.map((id: number) => id.toString())
+                  : editingCoupon.ticket_pricing_id
+                  ? [editingCoupon.ticket_pricing_id.toString()]
+                  : [],
               }}
               validationSchema={Yup.object({
                 maxUsage: Yup.number()
@@ -702,10 +726,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                     `Uso máximo deve ser maior ou igual ao uso atual (${editingCoupon.used_count})`
                   )
                   .required("Uso máximo é obrigatório"),
-                ticketType: Yup.string().when("isTicketSpecific", {
+                ticketTypes: Yup.array().when("isTicketSpecific", {
                   is: true,
-                  then: (schema) =>
-                    schema.required("Tipo de ingresso é obrigatório"),
+                  then: (schema) => schema.min(1, "Selecione pelo menos um tipo de ingresso"),
                   otherwise: (schema) => schema.notRequired(),
                 }),
               })}
@@ -805,37 +828,57 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
 
                     {values.isTicketSpecific && (
                       <div>
-                        <Label>Ticket Type</Label>
-                        <Select
-                          value={values.ticketType}
-                          onValueChange={(value) =>
-                            setFieldValue("ticketType", value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select ticket type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {isLoadingTicketPricings ? (
-                              <SelectItem value="loading" disabled>
-                                Carregando...
-                              </SelectItem>
-                            ) : (
-                              ticketPricings?.map((pricing) => (
-                                <SelectItem
-                                  key={pricing.id}
-                                  value={pricing.id.toString()}
+                        <Label>Ticket Types</Label>
+                        <div className="mt-2 space-y-2 max-h-48 overflow-y-auto border rounded-md p-3">
+                          {isLoadingTicketPricings ? (
+                            <div className="text-sm text-muted-foreground">
+                              Carregando...
+                            </div>
+                          ) : ticketPricings && ticketPricings.length > 0 ? (
+                            ticketPricings.map((pricing) => (
+                              <div
+                                key={pricing.id}
+                                className="flex items-center space-x-2"
+                              >
+                                <Checkbox
+                                  id={`edit-pricing-${pricing.id}`}
+                                  checked={values.ticketTypes.includes(
+                                    pricing.id.toString()
+                                  )}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setFieldValue("ticketTypes", [
+                                        ...values.ticketTypes,
+                                        pricing.id.toString(),
+                                      ]);
+                                    } else {
+                                      setFieldValue(
+                                        "ticketTypes",
+                                        values.ticketTypes.filter(
+                                          (id) => id !== pricing.id.toString()
+                                        )
+                                      );
+                                    }
+                                  }}
+                                />
+                                <Label
+                                  htmlFor={`edit-pricing-${pricing.id}`}
+                                  className="text-sm font-normal cursor-pointer"
                                 >
                                   {pricing.ticket_type} - {pricing.gender} (Lote{" "}
                                   {pricing.lot})
-                                </SelectItem>
-                              ))
-                            )}
-                          </SelectContent>
-                        </Select>
-                        {touched.ticketType && errors.ticketType && (
+                                </Label>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-sm text-muted-foreground">
+                              Nenhum tipo de ingresso disponível
+                            </div>
+                          )}
+                        </div>
+                        {touched.ticketTypes && errors.ticketTypes && (
                           <div className="text-red-500 text-sm mt-1">
-                            {String(errors.ticketType)}
+                            {String(errors.ticketTypes)}
                           </div>
                         )}
                       </div>
