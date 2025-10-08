@@ -35,6 +35,7 @@ import { Plus, Edit, Save } from "lucide-react";
 import { SearchAndFilter } from "./SearchAndFilter";
 import { Pagination } from "./Pagination";
 import { CouponGateway } from "@/lib/CouponGateway";
+import { TicketPricingGateway } from "@/lib/TicketPricingGateway";
 
 interface NewCoupon {
   code: string;
@@ -72,6 +73,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
   const couponGateway = new CouponGateway(
     import.meta.env.VITE_BACKEND_BASE_URL
   );
+  const ticketPricingGateway = new TicketPricingGateway(
+    import.meta.env.VITE_BACKEND_BASE_URL
+  );
   const ticketTypes = ["VIP", "General", "Student"]; // Mock data
 
   // Debounced search function
@@ -102,6 +106,16 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
     queryFn: () => couponGateway.getEventCoupons(eventId),
     enabled: !!eventId,
   });
+
+  // Fetch active ticket pricings when checkbox is checked
+  const { data: ticketPricings, isLoading: isLoadingTicketPricings } = useQuery(
+    {
+      queryKey: ["event-ticket-pricings", eventId],
+      queryFn: () =>
+        ticketPricingGateway.getTicketPricingByEvent(eventId, "Active"),
+      enabled: !!eventId && newCoupon.isTicketSpecific,
+    }
+  );
 
   // Restore focus after query updates
   React.useEffect(() => {
@@ -321,11 +335,24 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                       <SelectValue placeholder="Select ticket type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {ticketTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
+                      {isLoadingTicketPricings ? (
+                        <SelectItem value="loading" disabled>
+                          Carregando...
                         </SelectItem>
-                      ))}
+                      ) : (
+                        ticketPricings?.map((pricing) => (
+                          <SelectItem
+                            key={pricing.id}
+                            value={pricing.id.toString()}
+                          >
+                            {pricing.ticket_type} -{" "}
+                            {pricing.gender === "male"
+                              ? "Masculino"
+                              : "Feminino"}{" "}
+                            (Lote {pricing.lot})
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
