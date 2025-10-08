@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
+import { Formik } from "formik";
+import * as Yup from "yup";
 import {
   Card,
   CardContent,
@@ -36,20 +38,28 @@ import { SearchAndFilter } from "./SearchAndFilter";
 import { Pagination } from "./Pagination";
 import { CouponGateway } from "@/lib/CouponGateway";
 import { TicketPricingGateway } from "@/lib/TicketPricingGateway";
-
-interface NewCoupon {
-  code: string;
-  type: string;
-  value: number;
-  maxUsage: number;
-  isActive: boolean;
-  isTicketSpecific: boolean;
-  ticketType: string;
-}
+import SuccessSnackbar from "./SuccessSnackbar";
+import ErrorSnackbar from "./ErrorSnackbar";
 
 interface EventCouponsProps {
   eventId: number;
 }
+
+const validationSchema = Yup.object({
+  code: Yup.string().required("Código é obrigatório"),
+  type: Yup.string().required("Tipo é obrigatório"),
+  value: Yup.number()
+    .min(1, "Valor deve ser maior que 0")
+    .required("Valor é obrigatório"),
+  maxUsage: Yup.number()
+    .min(1, "Uso máximo deve ser maior que 0")
+    .required("Uso máximo é obrigatório"),
+  ticketType: Yup.string().when("isTicketSpecific", {
+    is: true,
+    then: (schema) => schema.required("Tipo de ingresso é obrigatório"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+});
 
 export const EventCoupons = ({ eventId }: EventCouponsProps) => {
   const [couponSearch, setCouponSearch] = useState("");
@@ -58,16 +68,15 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isCreateCouponOpen, setIsCreateCouponOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<any>(null);
-  const [newCoupon, setNewCoupon] = useState<NewCoupon>({
-    code: "",
-    type: "percentage",
-    value: 10,
-    maxUsage: 100,
-    isActive: true,
+  const [currentFormValues, setCurrentFormValues] = useState({
     isTicketSpecific: false,
-    ticketType: "",
   });
+  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
+  const [showErrorSnackbar, setShowErrorSnackbar] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  const queryClient = useQueryClient();
 
   const itemsPerPage = 6;
   const couponGateway = new CouponGateway(
@@ -76,7 +85,31 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
   const ticketPricingGateway = new TicketPricingGateway(
     import.meta.env.VITE_BACKEND_BASE_URL
   );
-  const ticketTypes = ["VIP", "General", "Student"]; // Mock data
+
+  // Create coupon mutation
+  const createCouponMutation = useMutation({
+    mutationFn: async (values: any) => {
+      const couponData = {
+        event_id: eventId,
+        code: values.code,
+        discount_type: values.type,
+        discount_value: values.value,
+        max_uses: values.maxUsage,
+        active: values.isActive,
+        ticket_pricing_id: values.isTicketSpecific ? parseInt(values.ticketType) : null,
+      };
+      return couponGateway.createCoupon(couponData);
+    },
+    onSuccess: () => {
+      setShowSuccessSnackbar(true);
+      queryClient.invalidateQueries({ queryKey: ["event-coupons", eventId] });
+      setIsCreateCouponOpen(false);
+    },
+    onError: (error: any) => {
+      setErrorMessage(error.message || "Erro ao criar cupom");
+      setShowErrorSnackbar(true);
+    },
+  });
 
   // Debounced search function
   const debouncedSetSearch = useCallback(
@@ -113,7 +146,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
       queryKey: ["event-ticket-pricings", eventId],
       queryFn: () =>
         ticketPricingGateway.getTicketPricingByEvent(eventId, "Active"),
-      enabled: !!eventId && newCoupon.isTicketSpecific,
+      enabled: !!eventId && currentFormValues.isTicketSpecific,
     }
   );
 
@@ -126,45 +159,29 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
 
   const allCoupons = couponsData?.coupons || [];
 
-  // Filter coupons based on search and filter
+  // Filter coupons based on status and search
   const filteredCoupons = allCoupons.filter((coupon) => {
-    const matchesSearch = coupon.code
-      .toLowerCase()
-      .includes(debouncedSearch.toLowerCase());
-    const matchesFilter =
+    const matchesStatus =
       couponFilter === "all" ||
       (couponFilter === "active" && coupon.active) ||
       (couponFilter === "inactive" && !coupon.active);
-    return matchesSearch && matchesFilter;
+    const matchesSearch = coupon.code
+      .toLowerCase()
+      .includes(debouncedSearch.toLowerCase());
+    return matchesStatus && matchesSearch;
   });
 
-  // Pagination for coupons
-  const totalCouponPages = Math.ceil(filteredCoupons.length / itemsPerPage);
-  const startIndex = (couponPage - 1) * itemsPerPage;
-  const paginatedCoupons = filteredCoupons.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  // Calculate pagination
+  const from = (couponPage - 1) * itemsPerPage;
+  const to = Math.min(couponPage * itemsPerPage, filteredCoupons.length);
+  const totalPages = Math.ceil(filteredCoupons.length / itemsPerPage);
+  const paginatedCoupons = filteredCoupons.slice(from, to);
 
   const filterOptions = [
     { value: "all", label: "All Coupons" },
     { value: "active", label: "Active" },
     { value: "inactive", label: "Inactive" },
   ];
-
-  const onCreateCoupon = () => {
-    console.log("Creating coupon:", newCoupon);
-    setIsCreateCouponOpen(false);
-    setNewCoupon({
-      code: "",
-      type: "percentage",
-      value: 10,
-      maxUsage: 100,
-      isActive: true,
-      isTicketSpecific: false,
-      ticketType: "",
-    });
-  };
 
   const onEditCoupon = (coupon: any) => {
     setEditingCoupon({ ...coupon });
@@ -193,200 +210,328 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
 
   return (
     <div className="space-y-6">
-      {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <h2 className="text-2xl font-bold">Coupons Management</h2>
+      <div className="flex justify-between items-center">
+        <SearchAndFilter
+          searchValue={couponSearch}
+          onSearchChange={setCouponSearch}
+          searchPlaceholder="Buscar cupons..."
+          filterValue={couponFilter}
+          onFilterChange={setCouponFilter}
+          filterOptions={filterOptions}
+          searchInputRef={searchInputRef}
+        />
 
         <Dialog open={isCreateCouponOpen} onOpenChange={setIsCreateCouponOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Create Coupon
+              Criar Cupom
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Create New Coupon</DialogTitle>
+              <DialogTitle>Criar Novo Cupom</DialogTitle>
               <DialogDescription>
-                Configure your new discount coupon settings.
+                Crie um novo cupom de desconto para o evento.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="code">Coupon Code</Label>
-                <Input
-                  id="code"
-                  value={newCoupon.code}
-                  onChange={(e) =>
-                    setNewCoupon({
-                      ...newCoupon,
-                      code: e.target.value.toUpperCase(),
-                    })
-                  }
-                  placeholder="DISCOUNT20"
-                  className="uppercase"
-                />
-              </div>
+            <Formik
+              initialValues={{
+                code: "",
+                type: "percentage",
+                value: 10,
+                maxUsage: 100,
+                isActive: true,
+                isTicketSpecific: false,
+                ticketType: "",
+              }}
+              validationSchema={validationSchema}
+              onSubmit={(values, { resetForm }) => {
+                createCouponMutation.mutate(values, {
+                  onSuccess: () => {
+                    resetForm();
+                  },
+                });
+              }}
+            >
+              {({
+                values,
+                errors,
+                touched,
+                handleChange,
+                handleBlur,
+                handleSubmit,
+                setFieldValue,
+              }) => {
+                // Update state for query when isTicketSpecific changes
+                React.useEffect(() => {
+                  setCurrentFormValues({
+                    isTicketSpecific: values.isTicketSpecific,
+                  });
+                }, [values.isTicketSpecific]);
 
-              <div>
-                <Label>Discount Type</Label>
-                <Select
-                  value={newCoupon.type}
-                  onValueChange={(value) =>
-                    setNewCoupon({ ...newCoupon, type: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="percentage">
-                      Percentage Discount
-                    </SelectItem>
-                    <SelectItem value="fixed">Fixed Amount (BRL)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {newCoupon.type === "percentage" ? (
-                <div>
-                  <Label>Discount Percentage: {newCoupon.value}%</Label>
-                  <Slider
-                    value={[newCoupon.value]}
-                    onValueChange={(value) =>
-                      setNewCoupon({ ...newCoupon, value: value[0] })
-                    }
-                    max={100}
-                    min={1}
-                    step={1}
-                    className="mt-2"
-                  />
-                </div>
-              ) : (
-                <div>
-                  <Label htmlFor="value">Fixed Amount (BRL)</Label>
-                  <Input
-                    id="value"
-                    type="number"
-                    value={newCoupon.value}
-                    onChange={(e) =>
-                      setNewCoupon({
-                        ...newCoupon,
-                        value: parseInt(e.target.value) || 0,
-                      })
-                    }
-                    placeholder="50"
-                  />
-                </div>
-              )}
-
-              <div>
-                <Label>Max Usage: {newCoupon.maxUsage}</Label>
-                <Slider
-                  value={[newCoupon.maxUsage]}
-                  onValueChange={(value) =>
-                    setNewCoupon({ ...newCoupon, maxUsage: value[0] })
-                  }
-                  max={1000}
-                  min={1}
-                  step={1}
-                  className="mt-2"
-                />
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="active"
-                  checked={newCoupon.isActive}
-                  onCheckedChange={(checked) =>
-                    setNewCoupon({ ...newCoupon, isActive: !!checked })
-                  }
-                />
-                <Label htmlFor="active">Active</Label>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="ticketSpecific"
-                  checked={newCoupon.isTicketSpecific}
-                  onCheckedChange={(checked) =>
-                    setNewCoupon({
-                      ...newCoupon,
-                      isTicketSpecific: !!checked,
-                    })
-                  }
-                />
-                <Label htmlFor="ticketSpecific">
-                  Apply to specific ticket type only
-                </Label>
-              </div>
-
-              {newCoupon.isTicketSpecific && (
-                <div>
-                  <Label>Ticket Type</Label>
-                  <Select
-                    value={newCoupon.ticketType}
-                    onValueChange={(value) =>
-                      setNewCoupon({ ...newCoupon, ticketType: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select ticket type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {isLoadingTicketPricings ? (
-                        <SelectItem value="loading" disabled>
-                          Carregando...
-                        </SelectItem>
-                      ) : (
-                        ticketPricings?.map((pricing) => (
-                          <SelectItem
-                            key={pricing.id}
-                            value={pricing.id.toString()}
-                          >
-                            {pricing.ticket_type} -{" "}
-                            {pricing.gender === "male"
-                              ? "Masculino"
-                              : "Feminino"}{" "}
-                            (Lote {pricing.lot})
-                          </SelectItem>
-                        ))
+                return (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <Label htmlFor="code">Coupon Code</Label>
+                      <Input
+                        id="code"
+                        name="code"
+                        value={values.code}
+                        onChange={(e) =>
+                          setFieldValue("code", e.target.value.toUpperCase())
+                        }
+                        onBlur={handleBlur}
+                        placeholder="DISCOUNT20"
+                        className="uppercase"
+                      />
+                      {touched.code && errors.code && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {errors.code}
+                        </div>
                       )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
+                    </div>
 
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setIsCreateCouponOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button onClick={onCreateCoupon}>Create Coupon</Button>
-            </DialogFooter>
+                    <div>
+                      <Label>Discount Type</Label>
+                      <Select
+                        value={values.type}
+                        onValueChange={(value) => setFieldValue("type", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="percentage">
+                            Percentage Discount
+                          </SelectItem>
+                          <SelectItem value="fixed">
+                            Fixed Amount (R$)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {values.type === "percentage" ? (
+                      <div>
+                        <Label>Discount Percentage</Label>
+                        <div className="space-y-2">
+                          <Slider
+                            value={[values.value]}
+                            onValueChange={(value) =>
+                              setFieldValue("value", value[0])
+                            }
+                            max={100}
+                            min={1}
+                            step={1}
+                            className="w-full"
+                          />
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">
+                              1%
+                            </span>
+                            <Input
+                              type="number"
+                              value={values.value}
+                              onChange={(e) =>
+                                setFieldValue(
+                                  "value",
+                                  Math.min(
+                                    100,
+                                    Math.max(1, parseInt(e.target.value) || 1)
+                                  )
+                                )
+                              }
+                              className="w-20 text-center"
+                              min={1}
+                              max={100}
+                            />
+                            <span className="text-sm text-muted-foreground">
+                              100%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <Label>Fixed Discount Amount (BRL)</Label>
+                        <div className="space-y-2">
+                          <Slider
+                            value={[values.value]}
+                            onValueChange={(value) =>
+                              setFieldValue("value", value[0])
+                            }
+                            max={500}
+                            min={1}
+                            step={5}
+                            className="w-full"
+                          />
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">
+                              R$ 1
+                            </span>
+                            <Input
+                              type="number"
+                              value={values.value}
+                              onChange={(e) =>
+                                setFieldValue(
+                                  "value",
+                                  Math.min(
+                                    500,
+                                    Math.max(1, parseInt(e.target.value) || 1)
+                                  )
+                                )
+                              }
+                              className="w-20 text-center"
+                              min={1}
+                              max={500}
+                              step={5}
+                            />
+                            <span className="text-sm text-muted-foreground">
+                              R$ 500
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <Label>Max Usage</Label>
+                      <div className="space-y-2">
+                        <Slider
+                          value={[values.maxUsage]}
+                          onValueChange={(value) =>
+                            setFieldValue("maxUsage", value[0])
+                          }
+                          max={1000}
+                          min={1}
+                          step={1}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">
+                            1
+                          </span>
+                          <Input
+                            type="number"
+                            value={values.maxUsage}
+                            onChange={(e) =>
+                              setFieldValue(
+                                "maxUsage",
+                                Math.min(
+                                  1000,
+                                  Math.max(1, parseInt(e.target.value) || 1)
+                                )
+                              )
+                            }
+                            className="w-20 text-center"
+                            min={1}
+                            max={1000}
+                          />
+                          <span className="text-sm text-muted-foreground">
+                            1000
+                          </span>
+                        </div>
+                      </div>
+                      {touched.maxUsage && errors.maxUsage && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {errors.maxUsage}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="active"
+                        checked={values.isActive}
+                        onCheckedChange={(checked) =>
+                          setFieldValue("isActive", !!checked)
+                        }
+                      />
+                      <Label htmlFor="active">Active</Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="ticketSpecific"
+                        checked={values.isTicketSpecific}
+                        onCheckedChange={(checked) =>
+                          setFieldValue("isTicketSpecific", !!checked)
+                        }
+                      />
+                      <Label htmlFor="ticketSpecific">
+                        Apply to specific ticket type only
+                      </Label>
+                    </div>
+
+                    {values.isTicketSpecific && (
+                      <div>
+                        <Label>Ticket Type</Label>
+                        <Select
+                          value={values.ticketType}
+                          onValueChange={(value) =>
+                            setFieldValue("ticketType", value)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select ticket type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {isLoadingTicketPricings ? (
+                              <SelectItem value="loading" disabled>
+                                Carregando...
+                              </SelectItem>
+                            ) : (
+                              ticketPricings?.map((pricing) => (
+                                <SelectItem
+                                  key={pricing.id}
+                                  value={pricing.id.toString()}
+                                >
+                                  {pricing.ticket_type} - {pricing.gender} (Lote{" "}
+                                  {pricing.lot})
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                        {touched.ticketType && errors.ticketType && (
+                          <div className="text-red-500 text-sm mt-1">
+                            {errors.ticketType}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <DialogFooter>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsCreateCouponOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        disabled={createCouponMutation.isPending}
+                      >
+                        {createCouponMutation.isPending ? "Criando..." : "Create Coupon"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                );
+              }}
+            </Formik>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Filters and Search */}
-      <SearchAndFilter
-        searchValue={couponSearch}
-        onSearchChange={setCouponSearch}
-        searchPlaceholder="Search coupons..."
-        filterValue={couponFilter}
-        onFilterChange={setCouponFilter}
-        filterOptions={filterOptions}
-        searchInputRef={searchInputRef}
-      />
-
-      {/* Coupons Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Coupons List</CardTitle>
+          <CardTitle>Cupons do Evento</CardTitle>
+          <CardDescription>
+            Mostrando {from + 1}-{to} de {filteredCoupons.length} cupons
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -409,98 +554,100 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
             </div>
 
             <div className="space-y-2">
-              {paginatedCoupons.map((coupon) => (
-                <div
-                  key={coupon.id}
-                  className="grid grid-cols-12 gap-2 md:gap-4 text-sm py-3 border-b border-border/50 last:border-0 items-center"
-                >
-                  {/* Code - Takes majority of width on mobile */}
-                  <div className="col-span-4 md:col-span-4">
-                    <span className="font-mono font-medium text-xs md:text-sm break-all">
-                      {coupon.code}
-                    </span>
-                    {/* {coupon.isTicketSpecific && (
-                      <div className="text-xs text-muted-foreground mt-1">
-                        → {coupon.ticketType}
-                      </div>
-                    )} */}
-                  </div>
-
-                  {/* Value */}
-                  <div className="col-span-2 md:col-span-2">
-                    <span className="text-xs md:text-sm">
-                      {coupon.discount_type === "percentage"
-                        ? `${coupon.discount_value}%`
-                        : `R$ ${coupon.discount_value}`}
-                    </span>
-                  </div>
-
-                  {/* Usage */}
-                  <div className="col-span-2 md:col-span-3">
-                    <div className="text-xs md:text-sm">
-                      {coupon.used_count}/{coupon.max_uses}
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-1 mt-1">
-                      <div
-                        className="bg-primary h-1 rounded-full"
-                        style={{
-                          width: `${
-                            (coupon.used_count / coupon.max_uses) * 100
-                          }%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Status - Different for mobile vs desktop */}
-                  <div className="col-span-2 md:col-span-2">
-                    {/* Mobile: Visual indicator only */}
-                    <div className="md:hidden flex items-center justify-center">
-                      <div
-                        className={`w-3 h-3 rounded-full ${
-                          coupon.active ? "bg-green-500" : "bg-gray-400"
-                        }`}
-                        title={coupon.active ? "Active" : "Inactive"}
-                      />
-                    </div>
-                    {/* Desktop: Badge with text */}
-                    <div className="hidden md:flex md:items-center md:justify-center">
-                      <Badge variant={coupon.active ? "default" : "secondary"}>
-                        {coupon.active ? "Active" : "Inactive"}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="col-span-1 md:col-span-1">
-                    <div className="flex items-center justify-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onEditCoupon(coupon)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Edit className="h-3 w-3 md:h-4 md:w-4" />
-                      </Button>
-                    </div>
-                  </div>
+              {paginatedCoupons.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Nenhum cupom encontrado
                 </div>
-              ))}
+              ) : (
+                paginatedCoupons.map((coupon, index) => (
+                  <div
+                    key={`${coupon.id}-${couponPage}-${index}`}
+                    className="grid grid-cols-12 gap-2 md:gap-4 text-sm py-3 border-b border-border/50 last:border-0 items-center"
+                  >
+                    {/* Code */}
+                    <div className="col-span-4 md:col-span-4">
+                      <span className="font-mono font-medium text-xs md:text-sm break-all">
+                        {coupon.code}
+                      </span>
+                    </div>
+
+                    {/* Value */}
+                    <div className="col-span-2 md:col-span-2">
+                      <span className="text-xs md:text-sm">
+                        {coupon.discount_type === "percentage"
+                          ? `${coupon.discount_value}%`
+                          : `R$ ${coupon.discount_value}`}
+                      </span>
+                    </div>
+
+                    {/* Usage */}
+                    <div className="col-span-2 md:col-span-3">
+                      <div className="text-xs md:text-sm">
+                        {coupon.used_count}/{coupon.max_uses}
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-1 mt-1">
+                        <div
+                          className="bg-primary h-1 rounded-full"
+                          style={{
+                            width: `${
+                              (coupon.used_count / coupon.max_uses) * 100
+                            }%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Status */}
+                    <div className="col-span-2 md:col-span-2">
+                      {/* Mobile: Visual indicator only */}
+                      <div className="md:hidden flex items-center justify-center">
+                        <div
+                          className={`w-3 h-3 rounded-full ${
+                            coupon.active ? "bg-green-500" : "bg-gray-400"
+                          }`}
+                          title={coupon.active ? "Ativo" : "Inativo"}
+                        />
+                      </div>
+                      {/* Desktop: Badge with text */}
+                      <div className="hidden md:flex md:items-center md:justify-center">
+                        <Badge
+                          variant={coupon.active ? "default" : "secondary"}
+                        >
+                          {coupon.active ? "Ativo" : "Inativo"}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="col-span-1 md:col-span-1">
+                      <div className="flex items-center justify-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onEditCoupon(coupon)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit className="h-3 w-3 md:h-4 md:w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             {/* Pagination */}
-            <Pagination
-              currentPage={couponPage}
-              totalPages={totalCouponPages}
-              onPageChange={setCouponPage}
-              startIndex={startIndex}
-              endIndex={Math.min(
-                startIndex + itemsPerPage,
-                filteredCoupons.length
-              )}
-              totalItems={filteredCoupons.length}
-              itemName="coupons"
-            />
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={couponPage}
+                totalPages={totalPages}
+                onPageChange={setCouponPage}
+                startIndex={from + 1}
+                endIndex={to}
+                totalItems={filteredCoupons.length}
+                itemName="cupons"
+              />
+            )}
           </div>
         </CardContent>
       </Card>
@@ -521,11 +668,11 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
 
             <div className="space-y-4">
               <div>
-                <Label>Max Usage: {editingCoupon.maxUsage}</Label>
+                <Label>Max Usage: {editingCoupon.max_uses}</Label>
                 <Slider
-                  value={[editingCoupon.maxUsage]}
+                  value={[editingCoupon.max_uses]}
                   onValueChange={(value) =>
-                    setEditingCoupon({ ...editingCoupon, maxUsage: value[0] })
+                    setEditingCoupon({ ...editingCoupon, max_uses: value[0] })
                   }
                   max={1000}
                   min={1}
@@ -537,55 +684,13 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
               <div className="flex items-center space-x-2">
                 <Switch
                   id="editActive"
-                  checked={editingCoupon.isActive}
+                  checked={editingCoupon.active}
                   onCheckedChange={(checked) =>
-                    setEditingCoupon({ ...editingCoupon, isActive: checked })
+                    setEditingCoupon({ ...editingCoupon, active: checked })
                   }
                 />
                 <Label htmlFor="editActive">Active</Label>
               </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="editTicketSpecific"
-                  checked={editingCoupon.isTicketSpecific}
-                  onCheckedChange={(checked) =>
-                    setEditingCoupon({
-                      ...editingCoupon,
-                      isTicketSpecific: checked,
-                    })
-                  }
-                />
-                <Label htmlFor="editTicketSpecific">
-                  Apply to specific ticket type only
-                </Label>
-              </div>
-
-              {editingCoupon.isTicketSpecific && (
-                <div>
-                  <Label>Ticket Type</Label>
-                  <Select
-                    value={editingCoupon.ticketType || ""}
-                    onValueChange={(value) =>
-                      setEditingCoupon({
-                        ...editingCoupon,
-                        ticketType: value,
-                      })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select ticket type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ticketTypes.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </div>
 
             <DialogFooter>
@@ -600,6 +705,18 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
           </DialogContent>
         </Dialog>
       )}
+
+      <SuccessSnackbar
+        visible={showSuccessSnackbar}
+        onDismiss={() => setShowSuccessSnackbar(false)}
+        message="Cupom criado com sucesso"
+      />
+
+      <ErrorSnackbar
+        visible={showErrorSnackbar}
+        onDismiss={() => setShowErrorSnackbar(false)}
+        message={errorMessage}
+      />
     </div>
   );
 };
