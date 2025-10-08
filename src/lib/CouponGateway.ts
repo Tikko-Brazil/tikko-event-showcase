@@ -1,4 +1,4 @@
-import { createFetchWithAuth } from './fetchWithAuth';
+import { createFetchWithAuth } from "./fetchWithAuth";
 import {
   BadRequestException,
   UnauthorizedException,
@@ -7,7 +7,7 @@ import {
   UnprocessableEntityException,
   LockedException,
   InternalServerErrorException,
-} from './exceptions';
+} from "./exceptions";
 
 interface CouponPriceRequest {
   event_id: string;
@@ -26,8 +26,8 @@ interface CreateCouponRequest {
   discount_type: string;
   discount_value: number;
   max_uses: number;
-  valid_from: string;
-  valid_until: string;
+  valid_from?: string;
+  valid_until?: string;
   event_id: number;
   ticket_pricing_id: number[];
 }
@@ -66,67 +66,78 @@ interface DeleteCouponResponse {
 
 const ERROR_MESSAGES = {
   getCouponPrice: {
-    400: 'Invalid event ID or ticket pricing ID',
-    403: 'Coupon no longer valid',
-    404: 'Coupon not found',
-    422: 'Coupon invalid for this ticket pricing',
-    423: 'Coupon inactive',
-    500: 'Server error during coupon validation'
+    400: "Invalid event ID or ticket pricing ID",
+    403: "Coupon no longer valid",
+    404: "Coupon not found",
+    422: "Coupon invalid for this ticket pricing",
+    423: "Coupon inactive",
+    500: "Server error during coupon validation",
   },
   createCoupon: {
-    400: 'Invalid request data',
-    401: 'Authentication required',
-    403: 'Insufficient permissions',
-    500: 'Server error during coupon creation'
+    400: "Invalid request data",
+    401: "Authentication required",
+    403: "Insufficient permissions",
+    500: "Server error during coupon creation",
   },
   getCoupon: {
-    400: 'Invalid coupon ID',
-    401: 'Authentication required',
-    403: 'Insufficient permissions',
-    404: 'Coupon not found',
-    500: 'Server error'
+    400: "Invalid coupon ID",
+    401: "Authentication required",
+    403: "Insufficient permissions",
+    404: "Coupon not found",
+    500: "Server error",
   },
   updateCoupon: {
-    400: 'Invalid coupon ID or request data',
-    401: 'Authentication required',
-    403: 'Insufficient permissions',
-    404: 'Coupon not found',
-    500: 'Server error during coupon update'
+    400: "Invalid coupon ID or request data",
+    401: "Authentication required",
+    403: "Insufficient permissions",
+    404: "Coupon not found",
+    500: "Server error during coupon update",
   },
   deleteCoupon: {
-    400: 'Invalid coupon ID',
-    401: 'Authentication required',
-    403: 'Insufficient permissions',
-    404: 'Coupon not found',
-    500: 'Server error during coupon deletion'
+    400: "Invalid coupon ID",
+    401: "Authentication required",
+    403: "Insufficient permissions",
+    404: "Coupon not found",
+    500: "Server error during coupon deletion",
   },
   getEventCoupons: {
-    400: 'Invalid event ID or ticket pricing ID',
-    401: 'Authentication required',
-    403: 'Insufficient permissions',
-    500: 'Server error'
-  }
+    400: "Invalid event ID or ticket pricing ID",
+    401: "Authentication required",
+    403: "Insufficient permissions",
+    500: "Server error",
+  },
 };
 
 export class CouponGateway {
   private baseUrl: string;
-  private fetchWithAuth: (url: string, options?: RequestInit) => Promise<Response>;
+  private fetchWithAuth: (
+    url: string,
+    options?: RequestInit
+  ) => Promise<Response>;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
     this.fetchWithAuth = createFetchWithAuth(baseUrl);
   }
 
-  private async handleResponse<T>(response: Response, endpoint: keyof typeof ERROR_MESSAGES): Promise<T> {
+  private async handleResponse<T>(
+    response: Response,
+    endpoint: keyof typeof ERROR_MESSAGES
+  ): Promise<T> {
     const data = await response.json().catch(() => ({}));
-    
-    if (response.status === 200 || response.status === 201 || response.status === 204) {
+
+    if (
+      response.status === 200 ||
+      response.status === 201 ||
+      response.status === 204
+    ) {
       return data;
     }
 
     const messages = ERROR_MESSAGES[endpoint] as Record<number, string>;
-    const message = messages[response.status] || data.message || 'Unknown error';
-    
+    const message =
+      messages[response.status] || data.message || "Unknown error";
+
     switch (response.status) {
       case 400:
         throw new BadRequestException(message);
@@ -150,52 +161,71 @@ export class CouponGateway {
   // Public endpoint
   async getCouponPrice(data: CouponPriceRequest): Promise<CouponPriceResponse> {
     const response = await fetch(`${this.baseUrl}/public/coupon/price`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     });
-    return this.handleResponse<CouponPriceResponse>(response, 'getCouponPrice');
+    return this.handleResponse<CouponPriceResponse>(response, "getCouponPrice");
   }
 
   // Private endpoints
   async createCoupon(data: CreateCouponRequest): Promise<Coupon> {
-    const response = await this.fetchWithAuth(`${this.baseUrl}/private/coupon`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-    return this.handleResponse<Coupon>(response, 'createCoupon');
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/coupon`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+    return this.handleResponse<Coupon>(response, "createCoupon");
   }
 
   async getCoupon(id: number): Promise<Coupon> {
-    const response = await this.fetchWithAuth(`${this.baseUrl}/private/coupon/${id}`);
-    return this.handleResponse<Coupon>(response, 'getCoupon');
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/coupon/${id}`
+    );
+    return this.handleResponse<Coupon>(response, "getCoupon");
   }
 
   async updateCoupon(id: number, data: UpdateCouponRequest): Promise<Coupon> {
-    const response = await this.fetchWithAuth(`${this.baseUrl}/private/coupon/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-    return this.handleResponse<Coupon>(response, 'updateCoupon');
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/coupon/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
+    return this.handleResponse<Coupon>(response, "updateCoupon");
   }
 
   async deleteCoupon(id: number): Promise<DeleteCouponResponse> {
-    const response = await this.fetchWithAuth(`${this.baseUrl}/private/coupon/${id}`, {
-      method: 'DELETE',
-    });
-    return this.handleResponse<DeleteCouponResponse>(response, 'deleteCoupon');
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/coupon/${id}`,
+      {
+        method: "DELETE",
+      }
+    );
+    return this.handleResponse<DeleteCouponResponse>(response, "deleteCoupon");
   }
 
-  async getEventCoupons(eventId: number, ticketPricingId?: number): Promise<CouponsListResponse> {
+  async getEventCoupons(
+    eventId: number,
+    ticketPricingId?: number
+  ): Promise<CouponsListResponse> {
     const params = new URLSearchParams();
     if (ticketPricingId) {
-      params.append('ticket_pricing_id', ticketPricingId.toString());
+      params.append("ticket_pricing_id", ticketPricingId.toString());
     }
-    
-    const url = `${this.baseUrl}/private/coupons/event/${eventId}${params.toString() ? `?${params}` : ''}`;
+
+    const url = `${this.baseUrl}/private/coupons/event/${eventId}${
+      params.toString() ? `?${params}` : ""
+    }`;
     const response = await this.fetchWithAuth(url);
-    return this.handleResponse<CouponsListResponse>(response, 'getEventCoupons');
+    return this.handleResponse<CouponsListResponse>(
+      response,
+      "getEventCoupons"
+    );
   }
 }

@@ -96,7 +96,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
         discount_value: values.value,
         max_uses: values.maxUsage,
         active: values.isActive,
-        ticket_pricing_id: values.isTicketSpecific ? parseInt(values.ticketType) : null,
+        ticket_pricing_id: values.isTicketSpecific
+          ? [parseInt(values.ticketType)]
+          : null,
       };
       return couponGateway.createCoupon(couponData);
     },
@@ -107,6 +109,29 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
     },
     onError: (error: any) => {
       setErrorMessage(error.message || "Erro ao criar cupom");
+      setShowErrorSnackbar(true);
+    },
+  });
+
+  // Update coupon mutation
+  const updateCouponMutation = useMutation({
+    mutationFn: async ({ id, values }: { id: number; values: any }) => {
+      const updateData = {
+        max_uses: values.maxUsage,
+        active: values.isActive,
+        ticket_pricing_id: values.isTicketSpecific
+          ? parseInt(values.ticketType)
+          : null,
+      };
+      return couponGateway.updateCoupon(id, updateData);
+    },
+    onSuccess: () => {
+      setShowSuccessSnackbar(true);
+      queryClient.invalidateQueries({ queryKey: ["event-coupons", eventId] });
+      setEditingCoupon(null);
+    },
+    onError: (error: any) => {
+      setErrorMessage(error.message || "Erro ao atualizar cupom");
       setShowErrorSnackbar(true);
     },
   });
@@ -185,11 +210,6 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
 
   const onEditCoupon = (coupon: any) => {
     setEditingCoupon({ ...coupon });
-  };
-
-  const onSaveEdit = () => {
-    console.log("Saving coupon:", editingCoupon);
-    setEditingCoupon(null);
   };
 
   if (isLoading) {
@@ -288,7 +308,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                       />
                       {touched.code && errors.code && (
                         <div className="text-red-500 text-sm mt-1">
-                          {errors.code}
+                          {String(errors.code)}
                         </div>
                       )}
                     </div>
@@ -436,7 +456,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                       </div>
                       {touched.maxUsage && errors.maxUsage && (
                         <div className="text-red-500 text-sm mt-1">
-                          {errors.maxUsage}
+                          {String(errors.maxUsage)}
                         </div>
                       )}
                     </div>
@@ -497,7 +517,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                         </Select>
                         {touched.ticketType && errors.ticketType && (
                           <div className="text-red-500 text-sm mt-1">
-                            {errors.ticketType}
+                            {String(errors.ticketType)}
                           </div>
                         )}
                       </div>
@@ -511,11 +531,13 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                       >
                         Cancel
                       </Button>
-                      <Button 
-                        type="submit" 
+                      <Button
+                        type="submit"
                         disabled={createCouponMutation.isPending}
                       >
-                        {createCouponMutation.isPending ? "Criando..." : "Create Coupon"}
+                        {createCouponMutation.isPending
+                          ? "Criando..."
+                          : "Create Coupon"}
                       </Button>
                     </DialogFooter>
                   </form>
@@ -658,7 +680,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
           open={!!editingCoupon}
           onOpenChange={() => setEditingCoupon(null)}
         >
-          <DialogContent className="max-w-md">
+          <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Edit Coupon: {editingCoupon.code}</DialogTitle>
               <DialogDescription>
@@ -666,42 +688,188 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4">
-              <div>
-                <Label>Max Usage: {editingCoupon.max_uses}</Label>
-                <Slider
-                  value={[editingCoupon.max_uses]}
-                  onValueChange={(value) =>
-                    setEditingCoupon({ ...editingCoupon, max_uses: value[0] })
-                  }
-                  max={1000}
-                  min={1}
-                  step={1}
-                  className="mt-2"
-                />
-              </div>
+            <Formik
+              initialValues={{
+                maxUsage: editingCoupon.max_uses,
+                isActive: editingCoupon.active,
+                isTicketSpecific: !!editingCoupon.ticket_pricing_id,
+                ticketType: editingCoupon.ticket_pricing_id?.toString() || "",
+              }}
+              validationSchema={Yup.object({
+                maxUsage: Yup.number()
+                  .min(
+                    editingCoupon.used_count,
+                    `Uso máximo deve ser maior ou igual ao uso atual (${editingCoupon.used_count})`
+                  )
+                  .required("Uso máximo é obrigatório"),
+                ticketType: Yup.string().when("isTicketSpecific", {
+                  is: true,
+                  then: (schema) =>
+                    schema.required("Tipo de ingresso é obrigatório"),
+                  otherwise: (schema) => schema.notRequired(),
+                }),
+              })}
+              onSubmit={(values) => {
+                updateCouponMutation.mutate({ id: editingCoupon.id, values });
+              }}
+            >
+              {({
+                values,
+                errors,
+                touched,
+                handleBlur,
+                handleSubmit,
+                setFieldValue,
+              }) => {
+                // Update state for query when isTicketSpecific changes
+                React.useEffect(() => {
+                  setCurrentFormValues({
+                    isTicketSpecific: values.isTicketSpecific,
+                  });
+                }, [values.isTicketSpecific]);
 
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="editActive"
-                  checked={editingCoupon.active}
-                  onCheckedChange={(checked) =>
-                    setEditingCoupon({ ...editingCoupon, active: checked })
-                  }
-                />
-                <Label htmlFor="editActive">Active</Label>
-              </div>
-            </div>
+                return (
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <Label>Max Usage</Label>
+                      <div className="space-y-2">
+                        <Slider
+                          value={[values.maxUsage]}
+                          onValueChange={(value) =>
+                            setFieldValue("maxUsage", value[0])
+                          }
+                          max={1000}
+                          min={editingCoupon.used_count}
+                          step={1}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">
+                            {editingCoupon.used_count}
+                          </span>
+                          <Input
+                            type="number"
+                            value={values.maxUsage}
+                            onChange={(e) =>
+                              setFieldValue(
+                                "maxUsage",
+                                Math.min(
+                                  1000,
+                                  Math.max(
+                                    editingCoupon.used_count,
+                                    parseInt(e.target.value) ||
+                                      editingCoupon.used_count
+                                  )
+                                )
+                              )
+                            }
+                            className="w-20 text-center"
+                            min={editingCoupon.used_count}
+                            max={1000}
+                          />
+                          <span className="text-sm text-muted-foreground">
+                            1000
+                          </span>
+                        </div>
+                      </div>
+                      {touched.maxUsage && errors.maxUsage && (
+                        <div className="text-red-500 text-sm mt-1">
+                          {String(errors.maxUsage)}
+                        </div>
+                      )}
+                    </div>
 
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setEditingCoupon(null)}>
-                Cancel
-              </Button>
-              <Button onClick={onSaveEdit}>
-                <Save className="h-4 w-4 mr-2" />
-                Save Changes
-              </Button>
-            </DialogFooter>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="editActive"
+                        checked={values.isActive}
+                        onCheckedChange={(checked) =>
+                          setFieldValue("isActive", checked)
+                        }
+                      />
+                      <Label htmlFor="editActive">Active</Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="editTicketSpecific"
+                        checked={values.isTicketSpecific}
+                        onCheckedChange={(checked) =>
+                          setFieldValue("isTicketSpecific", checked)
+                        }
+                      />
+                      <Label htmlFor="editTicketSpecific">
+                        Apply to specific ticket type only
+                      </Label>
+                    </div>
+
+                    {values.isTicketSpecific && (
+                      <div>
+                        <Label>Ticket Type</Label>
+                        <Select
+                          value={values.ticketType}
+                          onValueChange={(value) =>
+                            setFieldValue("ticketType", value)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select ticket type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {isLoadingTicketPricings ? (
+                              <SelectItem value="loading" disabled>
+                                Carregando...
+                              </SelectItem>
+                            ) : (
+                              ticketPricings?.map((pricing) => (
+                                <SelectItem
+                                  key={pricing.id}
+                                  value={pricing.id.toString()}
+                                >
+                                  {pricing.ticket_type} - {pricing.gender} (Lote{" "}
+                                  {pricing.lot})
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                        {touched.ticketType && errors.ticketType && (
+                          <div className="text-red-500 text-sm mt-1">
+                            {String(errors.ticketType)}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <DialogFooter>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setEditingCoupon(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={updateCouponMutation.isPending}
+                      >
+                        {updateCouponMutation.isPending ? (
+                          <>
+                            <Save className="h-4 w-4 mr-2" />
+                            Salvando...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="h-4 w-4 mr-2" />
+                            Save Changes
+                          </>
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                );
+              }}
+            </Formik>
           </DialogContent>
         </Dialog>
       )}
