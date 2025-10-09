@@ -72,7 +72,7 @@ const Auth = () => {
     const codeVerifier = generateCodeVerifier();
     const codeChallenge = await generateCodeChallenge(codeVerifier);
     const redirectUri = `${window.location.origin}${
-      import.meta.env.VITE_GOOGLE_CLIENT_ID || "/auth"
+      import.meta.env.VITE_PUBLIC_GOOGLE_REDIRECT_ROUTE || "/auth"
     }`;
 
     sessionStorage.setItem("codeVerifier", codeVerifier);
@@ -92,7 +92,7 @@ const Auth = () => {
   const exchangeCodeWithBackend = async (code: string) => {
     const codeVerifier = sessionStorage.getItem("codeVerifier");
     const redirectUri = `${window.location.origin}${
-      import.meta.env.VITE_GOOGLE_CLIENT_ID || "/auth"
+      import.meta.env.VITE_PUBLIC_GOOGLE_REDIRECT_ROUTE || "/auth"
     }`;
 
     try {
