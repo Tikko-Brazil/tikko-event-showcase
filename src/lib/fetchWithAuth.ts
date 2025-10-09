@@ -46,7 +46,7 @@ const refreshAccessToken = async (baseUrl: string): Promise<TokenPair> => {
     } catch (error) {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      window.location.href = '/auth';
+      window.location.href = '/login';
       throw new Error('Token refresh failed');
     } finally {
       isRefreshing = false;

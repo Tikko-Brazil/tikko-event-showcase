@@ -12,7 +12,7 @@ const PrivateRoute = ({ children }: PrivateRouteProps) => {
 
   const token = localStorage.getItem("accessToken");
 
-  return token ? <>{children}</> : <Navigate to="/auth" replace />;
+  return token ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 export default PrivateRoute;

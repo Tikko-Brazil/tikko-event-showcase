@@ -142,16 +142,16 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
   const initialValues = isPasswordReset
     ? { password: "", confirmPassword: "" }
     : {
-        email: "",
-        fullName: "",
-        password: "",
-        confirmPassword: "",
-        gender: "",
-        birthdate: "",
-        phone: "+55 ",
-        instagram: "",
-        bio: "",
-      };
+      email: "",
+      fullName: "",
+      password: "",
+      confirmPassword: "",
+      gender: "",
+      birthdate: "",
+      phone: "+55 ",
+      instagram: "",
+      bio: "",
+    };
 
   const validationSchema = isPasswordReset ? passwordResetSchema : signupSchema;
 
@@ -420,11 +420,10 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                     type={showPassword ? "text" : "password"}
                     placeholder="Digite sua senha"
                     onBlur={handleBlur}
-                    className={`pr-10 ${
-                      errors.password && touched.password
+                    className={`pr-10 ${errors.password && touched.password
                         ? "border-destructive"
                         : ""
-                    }`}
+                      }`}
                   />
                   <button
                     type="button"
@@ -455,11 +454,10 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirme sua senha"
                     onBlur={handleBlur}
-                    className={`pr-10 ${
-                      errors.confirmPassword && touched.confirmPassword
+                    className={`pr-10 ${errors.confirmPassword && touched.confirmPassword
                         ? "border-destructive"
                         : ""
-                    }`}
+                      }`}
                   />
                   <button
                     type="button"
@@ -491,14 +489,14 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                     ? "Atualizando..."
                     : "Criando Conta..."
                   : isPasswordReset
-                  ? "Atualizar Senha"
-                  : "Criar Conta"}
+                    ? "Atualizar Senha"
+                    : "Criar Conta"}
               </Button>
 
               {!isPasswordReset && (
                 <p className="text-center text-sm text-muted-foreground mt-4">
                   Já tem uma conta?{" "}
-                  <Link to="/auth" className="text-primary hover:underline">
+                  <Link to="/login" className="text-primary hover:underline">
                     Entrar
                   </Link>
                 </p>

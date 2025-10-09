@@ -34,7 +34,7 @@ const App = () => (
               }
             />
             <Route
-              path="/auth"
+              path="/login"
               element={
                 <PublicRoute>
                   <Auth />

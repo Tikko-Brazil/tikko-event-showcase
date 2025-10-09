@@ -130,7 +130,7 @@ const EnhancedIndex = () => {
               </Link>
             </nav>
             <div className="flex items-center space-x-3">
-              <Link to="/auth">
+              <Link to="/login">
                 <Button
                   variant="ghost"
                   className="transition-smooth hover:shadow-glow"
@@ -138,7 +138,7 @@ const EnhancedIndex = () => {
                   Sign In
                 </Button>
               </Link>
-              <Link to="/auth">
+              <Link to="/login">
                 <Button className="gradient-button hover:shadow-elegant transition-smooth">
                   Get Started
                 </Button>
@@ -177,7 +177,7 @@ const EnhancedIndex = () => {
               unforgettable memories. Your next adventure is just a click away.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/auth">
+              <Link to="/login">
                 <Button
                   size="lg"
                   className="h-14 px-8 text-lg gradient-button hover:shadow-elegant transition-bounce"
@@ -335,7 +335,7 @@ const EnhancedIndex = () => {
               entertainment needs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/auth">
+              <Link to="/login">
                 <Button
                   size="lg"
                   className="h-14 px-8 text-lg gradient-button hover:shadow-elegant transition-bounce"
