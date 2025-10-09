@@ -91,9 +91,7 @@ const Auth = () => {
 
   const exchangeCodeWithBackend = async (code: string) => {
     const codeVerifier = sessionStorage.getItem("codeVerifier");
-    const redirectUri = `${window.location.origin}${
-      import.meta.env.VITE_PUBLIC_GOOGLE_REDIRECT_ROUTE || "/auth"
-    }`;
+    const redirectUri = `${window.location.origin}/login/`;
 
     try {
       const data = await authGateway.exchange({
