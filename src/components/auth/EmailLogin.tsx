@@ -1,20 +1,23 @@
-import React from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Eye, EyeOff } from 'lucide-react';
-import { AuthGateway } from '@/lib/AuthGateway';
-import ErrorSnackbar from '@/components/ErrorSnackbar';
+import React from "react";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff } from "lucide-react";
+import { AuthGateway } from "@/lib/AuthGateway";
+import ErrorSnackbar from "@/components/ErrorSnackbar";
 
 const loginSchema = Yup.object().shape({
-  email: Yup.string()
-    .email('Email inválido')
-    .required('Email é obrigatório'),
-  password: Yup.string()
-    .required('Senha é obrigatória'),
+  email: Yup.string().email("Email inválido").required("Email é obrigatório"),
+  password: Yup.string().required("Senha é obrigatória"),
 });
 
 interface EmailLoginProps {
@@ -22,12 +25,15 @@ interface EmailLoginProps {
   onBack: () => void;
 }
 
-const EmailLogin: React.FC<EmailLoginProps> = ({ onForgotPassword, onBack }) => {
+const EmailLogin: React.FC<EmailLoginProps> = ({
+  onForgotPassword,
+  onBack,
+}) => {
   const [showPassword, setShowPassword] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState('');
+  const [errorMessage, setErrorMessage] = React.useState("");
   const [showError, setShowError] = React.useState(false);
-  
-  const authGateway = new AuthGateway('http://localhost:3000');
+
+  const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -37,7 +43,7 @@ const EmailLogin: React.FC<EmailLoginProps> = ({ onForgotPassword, onBack }) => 
       </CardHeader>
       <CardContent>
         <Formik
-          initialValues={{ email: '', password: '' }}
+          initialValues={{ email: "", password: "" }}
           validationSchema={loginSchema}
           onSubmit={async (values, { setSubmitting }) => {
             try {
@@ -45,11 +51,17 @@ const EmailLogin: React.FC<EmailLoginProps> = ({ onForgotPassword, onBack }) => 
                 email: values.email,
                 password: values.password,
               });
-              
-              localStorage.setItem('accessToken', response.token_pair.access_token);
-              localStorage.setItem('refreshToken', response.token_pair.refresh_token);
-              
-              window.location.href = '/dashboard';
+
+              localStorage.setItem(
+                "accessToken",
+                response.token_pair.access_token
+              );
+              localStorage.setItem(
+                "refreshToken",
+                response.token_pair.refresh_token
+              );
+
+              window.location.href = "/dashboard";
             } catch (error: any) {
               setErrorMessage(error.message);
               setShowError(true);
@@ -68,9 +80,15 @@ const EmailLogin: React.FC<EmailLoginProps> = ({ onForgotPassword, onBack }) => 
                   name="email"
                   type="email"
                   placeholder="seu@email.com"
-                  className={errors.email && touched.email ? 'border-destructive' : ''}
+                  className={
+                    errors.email && touched.email ? "border-destructive" : ""
+                  }
                 />
-                <ErrorMessage name="email" component="div" className="text-destructive text-sm mt-1" />
+                <ErrorMessage
+                  name="email"
+                  component="div"
+                  className="text-destructive text-sm mt-1"
+                />
               </div>
 
               <div className="space-y-2">
@@ -80,19 +98,31 @@ const EmailLogin: React.FC<EmailLoginProps> = ({ onForgotPassword, onBack }) => 
                     as={Input}
                     id="password"
                     name="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     placeholder="Digite sua senha"
-                    className={`pr-10 ${errors.password && touched.password ? 'border-destructive' : ''}`}
+                    className={`pr-10 ${
+                      errors.password && touched.password
+                        ? "border-destructive"
+                        : ""
+                    }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
-                <ErrorMessage name="password" component="div" className="text-destructive text-sm mt-1" />
+                <ErrorMessage
+                  name="password"
+                  component="div"
+                  className="text-destructive text-sm mt-1"
+                />
               </div>
 
               <div className="flex justify-end">
@@ -106,13 +136,13 @@ const EmailLogin: React.FC<EmailLoginProps> = ({ onForgotPassword, onBack }) => 
                 </Button>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full h-12 text-lg mt-6" 
+              <Button
+                type="submit"
+                className="w-full h-12 text-lg mt-6"
                 disabled={isSubmitting}
                 size="lg"
               >
-                {isSubmitting ? 'Entrando...' : 'Entrar'}
+                {isSubmitting ? "Entrando..." : "Entrar"}
               </Button>
             </Form>
           )}

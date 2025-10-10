@@ -137,21 +137,21 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
   const [successMessage, setSuccessMessage] = React.useState("");
   const [showSuccess, setShowSuccess] = React.useState(false);
 
-  const authGateway = new AuthGateway("http://localhost:3000");
+  const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
   const initialValues = isPasswordReset
     ? { password: "", confirmPassword: "" }
     : {
-      email: "",
-      fullName: "",
-      password: "",
-      confirmPassword: "",
-      gender: "",
-      birthdate: "",
-      phone: "+55 ",
-      instagram: "",
-      bio: "",
-    };
+        email: "",
+        fullName: "",
+        password: "",
+        confirmPassword: "",
+        gender: "",
+        birthdate: "",
+        phone: "+55 ",
+        instagram: "",
+        bio: "",
+      };
 
   const validationSchema = isPasswordReset ? passwordResetSchema : signupSchema;
 
@@ -420,10 +420,11 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                     type={showPassword ? "text" : "password"}
                     placeholder="Digite sua senha"
                     onBlur={handleBlur}
-                    className={`pr-10 ${errors.password && touched.password
+                    className={`pr-10 ${
+                      errors.password && touched.password
                         ? "border-destructive"
                         : ""
-                      }`}
+                    }`}
                   />
                   <button
                     type="button"
@@ -454,10 +455,11 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirme sua senha"
                     onBlur={handleBlur}
-                    className={`pr-10 ${errors.confirmPassword && touched.confirmPassword
+                    className={`pr-10 ${
+                      errors.confirmPassword && touched.confirmPassword
                         ? "border-destructive"
                         : ""
-                      }`}
+                    }`}
                   />
                   <button
                     type="button"
@@ -489,8 +491,8 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                     ? "Atualizando..."
                     : "Criando Conta..."
                   : isPasswordReset
-                    ? "Atualizar Senha"
-                    : "Criar Conta"}
+                  ? "Atualizar Senha"
+                  : "Criar Conta"}
               </Button>
 
               {!isPasswordReset && (
