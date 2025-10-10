@@ -120,16 +120,8 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
 
   // Get sales data from daily sales endpoint or fallback to mock data
   const getSalesData = () => {
-    if (!dailySales) {
-      return [
-        { time: "Day 7", tickets: 1 },
-        { time: "Day 6", tickets: 1 },
-        { time: "Day 5", tickets: 1 },
-        { time: "Day 4", tickets: 1 },
-        { time: "Day 3", tickets: 1 },
-        { time: "Day 2", tickets: 1 },
-        { time: "Day 1", tickets: 1 },
-      ];
+    if (!dailySales || dailySales.length === 0) {
+      return [];
     }
 
     const days = getDaysFromTimeWindow(salesTimeWindow);
@@ -138,7 +130,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
 
     // Create map of existing sales data
     dailySales.forEach((sale) => {
-      const date = sale.date.split('T')[0]; // Extract YYYY-MM-DD from ISO string
+      const date = sale.date.split("T")[0]; // Extract YYYY-MM-DD from ISO string
       salesMap.set(date, sale.total_sales);
     });
 
@@ -147,7 +139,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      const dateKey = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+      const dateKey = date.toISOString().split("T")[0]; // Format as YYYY-MM-DD
       const formattedDate = date.toLocaleDateString("pt-BR", {
         month: "short",
         day: "numeric",
@@ -420,17 +412,30 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <CardTitle>Tickets Sold</CardTitle>
-                {dailySales && dailySales.length > 0 && dailySales[dailySales.length - 1].percentage_change !== null && (
-                  <div className={`text-sm font-medium ${
-                    dailySales[dailySales.length - 1].percentage_change! >= 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {dailySales[dailySales.length - 1].percentage_change! >= 0 ? '+' : ''}
-                    {dailySales[dailySales.length - 1].percentage_change!.toLocaleString("pt-BR", {
-                      minimumFractionDigits: 1,
-                      maximumFractionDigits: 1,
-                    })}%
-                  </div>
-                )}
+                {dailySales &&
+                  dailySales.length > 0 &&
+                  dailySales[dailySales.length - 1].percentage_change !==
+                    null && (
+                    <div
+                      className={`text-sm font-medium ${
+                        dailySales[dailySales.length - 1].percentage_change! >=
+                        0
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {dailySales[dailySales.length - 1].percentage_change! >= 0
+                        ? "+"
+                        : ""}
+                      {dailySales[
+                        dailySales.length - 1
+                      ].percentage_change!.toLocaleString("pt-BR", {
+                        minimumFractionDigits: 1,
+                        maximumFractionDigits: 1,
+                      })}
+                      %
+                    </div>
+                  )}
               </div>
               <TimeWindowSelector
                 options={["7d", "14d", "30d"]}
@@ -447,6 +452,10 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
                 </div>
               ) : dailySalesError ? (
                 <div className="text-red-500">Error loading sales data</div>
+              ) : salesData.length === 0 ? (
+                <div className="text-muted-foreground">
+                  Insufficient data available
+                </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={salesData}>
