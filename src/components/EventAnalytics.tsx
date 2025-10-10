@@ -138,16 +138,16 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
 
     // Create map of existing sales data
     dailySales.forEach((sale) => {
-      const date = new Date(sale.date).toDateString();
+      const date = sale.date.split('T')[0]; // Extract YYYY-MM-DD from ISO string
       salesMap.set(date, sale.total_sales);
     });
 
     // Generate complete date range with 0 for missing days
     const result = [];
     for (let i = days - 1; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
-      const dateKey = date.toDateString();
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateKey = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
       const formattedDate = date.toLocaleDateString("pt-BR", {
         month: "short",
         day: "numeric",
