@@ -121,13 +121,34 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
       ];
     }
 
-    return eventStats.daily_sales.map((sale, index) => ({
-      time: new Date(sale.date).toLocaleDateString("pt-BR", {
+    const days = getDaysFromTimeWindow(salesTimeWindow);
+    const today = new Date();
+    const salesMap = new Map();
+
+    // Create map of existing sales data
+    eventStats.daily_sales.forEach((sale) => {
+      const date = new Date(sale.date).toDateString();
+      salesMap.set(date, sale.total_sales);
+    });
+
+    // Generate complete date range with 0 for missing days
+    const result = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateKey = date.toDateString();
+      const formattedDate = date.toLocaleDateString("pt-BR", {
         month: "short",
         day: "numeric",
-      }),
-      tickets: sale.total_sales,
-    }));
+      });
+
+      result.push({
+        time: formattedDate,
+        tickets: salesMap.get(dateKey) || 0,
+      });
+    }
+
+    return result;
   };
 
   const salesData = getSalesData();
