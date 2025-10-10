@@ -57,9 +57,20 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["event-stats", eventId, salesTimeWindow],
+    queryKey: ["event-stats", eventId],
+    queryFn: () => eventGateway.getEventStats(eventId),
+    enabled: !!eventId,
+  });
+
+  // Fetch daily sales data separately
+  const {
+    data: dailySales,
+    isLoading: isDailySalesLoading,
+    error: dailySalesError,
+  } = useQuery({
+    queryKey: ["event-daily-sales", eventId, salesTimeWindow],
     queryFn: () =>
-      eventGateway.getEventStats(
+      eventGateway.getEventDailySales(
         eventId,
         getDaysFromTimeWindow(salesTimeWindow)
       ),
@@ -107,9 +118,9 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
     paidTickets: 135,
   };
 
-  // Get sales data from event stats or fallback to mock data
+  // Get sales data from daily sales endpoint or fallback to mock data
   const getSalesData = () => {
-    if (!eventStats?.daily_sales) {
+    if (!dailySales) {
       return [
         { time: "Day 7", tickets: 1 },
         { time: "Day 6", tickets: 1 },
@@ -126,7 +137,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
     const salesMap = new Map();
 
     // Create map of existing sales data
-    eventStats.daily_sales.forEach((sale) => {
+    dailySales.forEach((sale) => {
       const date = new Date(sale.date).toDateString();
       salesMap.set(date, sale.total_sales);
     });
@@ -407,7 +418,20 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
         <Card>
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle>Tickets Sold</CardTitle>
+              <div className="flex items-center gap-3">
+                <CardTitle>Tickets Sold</CardTitle>
+                {dailySales && dailySales.length > 0 && dailySales[dailySales.length - 1].percentage_change !== null && (
+                  <div className={`text-sm font-medium ${
+                    dailySales[dailySales.length - 1].percentage_change! >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {dailySales[dailySales.length - 1].percentage_change! >= 0 ? '+' : ''}
+                    {dailySales[dailySales.length - 1].percentage_change!.toLocaleString("pt-BR", {
+                      minimumFractionDigits: 1,
+                      maximumFractionDigits: 1,
+                    })}%
+                  </div>
+                )}
+              </div>
               <TimeWindowSelector
                 options={["7d", "14d", "30d"]}
                 selected={salesTimeWindow}
@@ -416,36 +440,47 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={salesData}>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis
-                    dataKey="time"
-                    tick={{ fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip
-                    labelStyle={{ color: "hsl(var(--foreground))" }}
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--popover))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Bar
-                    dataKey="tickets"
-                    fill="hsl(var(--primary))"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="h-[250px] w-full flex items-center justify-center">
+              {isDailySalesLoading ? (
+                <div className="text-muted-foreground">
+                  Loading sales data...
+                </div>
+              ) : dailySalesError ? (
+                <div className="text-red-500">Error loading sales data</div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={salesData}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="opacity-30"
+                    />
+                    <XAxis
+                      dataKey="time"
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip
+                      labelStyle={{ color: "hsl(var(--foreground))" }}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--popover))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Bar
+                      dataKey="tickets"
+                      fill="hsl(var(--primary))"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </CardContent>
         </Card>

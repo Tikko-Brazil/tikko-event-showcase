@@ -128,12 +128,14 @@ interface EventStats {
   };
   total_visits: number;
   conversion_rate: number;
-  daily_sales: {
-    date: string;
-    total_sales: number;
-    paid_sales: number;
-    free_sales: number;
-  }[];
+}
+
+interface DailySales {
+  date: string;
+  total_sales: number;
+  paid_sales: number;
+  free_sales: number;
+  percentage_change: number | null;
 }
 
 interface AssignRoleRequest {
@@ -238,6 +240,18 @@ export class EventGateway {
 
     const response = await this.fetchWithAuth(url.toString());
     return this.handleResponse<EventStats>(response);
+  }
+
+  async getEventDailySales(id: number, days?: number): Promise<DailySales[]> {
+    const url = new URL(
+      `${this.baseUrl}/private/event/${id}/stats/daily-sales`
+    );
+    if (days !== undefined) {
+      url.searchParams.append("days", days.toString());
+    }
+
+    const response = await this.fetchWithAuth(url.toString());
+    return this.handleResponse<DailySales[]>(response);
   }
 
   async getUserEvents(): Promise<UserEventResponse> {
