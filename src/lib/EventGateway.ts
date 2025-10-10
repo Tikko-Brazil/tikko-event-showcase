@@ -138,6 +138,11 @@ interface DailySales {
   percentage_change: number | null;
 }
 
+interface ValidatedTickets {
+  timestamp: string;
+  count: number;
+}
+
 interface AssignRoleRequest {
   user_id: number;
   role: string;
@@ -252,6 +257,21 @@ export class EventGateway {
 
     const response = await this.fetchWithAuth(url.toString());
     return this.handleResponse<DailySales[]>(response);
+  }
+
+  async getEventValidatedTickets(
+    id: number,
+    minutes?: number
+  ): Promise<ValidatedTickets[]> {
+    const url = new URL(
+      `${this.baseUrl}/private/event/${id}/stats/validated-tickets`
+    );
+    if (minutes !== undefined) {
+      url.searchParams.append("minutes", minutes.toString());
+    }
+
+    const response = await this.fetchWithAuth(url.toString());
+    return this.handleResponse<ValidatedTickets[]>(response);
   }
 
   async getUserEvents(): Promise<UserEventResponse> {

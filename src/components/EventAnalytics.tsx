@@ -31,7 +31,7 @@ interface EventAnalyticsProps {
 
 export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
   const [salesTimeWindow, setSalesTimeWindow] = useState("7d");
-  const [validationTimeWindow, setValidationTimeWindow] = useState("7d");
+  const [validationTimeWindow, setValidationTimeWindow] = useState("30m");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
@@ -48,6 +48,20 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
         return 30;
       default:
         return 7;
+    }
+  };
+
+  // Convert time window to minutes
+  const getMinutesFromTimeWindow = (timeWindow: string) => {
+    switch (timeWindow) {
+      case "30m":
+        return 30;
+      case "2h":
+        return 120;
+      case "5h":
+        return 300;
+      default:
+        return 30;
     }
   };
 
@@ -73,6 +87,17 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
       eventGateway.getEventDailySales(
         eventId,
         getDaysFromTimeWindow(salesTimeWindow)
+      ),
+    enabled: !!eventId,
+  });
+
+  // Fetch validated tickets data
+  const { data: validatedTickets } = useQuery({
+    queryKey: ["event-validated-tickets", eventId, validationTimeWindow],
+    queryFn: () =>
+      eventGateway.getEventValidatedTickets(
+        eventId,
+        getMinutesFromTimeWindow(validationTimeWindow)
       ),
     enabled: !!eventId,
   });
@@ -156,48 +181,26 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
 
   const salesData = getSalesData();
 
-  // Validation data based on selected time window
-  const validationDataSets = {
-    "15m": [
-      { time: "15m", validated: 5 },
-      { time: "12m", validated: 8 },
-      { time: "9m", validated: 12 },
-      { time: "6m", validated: 15 },
-      { time: "3m", validated: 18 },
-    ],
-    "30m": [
-      { time: "30m", validated: 12 },
-      { time: "25m", validated: 18 },
-      { time: "20m", validated: 25 },
-      { time: "15m", validated: 32 },
-      { time: "10m", validated: 28 },
-      { time: "5m", validated: 35 },
-    ],
-    "1h": [
-      { time: "60m", validated: 15 },
-      { time: "50m", validated: 22 },
-      { time: "40m", validated: 28 },
-      { time: "30m", validated: 35 },
-      { time: "20m", validated: 41 },
-      { time: "10m", validated: 45 },
-    ],
-    "2h": [
-      { time: "2h", validated: 25 },
-      { time: "100m", validated: 32 },
-      { time: "80m", validated: 38 },
-      { time: "60m", validated: 45 },
-      { time: "40m", validated: 52 },
-      { time: "20m", validated: 58 },
-    ],
-    "5h": [
-      { time: "5h", validated: 35 },
-      { time: "4h", validated: 45 },
-      { time: "3h", validated: 55 },
-      { time: "2h", validated: 65 },
-      { time: "1h", validated: 75 },
-      { time: "30m", validated: 89 },
-    ],
+  // Get validation data from validated tickets endpoint or fallback to mock data
+  const getValidationData = () => {
+    if (!validatedTickets) {
+      return [];
+    }
+
+    if (validatedTickets.length === 0) {
+      return [];
+    }
+
+    return validatedTickets.map(ticket => ({
+      time: new Date(ticket.timestamp).toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      validated: ticket.count,
+    }));
   };
+
+  const validationData = getValidationData();
 
   // Calculate gender data from event stats
   const calculateGenderData = () => {
@@ -500,49 +503,47 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
             <div className="flex items-center justify-between">
               <CardTitle>Ticket Validations</CardTitle>
               <TimeWindowSelector
-                options={["15m", "30m", "1h", "2h", "5h"]}
+                options={["30m", "2h", "5h"]}
                 selected={validationTimeWindow}
                 onSelect={setValidationTimeWindow}
               />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={
-                    validationDataSets[
-                      validationTimeWindow as keyof typeof validationDataSets
-                    ]
-                  }
-                >
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis
-                    dataKey="time"
-                    tick={{ fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip
-                    labelStyle={{ color: "hsl(var(--foreground))" }}
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--popover))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Bar
-                    dataKey="validated"
-                    fill="hsl(var(--primary))"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="h-[250px] w-full flex items-center justify-center">
+              {validationData.length === 0 ? (
+                <div className="text-muted-foreground">Insufficient data available</div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={validationData}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis
+                      dataKey="time"
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 12 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip
+                      labelStyle={{ color: "hsl(var(--foreground))" }}
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--popover))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px",
+                      }}
+                    />
+                    <Bar
+                      dataKey="validated"
+                      fill="hsl(var(--primary))"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </CardContent>
         </Card>
