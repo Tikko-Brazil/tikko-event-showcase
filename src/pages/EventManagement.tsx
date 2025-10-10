@@ -10,6 +10,7 @@ import { EventParticipants } from "@/components/EventParticipants";
 import { EventTicketTypes } from "@/components/EventTicketTypes";
 import { EventCoupons } from "@/components/EventCoupons";
 import { EventJoinRequests } from "@/components/EventJoinRequests";
+import { EventStaff } from "@/components/EventStaff";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ArrowLeft,
@@ -24,6 +25,7 @@ import {
   Edit,
   FileText,
   TrendingUp,
+  UsersRound,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import logoLight from "@/assets/logoLight.png";
@@ -379,6 +381,7 @@ const EventManagement = () => {
     { id: "participants", label: "Participants", icon: Users },
     { id: "tickets", label: "Ticket Types", icon: Ticket },
     { id: "coupons", label: "Coupons", icon: Gift },
+    { id: "staff", label: "Staff", icon: UsersRound },
     { id: "validate", label: "Validate Tickets", icon: CheckCircle2 },
     { id: "requests", label: "Join Requests", icon: UserPlus },
   ];
@@ -574,6 +577,8 @@ const EventManagement = () => {
     <EventTicketTypes eventId={parseInt(eventId!)} />
   );
 
+  const renderStaff = () => <EventStaff eventId={parseInt(eventId!)} />;
+
   const renderEditEvent = () => <EventEditForm event={event} />;
 
   const renderPlaceholderSection = (title: string, description: string) => (
@@ -599,6 +604,8 @@ const EventManagement = () => {
         return renderTicketTypes();
       case "coupons":
         return renderCoupons();
+      case "staff":
+        return renderStaff();
       case "validate":
         return renderPlaceholderSection(
           "Validate Tickets",
@@ -645,6 +652,8 @@ const EventManagement = () => {
               ? renderTicketTypes()
               : mobileOverlay === "coupons"
               ? renderCoupons()
+              : mobileOverlay === "staff"
+              ? renderStaff()
               : mobileOverlay === "requests"
               ? renderJoinRequests()
               : renderPlaceholderSection(
