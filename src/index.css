@@ -37,7 +37,7 @@ All colors MUST be HSL.
     --ring: 263 70% 50%;
 
     /* Tikko-specific colors */
-    --tikko-orange: 15 90% 55%;
+    --tikko-orange: 268, 100%, 79%;
     --tikko-purple: 263 70% 50%;
     --tikko-dark: 229 84% 5%;
     --tikko-card-light: 210 40% 98%;

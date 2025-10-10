@@ -149,34 +149,13 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
       return [];
     }
 
-    const days = getDaysFromTimeWindow(salesTimeWindow);
-    const today = new Date();
-    const salesMap = new Map();
-
-    // Create map of existing sales data
-    dailySales.forEach((sale) => {
-      const date = sale.date.split("T")[0]; // Extract YYYY-MM-DD from ISO string
-      salesMap.set(date, sale.total_sales);
-    });
-
-    // Generate complete date range with 0 for missing days
-    const result = [];
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateKey = date.toISOString().split("T")[0]; // Format as YYYY-MM-DD
-      const formattedDate = date.toLocaleDateString("pt-BR", {
+    return dailySales.map((sale) => ({
+      time: new Date(sale.date.split("T")[0]).toLocaleDateString("pt-BR", {
         month: "short",
         day: "numeric",
-      });
-
-      result.push({
-        time: formattedDate,
-        tickets: salesMap.get(dateKey) || 0,
-      });
-    }
-
-    return result;
+      }),
+      tickets: sale.total_sales,
+    }));
   };
 
   const salesData = getSalesData();
@@ -191,7 +170,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
       return [];
     }
 
-    return validatedTickets.map(ticket => ({
+    return validatedTickets.map((ticket) => ({
       time: new Date(ticket.timestamp).toLocaleTimeString("pt-BR", {
         hour: "2-digit",
         minute: "2-digit",
@@ -418,7 +397,9 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
                 {dailySales &&
                   dailySales.length > 0 &&
                   dailySales[dailySales.length - 1].percentage_change !==
-                    null && (
+                    null &&
+                  dailySales[dailySales.length - 1].percentage_change !==
+                    undefined && (
                     <div
                       className={`text-sm font-medium ${
                         dailySales[dailySales.length - 1].percentage_change! >=
@@ -512,11 +493,16 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
           <CardContent>
             <div className="h-[250px] w-full flex items-center justify-center">
               {validationData.length === 0 ? (
-                <div className="text-muted-foreground">Insufficient data available</div>
+                <div className="text-muted-foreground">
+                  Insufficient data available
+                </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={validationData}>
-                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="opacity-30"
+                    />
                     <XAxis
                       dataKey="time"
                       tick={{ fontSize: 12 }}
@@ -576,14 +562,13 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
                   <Tooltip
                     formatter={(value, name, props) => [
                       `${props.payload.count} people (${value}%)`,
-                      name,
                     ]}
                     labelStyle={{ color: "hsl(var(--foreground))" }}
                     contentStyle={{
                       backgroundColor: "hsl(var(--popover))",
                       border: "1px solid hsl(var(--border))",
                       borderRadius: "8px",
-                      color: "hsl(var(--foreground))",
+                      color: "hsl(var(--tikko-orange))",
                     }}
                   />
                   <Legend
@@ -593,6 +578,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
                     wrapperStyle={{
                       fontSize: "12px",
                       color: "hsl(var(--foreground))",
+                      paddingTop: "12px",
                     }}
                   />
                 </PieChart>
