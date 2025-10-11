@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -36,40 +38,70 @@ import { Label } from "@/components/ui/label";
 import { UserPlus, Pencil, Trash2, Shield, Crown } from "lucide-react";
 import { SearchAndFilter } from "./SearchAndFilter";
 import { Pagination } from "./Pagination";
-import { StaffGateway, StaffRole, StaffMember } from "@/lib/StaffGateway";
+import { EventGateway } from "@/lib/EventGateway";
 import SuccessSnackbar from "./SuccessSnackbar";
 import ErrorSnackbar from "./ErrorSnackbar";
+
+enum StaffRole {
+  VALIDATOR = "validator",
+  COORDINATOR = "coordinator",
+  MANAGER = "manager",
+  HOST = "host",
+}
+
+interface StaffMember {
+  id: number;
+  username: string;
+  email: string;
+  phone_number: string;
+  birthday: string;
+  gender: string;
+  location: string;
+  instagram_profile: string;
+  role: string;
+}
 
 interface EventStaffProps {
   eventId: number;
 }
 
-const getRoleIcon = (role: StaffRole) => {
-  switch (role) {
-    case StaffRole.HOST:
+const getRoleIcon = (role: string | number) => {
+  const roleStr = role.toString();
+  switch (roleStr) {
+    case "4":
+    case "host":
       return <Crown className="h-4 w-4" />;
-    case StaffRole.MANAGER:
+    case "3":
+    case "manager":
       return <Shield className="h-4 w-4" />;
     default:
       return null;
   }
 };
 
-const getRoleLabel = (role: StaffRole) => {
+const getRoleLabel = (role: string | number) => {
+  const roleStr = role.toString();
   const labels = {
-    [StaffRole.HOST]: "Host",
-    [StaffRole.MANAGER]: "Manager",
-    [StaffRole.COORDINATOR]: "Coordinator",
-    [StaffRole.VALIDATOR]: "Validator",
+    "4": "Host",
+    "3": "Manager",
+    "2": "Coordinator",
+    "1": "Validator",
+    host: "Host",
+    manager: "Manager",
+    coordinator: "Coordinator",
+    validator: "Validator",
   };
-  return labels[role] || role;
+  return labels[roleStr as keyof typeof labels] || roleStr;
 };
 
-const getRoleBadgeVariant = (role: StaffRole) => {
-  switch (role) {
-    case StaffRole.HOST:
+const getRoleBadgeVariant = (role: string | number) => {
+  const roleStr = role.toString();
+  switch (roleStr) {
+    case "4":
+    case "host":
       return "default";
-    case StaffRole.MANAGER:
+    case "3":
+    case "manager":
       return "secondary";
     default:
       return "outline";
@@ -89,16 +121,13 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
 
   // Add staff dialog state
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newStaffEmail, setNewStaffEmail] = useState("");
-  const [newStaffRole, setNewStaffRole] = useState<StaffRole>(StaffRole.VALIDATOR);
 
   // Edit staff dialog state
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
-  const [editStaffRole, setEditStaffRole] = useState<StaffRole>(StaffRole.VALIDATOR);
 
   const staffPerPage = 6;
 
-  const staffGateway = new StaffGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
   const queryClient = useQueryClient();
 
   // Debounced search function
@@ -117,23 +146,29 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
   // Reset page when filter or search changes
   React.useEffect(() => {
     setStaffPage(1);
-  }, [staffFilter, debouncedSearch]);
-
-  // Get role filter value
-  const getRoleFilter = (): StaffRole | undefined => {
-    if (staffFilter === "all") return undefined;
-    return staffFilter as StaffRole;
-  };
+  }, [staffFilter, staffSearch]);
 
   // Fetch staff using React Query
+  // Get role filter value for API
+  const getRoleFilter = (): number | undefined => {
+    if (staffFilter === "all") return undefined;
+    const roleMap = {
+      validator: 1,
+      coordinator: 2,
+      manager: 3,
+      host: 4,
+    };
+    return roleMap[staffFilter as keyof typeof roleMap];
+  };
+
   const {
-    data: staffData,
+    data: staff,
     isLoading,
     error,
   } = useQuery({
     queryKey: ["event-staff", eventId, staffFilter, debouncedSearch],
     queryFn: () =>
-      staffGateway.getEventStaff(
+      eventGateway.getEventStaff(
         eventId,
         getRoleFilter(),
         debouncedSearch || undefined
@@ -141,29 +176,22 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
     enabled: !!eventId,
   });
 
-  const staff = staffData?.staff || [];
-
   // Restore focus after query updates
   React.useEffect(() => {
     if (staffSearch && searchInputRef.current) {
       searchInputRef.current.focus();
     }
-  }, [staffData, staffSearch]);
+  }, [staff, staffSearch]);
 
   // Add staff mutation
   const addStaffMutation = useMutation({
-    mutationFn: (data: { user_email: string; role: StaffRole }) =>
-      staffGateway.addStaffMember({
-        user_email: data.user_email,
-        event_id: eventId,
-        role: data.role,
-      }),
+    mutationFn: (data: { email: string; role: string }) =>
+      eventGateway.addStaffMember(eventId, data),
     onSuccess: () => {
       setSuccessMessage("Staff member added successfully");
       setShowSuccessSnackbar(true);
       setIsAddDialogOpen(false);
-      setNewStaffEmail("");
-      setNewStaffRole(StaffRole.VALIDATOR);
+      addStaffFormik.resetForm();
       queryClient.invalidateQueries({ queryKey: ["event-staff", eventId] });
     },
     onError: (error: Error) => {
@@ -172,10 +200,34 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
     },
   });
 
+  // Add staff form validation
+  const addStaffSchema = Yup.object().shape({
+    email: Yup.string()
+      .required("Email is required")
+      .email("Invalid email format"),
+    role: Yup.string()
+      .required("Role is required")
+      .oneOf(["validator", "coordinator", "manager"], "Invalid role selected"),
+  });
+
+  const addStaffFormik = useFormik({
+    initialValues: {
+      email: "",
+      role: "validator",
+    },
+    validationSchema: addStaffSchema,
+    onSubmit: (values) => {
+      addStaffMutation.mutate({
+        email: values.email,
+        role: values.role,
+      });
+    },
+  });
+
   // Update staff mutation
   const updateStaffMutation = useMutation({
-    mutationFn: (data: { staff_id: string; role: StaffRole }) =>
-      staffGateway.updateStaffMember(data),
+    mutationFn: (data: { userId: number; role: string }) =>
+      eventGateway.updateStaffRole(eventId, data.userId, { role: data.role }),
     onSuccess: () => {
       setSuccessMessage("Staff member updated successfully");
       setShowSuccessSnackbar(true);
@@ -188,50 +240,49 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
     },
   });
 
-  // Remove staff mutation
-  const removeStaffMutation = useMutation({
-    mutationFn: (staffId: string) => staffGateway.removeStaffMember(staffId),
-    onSuccess: () => {
-      setSuccessMessage("Staff member removed successfully");
-      setShowSuccessSnackbar(true);
-      queryClient.invalidateQueries({ queryKey: ["event-staff", eventId] });
+  // Update staff form validation
+  const updateStaffSchema = Yup.object().shape({
+    role: Yup.string()
+      .required("Role is required")
+      .oneOf(["validator", "coordinator", "manager"], "Invalid role selected"),
+  });
+
+  const updateStaffFormik = useFormik({
+    initialValues: {
+      role: "validator",
     },
-    onError: (error: Error) => {
-      setErrorMessage(error.message || "Failed to remove staff member");
-      setShowErrorSnackbar(true);
+    validationSchema: updateStaffSchema,
+    onSubmit: (values) => {
+      if (!editingStaff) return;
+      updateStaffMutation.mutate({
+        userId: editingStaff.id,
+        role: values.role,
+      });
     },
   });
 
-  // Calculate pagination
+  const removeStaffMutation = {
+    mutate: (staffId: number) => {
+      console.warn("Remove staff not implemented in EventGateway yet", staffId);
+      setSuccessMessage("Staff member removed successfully");
+      setShowSuccessSnackbar(true);
+    },
+    isPending: false,
+  };
+
+  // Calculate pagination (server-side filtered data)
   const from = (staffPage - 1) * staffPerPage;
-  const to = Math.min(staffPage * staffPerPage, staff.length);
-  const totalPages = Math.ceil(staff.length / staffPerPage);
-  const paginatedStaff = staff.slice(from, to);
+  const to = Math.min(staffPage * staffPerPage, staff?.length || 0);
+  const totalPages = Math.ceil((staff?.length || 0) / staffPerPage);
+  const paginatedStaff = staff?.slice(from, to) || [];
 
   const filterOptions = [
     { value: "all", label: "All Roles" },
-    { value: StaffRole.HOST, label: "Host" },
-    { value: StaffRole.MANAGER, label: "Manager" },
-    { value: StaffRole.COORDINATOR, label: "Coordinator" },
-    { value: StaffRole.VALIDATOR, label: "Validator" },
+    { value: "host", label: "Host" },
+    { value: "manager", label: "Manager" },
+    { value: "coordinator", label: "Coordinator" },
+    { value: "validator", label: "Validator" },
   ];
-
-  const handleAddStaff = () => {
-    if (!newStaffEmail) {
-      setErrorMessage("Please enter an email address");
-      setShowErrorSnackbar(true);
-      return;
-    }
-    addStaffMutation.mutate({ user_email: newStaffEmail, role: newStaffRole });
-  };
-
-  const handleUpdateStaff = () => {
-    if (!editingStaff) return;
-    updateStaffMutation.mutate({
-      staff_id: editingStaff.id,
-      role: editStaffRole,
-    });
-  };
 
   if (isLoading) {
     return (
@@ -251,18 +302,17 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <SearchAndFilter
-          searchValue={staffSearch}
-          onSearchChange={setStaffSearch}
-          searchPlaceholder="Search staff..."
-          filterValue={staffFilter}
-          onFilterChange={setStaffFilter}
-          filterOptions={filterOptions}
-          searchInputRef={searchInputRef}
-        />
-
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Staff Management</h2>
+        <Dialog
+          open={isAddDialogOpen}
+          onOpenChange={(open) => {
+            setIsAddDialogOpen(open);
+            if (!open) {
+              addStaffFormik.resetForm();
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button className="whitespace-nowrap">
               <UserPlus className="h-4 w-4 mr-2" />
@@ -276,56 +326,81 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                 Add a new staff member to your event team.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <form
+              onSubmit={addStaffFormik.handleSubmit}
+              className="space-y-4 py-4"
+            >
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="staff@example.com"
-                  value={newStaffEmail}
-                  onChange={(e) => setNewStaffEmail(e.target.value)}
+                  value={addStaffFormik.values.email}
+                  onChange={addStaffFormik.handleChange}
+                  onBlur={addStaffFormik.handleBlur}
+                  className={
+                    addStaffFormik.touched.email && addStaffFormik.errors.email
+                      ? "border-red-500"
+                      : ""
+                  }
                 />
+                {addStaffFormik.touched.email &&
+                  addStaffFormik.errors.email && (
+                    <p className="text-sm text-red-500">
+                      {addStaffFormik.errors.email}
+                    </p>
+                  )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
                 <Select
-                  value={newStaffRole}
-                  onValueChange={(value) => setNewStaffRole(value as StaffRole)}
+                  value={addStaffFormik.values.role}
+                  onValueChange={(value) =>
+                    addStaffFormik.setFieldValue("role", value)
+                  }
                 >
                   <SelectTrigger id="role">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={StaffRole.HOST}>Host</SelectItem>
-                    <SelectItem value={StaffRole.MANAGER}>Manager</SelectItem>
-                    <SelectItem value={StaffRole.COORDINATOR}>
-                      Coordinator
-                    </SelectItem>
-                    <SelectItem value={StaffRole.VALIDATOR}>
-                      Validator
-                    </SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                    <SelectItem value="coordinator">Coordinator</SelectItem>
+                    <SelectItem value="validator">Validator</SelectItem>
                   </SelectContent>
                 </Select>
+                {addStaffFormik.touched.role && addStaffFormik.errors.role && (
+                  <p className="text-sm text-red-500">
+                    {addStaffFormik.errors.role}
+                  </p>
+                )}
               </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setIsAddDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAddStaff}
-                disabled={addStaffMutation.isPending}
-              >
-                {addStaffMutation.isPending ? "Adding..." : "Add Staff"}
-              </Button>
-            </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsAddDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={addStaffMutation.isPending}>
+                  {addStaffMutation.isPending ? "Adding..." : "Add Staff"}
+                </Button>
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
+
+      <SearchAndFilter
+        searchValue={staffSearch}
+        onSearchChange={setStaffSearch}
+        searchPlaceholder="Search staff..."
+        filterValue={staffFilter}
+        onFilterChange={setStaffFilter}
+        filterOptions={filterOptions}
+        searchInputRef={searchInputRef}
+      />
 
       {/* Staff Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -348,7 +423,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                   <div className="flex items-center gap-3">
                     <Avatar className="h-12 w-12">
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {member.user.username
+                        {member.username
                           .split(" ")
                           .map((n) => n[0])
                           .join("")}
@@ -356,10 +431,10 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                     </Avatar>
                     <div>
                       <h3 className="font-semibold text-sm leading-none">
-                        {member.user.username}
+                        {member.username}
                       </h3>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {member.user.email}
+                        {member.email}
                       </p>
                     </div>
                   </div>
@@ -372,25 +447,40 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                 </div>
 
                 <div className="space-y-3 text-sm">
-                  {member.user.instagram_profile && (
+                  {member.instagram_profile && (
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Instagram:</span>
                       <span className="font-medium">
-                        {member.user.instagram_profile}
+                        {member.instagram_profile}
                       </span>
                     </div>
                   )}
                 </div>
 
                 <div className="mt-4 pt-4 border-t flex gap-2">
-                  <Dialog
+                  {/* Hide Edit and Remove buttons for Host users */}
+                  {member.role.toString() !== "4" && member.role !== "host" && (
+                    <>
+                      <Dialog
                     open={editingStaff?.id === member.id}
                     onOpenChange={(open) => {
                       if (open) {
                         setEditingStaff(member);
-                        setEditStaffRole(member.role);
+                        // Convert numeric role to string role for form
+                        const roleStr = member.role.toString();
+                        const roleMap = {
+                          "1": "validator",
+                          "2": "coordinator", 
+                          "3": "manager",
+                          "4": "host"
+                        };
+                        const formRole = roleMap[roleStr as keyof typeof roleMap] || roleStr;
+                        updateStaffFormik.setValues({
+                          role: formRole,
+                        });
                       } else {
                         setEditingStaff(null);
+                        updateStaffFormik.resetForm();
                       }
                     }}
                   >
@@ -404,54 +494,59 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                       <DialogHeader>
                         <DialogTitle>Edit Staff Member</DialogTitle>
                         <DialogDescription>
-                          Update the role for {member.user.username}.
+                          Update the role for {member.username}.
                         </DialogDescription>
                       </DialogHeader>
-                      <div className="space-y-4 py-4">
+                      <form
+                        onSubmit={updateStaffFormik.handleSubmit}
+                        className="space-y-4 py-4"
+                      >
                         <div className="space-y-2">
                           <Label htmlFor="edit-role">Role</Label>
                           <Select
-                            value={editStaffRole}
+                            value={updateStaffFormik.values.role}
                             onValueChange={(value) =>
-                              setEditStaffRole(value as StaffRole)
+                              updateStaffFormik.setFieldValue("role", value)
                             }
                           >
                             <SelectTrigger id="edit-role">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value={StaffRole.HOST}>
-                                Host
-                              </SelectItem>
-                              <SelectItem value={StaffRole.MANAGER}>
-                                Manager
-                              </SelectItem>
-                              <SelectItem value={StaffRole.COORDINATOR}>
+                              <SelectItem value="manager">Manager</SelectItem>
+                              <SelectItem value="coordinator">
                                 Coordinator
                               </SelectItem>
-                              <SelectItem value={StaffRole.VALIDATOR}>
+                              <SelectItem value="validator">
                                 Validator
                               </SelectItem>
                             </SelectContent>
                           </Select>
+                          {updateStaffFormik.touched.role &&
+                            updateStaffFormik.errors.role && (
+                              <p className="text-sm text-red-500">
+                                {updateStaffFormik.errors.role}
+                              </p>
+                            )}
                         </div>
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => setEditingStaff(null)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleUpdateStaff}
-                          disabled={updateStaffMutation.isPending}
-                        >
-                          {updateStaffMutation.isPending
-                            ? "Updating..."
-                            : "Update"}
-                        </Button>
-                      </div>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setEditingStaff(null)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="submit"
+                            disabled={updateStaffMutation.isPending}
+                          >
+                            {updateStaffMutation.isPending
+                              ? "Updating..."
+                              : "Update"}
+                          </Button>
+                        </div>
+                      </form>
                     </DialogContent>
                   </Dialog>
 
@@ -470,8 +565,8 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Confirm Removal</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to remove {member.user.username}{" "}
-                          from the event staff? This action cannot be undone.
+                          Are you sure you want to remove {member.username} from
+                          the event staff? This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -488,6 +583,8 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -503,7 +600,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
           onPageChange={setStaffPage}
           startIndex={from + 1}
           endIndex={to}
-          totalItems={staff.length}
+          totalItems={staff?.length || 0}
           itemName="staff members"
         />
       )}

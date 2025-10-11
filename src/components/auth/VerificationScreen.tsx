@@ -69,6 +69,19 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
     }
   };
 
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "");
+
+    if (pastedData.length === 6) {
+      const newCode = pastedData.split("").slice(0, 6);
+      setCode(newCode);
+
+      // Auto-submit when pasted
+      handleVerify(pastedData);
+    }
+  };
+
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (e.key === "Backspace" && !code[index] && index > 0) {
       const prevInput = document.getElementById(`code-${index - 1}`);
@@ -140,6 +153,7 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
                   handleCodeChange(index, e.target.value.replace(/\D/g, ""))
                 }
                 onKeyDown={(e) => handleKeyDown(index, e)}
+                onPaste={handlePaste}
                 className="w-12 h-12 text-center text-lg font-mono"
                 aria-label={`Dígito ${index + 1}`}
               />

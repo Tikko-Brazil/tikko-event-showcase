@@ -143,9 +143,33 @@ interface ValidatedTickets {
   count: number;
 }
 
-interface AssignRoleRequest {
-  user_id: number;
+interface EventStaffMember {
+  id: number;
+  username: string;
+  email: string;
+  phone_number: string;
+  birthday: string;
+  gender: string;
+  location: string;
+  instagram_profile: string;
   role: string;
+}
+
+interface AddStaffRequest {
+  email: string;
+  role: string;
+}
+
+interface AddStaffResponse {
+  message: string;
+}
+
+interface UpdateStaffRoleRequest {
+  role: string;
+}
+
+interface UpdateStaffRoleResponse {
+  message: string;
 }
 
 interface UploadUrlResponse {
@@ -274,6 +298,23 @@ export class EventGateway {
     return this.handleResponse<ValidatedTickets[]>(response);
   }
 
+  async getEventStaff(
+    eventId: number,
+    role?: number,
+    search?: string
+  ): Promise<EventStaffMember[]> {
+    const url = new URL(`${this.baseUrl}/private/event/${eventId}/staff`);
+    if (role !== undefined) {
+      url.searchParams.append("role", role.toString());
+    }
+    if (search !== undefined) {
+      url.searchParams.append("search", search);
+    }
+
+    const response = await this.fetchWithAuth(url.toString());
+    return this.handleResponse<EventStaffMember[]>(response);
+  }
+
   async getUserEvents(): Promise<UserEventResponse> {
     const response = await this.fetchWithAuth(
       `${this.baseUrl}/private/event/user`
@@ -281,20 +322,33 @@ export class EventGateway {
     return this.handleResponse<UserEventResponse>(response);
   }
 
-  async assignRole(id: number, data: AssignRoleRequest): Promise<void> {
+  async addStaffMember(
+    id: number,
+    data: AddStaffRequest
+  ): Promise<AddStaffResponse> {
     const response = await this.fetchWithAuth(
-      `${this.baseUrl}/private/event/${id}/role`,
+      `${this.baseUrl}/private/event/${id}/staff`,
       {
         method: "POST",
         body: JSON.stringify(data),
       }
     );
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
-    }
+    return this.handleResponse<AddStaffResponse>(response);
+  }
+
+  async updateStaffRole(
+    eventId: number,
+    userId: number,
+    data: UpdateStaffRoleRequest
+  ): Promise<UpdateStaffRoleResponse> {
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/event/${eventId}/staff/${userId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
+    return this.handleResponse<UpdateStaffRoleResponse>(response);
   }
 
   async getUploadUrl(
