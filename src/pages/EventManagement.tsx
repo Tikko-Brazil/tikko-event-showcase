@@ -11,6 +11,7 @@ import { EventTicketTypes } from "@/components/EventTicketTypes";
 import { EventCoupons } from "@/components/EventCoupons";
 import { EventJoinRequests } from "@/components/EventJoinRequests";
 import { EventStaff } from "@/components/EventStaff";
+import SendTickets from "@/components/SendTickets";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ArrowLeft,
@@ -20,6 +21,7 @@ import {
   Settings,
   Ticket,
   CheckCircle2,
+  Send,
   UserPlus,
   Gift,
   Edit,
@@ -382,6 +384,7 @@ const EventManagement = () => {
     { id: "tickets", label: "Ticket Types", icon: Ticket },
     { id: "coupons", label: "Coupons", icon: Gift },
     { id: "staff", label: "Staff", icon: UsersRound },
+    { id: "send-tickets", label: "Send Tickets", icon: Send },
     { id: "validate", label: "Validate Tickets", icon: CheckCircle2 },
     { id: "requests", label: "Join Requests", icon: UserPlus },
   ];
@@ -579,6 +582,8 @@ const EventManagement = () => {
 
   const renderStaff = () => <EventStaff eventId={parseInt(eventId!)} />;
 
+  const renderSendTickets = () => <SendTickets eventId={parseInt(eventId!)} />;
+
   const renderEditEvent = () => <EventEditForm event={event} />;
 
   const renderPlaceholderSection = (title: string, description: string) => (
@@ -606,6 +611,8 @@ const EventManagement = () => {
         return renderCoupons();
       case "staff":
         return renderStaff();
+      case "send-tickets":
+        return renderSendTickets();
       case "validate":
         return renderPlaceholderSection(
           "Validate Tickets",
@@ -654,6 +661,8 @@ const EventManagement = () => {
               ? renderCoupons()
               : mobileOverlay === "staff"
               ? renderStaff()
+              : mobileOverlay === "send-tickets"
+              ? renderSendTickets()
               : mobileOverlay === "requests"
               ? renderJoinRequests()
               : renderPlaceholderSection(
