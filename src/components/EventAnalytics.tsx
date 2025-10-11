@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import {
   Card,
@@ -30,12 +31,31 @@ interface EventAnalyticsProps {
 }
 
 export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
+  const { t, i18n } = useTranslation();
   const [salesTimeWindow, setSalesTimeWindow] = useState("7d");
   const [validationTimeWindow, setValidationTimeWindow] = useState("30m");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
   const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+
+  // Helper function to format numbers according to current locale
+  const formatNumber = (value: number, options?: Intl.NumberFormatOptions) => {
+    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
+    return value.toLocaleString(locale, options);
+  };
+
+  // Helper function to format currency
+  const formatCurrency = (value: number) => {
+    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
+    const currency = i18n.language === 'pt' ? 'BRL' : 'USD';
+    return value.toLocaleString(locale, {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
 
   // Convert time window to days
   const getDaysFromTimeWindow = (timeWindow: string) => {
@@ -112,7 +132,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-muted-foreground">Loading analytics...</div>
+        <div className="text-muted-foreground">{t("eventManagement.analytics.loading")}</div>
       </div>
     );
   }
@@ -120,7 +140,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
   if (error) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-red-500">Error loading analytics data</div>
+        <div className="text-red-500">{t("eventManagement.analytics.error")}</div>
       </div>
     );
   }
@@ -150,7 +170,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
     }
 
     return dailySales.map((sale) => ({
-      time: new Date(sale.date.split("T")[0]).toLocaleDateString("pt-BR", {
+      time: new Date(sale.date.split("T")[0]).toLocaleDateString(i18n.language === 'pt' ? 'pt-BR' : 'en-US', {
         month: "short",
         day: "numeric",
       }),
@@ -171,7 +191,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
     }
 
     return validatedTickets.map((ticket) => ({
-      time: new Date(ticket.timestamp).toLocaleTimeString("pt-BR", {
+      time: new Date(ticket.timestamp).toLocaleTimeString(i18n.language === 'pt' ? 'pt-BR' : 'en-US', {
         hour: "2-digit",
         minute: "2-digit",
       }),
@@ -185,9 +205,9 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
   const calculateGenderData = () => {
     if (!eventStats?.total_tickets_sold_by_gender) {
       return [
-        { name: "Male", value: 55, count: 82, fill: "hsl(var(--primary))" },
+        { name: t("eventManagement.analytics.labels.male"), value: 55, count: 82, fill: "hsl(var(--primary))" },
         {
-          name: "Female",
+          name: t("eventManagement.analytics.labels.female"),
           value: 45,
           count: 68,
           fill: "hsl(var(--tikko-orange))",
@@ -203,9 +223,9 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
 
     if (totalCount === 0) {
       return [
-        { name: "Male", value: 50, count: 0, fill: "hsl(var(--primary))" },
+        { name: t("eventManagement.analytics.labels.male"), value: 50, count: 0, fill: "hsl(var(--primary))" },
         {
-          name: "Female",
+          name: t("eventManagement.analytics.labels.female"),
           value: 50,
           count: 0,
           fill: "hsl(var(--tikko-orange))",
@@ -218,13 +238,13 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
 
     return [
       {
-        name: "Male",
+        name: t("eventManagement.analytics.labels.male"),
         value: malePercentage,
         count: maleCount,
         fill: "hsl(var(--primary))",
       },
       {
-        name: "Female",
+        name: t("eventManagement.analytics.labels.female"),
         value: femalePercentage,
         count: femaleCount,
         fill: "hsl(var(--tikko-orange))",
@@ -310,7 +330,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          {option}
+          {t(`eventManagement.analytics.timeWindows.${option}`)}
         </button>
       ))}
     </div>
@@ -322,7 +342,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Total Tickets Issued</CardTitle>
+            <CardTitle className="text-sm">{t("eventManagement.analytics.cards.ticketsSold.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -333,54 +353,51 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Liquid Revenue</CardTitle>
+            <CardTitle className="text-sm">{t("eventManagement.analytics.cards.totalRevenue.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              R${" "}
-              {eventStats.total_revenue.toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
+              {formatCurrency(eventStats.total_revenue)}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Validated Tickets</CardTitle>
+            <CardTitle className="text-sm">{t("eventManagement.analytics.cards.validatedTickets.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {eventStats.total_validated_tickets}
             </div>
             <p className="text-xs text-muted-foreground">
-              {(
+              {formatNumber(
                 (100 * eventStats.total_validated_tickets) /
-                eventStats.total_tickets_sold
-              ).toLocaleString("pt-BR", {
-                minimumFractionDigits: 1,
-                maximumFractionDigits: 1,
-              })}
-              % of total
+                eventStats.total_tickets_sold,
+                {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1,
+                }
+              )}
+              % {t("eventManagement.analytics.labels.ofTotal")}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Conversion Rate</CardTitle>
+            <CardTitle className="text-sm">{t("eventManagement.analytics.cards.conversionRate.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {eventStats.conversion_rate.toLocaleString("pt-BR", {
+              {formatNumber(eventStats.conversion_rate, {
                 minimumFractionDigits: 1,
                 maximumFractionDigits: 1,
               })}
               %
             </div>
             <p className="text-xs text-muted-foreground">
-              {eventStats.total_visits} page visits
+              {formatNumber(eventStats.total_visits)} {t("eventManagement.analytics.labels.pageVisits")}
             </p>
           </CardContent>
         </Card>
@@ -393,7 +410,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <CardTitle>Tickets Sold</CardTitle>
+                <CardTitle>{t("eventManagement.analytics.cards.dailySales.title")}</CardTitle>
                 {dailySales &&
                   dailySales.length > 0 &&
                   dailySales[dailySales.length - 1].percentage_change !==
@@ -411,9 +428,9 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
                       {dailySales[dailySales.length - 1].percentage_change! >= 0
                         ? "+"
                         : ""}
-                      {dailySales[
+                      {formatNumber(dailySales[
                         dailySales.length - 1
-                      ].percentage_change!.toLocaleString("pt-BR", {
+                      ].percentage_change!, {
                         minimumFractionDigits: 1,
                         maximumFractionDigits: 1,
                       })}
@@ -432,13 +449,13 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
             <div className="h-[250px] w-full flex items-center justify-center">
               {isDailySalesLoading ? (
                 <div className="text-muted-foreground">
-                  Loading sales data...
+                  {t("eventManagement.analytics.loading")}
                 </div>
               ) : dailySalesError ? (
-                <div className="text-red-500">Error loading sales data</div>
+                <div className="text-red-500">{t("eventManagement.analytics.error")}</div>
               ) : salesData.length === 0 ? (
                 <div className="text-muted-foreground">
-                  Insufficient data available
+                  {t("eventManagement.analytics.noData")}
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
@@ -482,7 +499,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
         <Card>
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle>Ticket Validations</CardTitle>
+              <CardTitle>{t("eventManagement.analytics.cards.validatedTickets.title")}</CardTitle>
               <TimeWindowSelector
                 options={["30m", "2h", "5h"]}
                 selected={validationTimeWindow}
@@ -494,7 +511,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
             <div className="h-[250px] w-full flex items-center justify-center">
               {validationData.length === 0 ? (
                 <div className="text-muted-foreground">
-                  Insufficient data available
+                  {t("eventManagement.analytics.noData")}
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
@@ -540,7 +557,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
         {/* Gender Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Gender Distribution</CardTitle>
+            <CardTitle>{t("eventManagement.analytics.cards.genderDistribution.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[200px] w-full mb-4">
@@ -611,29 +628,29 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
         {/* Age Statistics */}
         <Card>
           <CardHeader>
-            <CardTitle>Age Statistics</CardTitle>
+            <CardTitle>{t("eventManagement.analytics.cards.ageStatistics.title")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Average Age</span>
+              <span className="text-sm text-muted-foreground">{t("eventManagement.analytics.labels.averageAge")}</span>
               <span className="text-sm font-medium">
-                {eventStats.age_stats.average_age_all}
+                {formatNumber(eventStats.age_stats.average_age_all)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">
-                Avg Male Age
+                {t("eventManagement.analytics.labels.avgMaleAge")}
               </span>
               <span className="text-sm font-medium">
-                {eventStats.age_stats.average_age_male}
+                {formatNumber(eventStats.age_stats.average_age_male)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">
-                Avg Female Age
+                {t("eventManagement.analytics.labels.avgFemaleAge")}
               </span>
               <span className="text-sm font-medium">
-                {eventStats.age_stats.average_age_female}
+                {formatNumber(eventStats.age_stats.average_age_female)}
               </span>
             </div>
           </CardContent>
@@ -642,25 +659,25 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
         {/* Join Requests */}
         <Card>
           <CardHeader>
-            <CardTitle>Join Requests</CardTitle>
+            <CardTitle>{t("eventManagement.analytics.cards.joinRequests.title")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Pending</span>
+              <span className="text-sm text-muted-foreground">{t("eventManagement.analytics.labels.pending")}</span>
               <Badge variant="outline">
-                {eventStats.total_pending_invites}
+                {formatNumber(eventStats.total_pending_invites)}
               </Badge>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Approved</span>
+              <span className="text-sm text-muted-foreground">{t("eventManagement.analytics.labels.approved")}</span>
               <Badge variant="default">
-                {eventStats.total_accepted_invites}
+                {formatNumber(eventStats.total_accepted_invites)}
               </Badge>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Rejected</span>
+              <span className="text-sm text-muted-foreground">{t("eventManagement.analytics.labels.rejected")}</span>
               <Badge variant="destructive">
-                {eventStats.total_rejected_invites}
+                {formatNumber(eventStats.total_rejected_invites)}
               </Badge>
             </div>
           </CardContent>
@@ -670,7 +687,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
       {/* Age Distribution Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Age Distribution</CardTitle>
+          <CardTitle>{t("eventManagement.analytics.cards.ageDistribution.title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-[250px] w-full">
@@ -710,16 +727,16 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
       {/* Ticket Types Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Tickets by Type</CardTitle>
+          <CardTitle>{t("eventManagement.analytics.cards.ticketsByType.title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {/* Header - Visible on all devices */}
             <div className="grid grid-cols-12 gap-2 md:gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
-              <span className="col-span-4 md:col-span-4">Type</span>
-              <span className="col-span-2">Lot</span>
-              <span className="col-span-3 md:col-span-3">Amount</span>
-              <span className="col-span-3">Revenue</span>
+              <span className="col-span-4 md:col-span-4">{t("eventManagement.analytics.labels.type")}</span>
+              <span className="col-span-2">{t("eventManagement.analytics.labels.lot")}</span>
+              <span className="col-span-3 md:col-span-3">{t("eventManagement.analytics.labels.amount")}</span>
+              <span className="col-span-3">{t("eventManagement.analytics.labels.revenue")}</span>
             </div>
             <div className="space-y-2">
               {ticketTypes.map((ticket, i) => (
@@ -743,17 +760,13 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
 
                   {/* Amount */}
                   <div className="col-span-3 md:col-span-3">
-                    <span className="text-xs md:text-sm">{ticket.amount}</span>
+                    <span className="text-xs md:text-sm">{formatNumber(ticket.amount)}</span>
                   </div>
 
                   {/* Revenue */}
                   <div className="col-span-3 md:col-span-3">
                     <span className="text-xs md:text-sm font-medium">
-                      R${" "}
-                      {ticket.revenue.toLocaleString("pt-BR", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
+                      {formatCurrency(ticket.revenue)}
                     </span>
                   </div>
                 </div>
@@ -766,7 +779,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
                 <p className="text-xs md:text-sm text-muted-foreground">
                   {startIndex + 1}-
                   {Math.min(startIndex + itemsPerPage, allTicketTypes.length)}{" "}
-                  of {allTicketTypes.length}
+                  {t("eventManagement.analytics.pagination.of")} {formatNumber(allTicketTypes.length)}
                 </p>
 
                 <div className="flex items-center gap-2">
@@ -781,7 +794,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
                       disabled={currentPage <= 1}
                     >
                       <ChevronLeft className="h-4 w-4 mr-1" />
-                      Previous
+                      {t("eventManagement.analytics.pagination.previous")}
                     </Button>
                     <Button
                       variant="outline"
@@ -792,7 +805,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
                       }}
                       disabled={currentPage >= totalPages}
                     >
-                      Next
+                      {t("eventManagement.analytics.pagination.next")}
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                   </div>
@@ -834,26 +847,26 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Ticket Distribution</CardTitle>
+            <CardTitle>{t("eventManagement.analytics.cards.ticketDistribution.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-full bg-green-500" />
-                  <span className="text-sm">Paid Tickets</span>
+                  <span className="text-sm">{t("eventManagement.analytics.labels.paidTickets")}</span>
                 </div>
                 <span className="text-sm font-medium">
-                  {eventStats.paid_tickets}
+                  {formatNumber(eventStats.paid_tickets)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="h-3 w-3 rounded-full bg-blue-500" />
-                  <span className="text-sm">Free Tickets</span>
+                  <span className="text-sm">{t("eventManagement.analytics.labels.freeTickets")}</span>
                 </div>
                 <span className="text-sm font-medium">
-                  {eventStats.free_tickets}
+                  {formatNumber(eventStats.free_tickets)}
                 </span>
               </div>
             </div>
@@ -862,16 +875,16 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle>{t("eventManagement.analytics.cards.quickActions.title")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button className="w-full justify-start" variant="outline">
               <FileText className="h-4 w-4 mr-2" />
-              Export Analytics Report
+              {t("eventManagement.analytics.actions.exportReport")}
             </Button>
             <Button className="w-full justify-start" variant="outline">
               <TrendingUp className="h-4 w-4 mr-2" />
-              View Detailed Charts
+              {t("eventManagement.analytics.actions.viewDetailedCharts")}
             </Button>
           </CardContent>
         </Card>

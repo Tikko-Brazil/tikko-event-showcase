@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface EventInfoHeaderProps {
   status: string;
@@ -18,10 +19,12 @@ export const EventInfoHeader = ({
   time,
   location,
 }: EventInfoHeaderProps) => {
+  const { t } = useTranslation();
+  
   return (
     <div className="p-4 border-b">
       <div className="flex items-center gap-3 mb-3 md:gap-2 md:mb-2">
-        <Badge variant="outline">{status}</Badge>
+        <Badge variant="outline">{t(`eventManagement.tags.${status}`)}</Badge>
         <span className="text-sm text-muted-foreground md:text-xs">
           <span className="md:hidden">Event ID: {id}</span>
           <span className="hidden md:inline">ID: {id}</span>

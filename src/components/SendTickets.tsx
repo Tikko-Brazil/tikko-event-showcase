@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -68,6 +69,7 @@ const validateMobileNumber = (mobileNumber: string) => {
 };
 
 const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
+  const { t } = useTranslation();
   const [showSuccessSnackbar, setShowSuccessSnackbar] = React.useState(false);
   const [showErrorSnackbar, setShowErrorSnackbar] = React.useState(false);
   const [successMessage, setSuccessMessage] = React.useState("");
@@ -84,7 +86,8 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
   // Fetch active ticket pricings
   const { data: ticketPricings, isLoading: isLoadingPricings } = useQuery({
     queryKey: ["ticket-pricings", eventId],
-    queryFn: () => ticketPricingGateway.getTicketPricingByEvent(eventId, "Active"),
+    queryFn: () =>
+      ticketPricingGateway.getTicketPricingByEvent(eventId, "Active"),
     enabled: !!eventId,
   });
 
@@ -95,13 +98,14 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
       email: string;
       phone: string;
       ticket_pricing_id: number;
-    }) => inviteGateway.sendCourtesyTicket({
-      event_id: eventId,
-      name: data.name,
-      email: data.email,
-      phone_number: data.phone,
-      ticket_pricing_id: data.ticket_pricing_id,
-    }),
+    }) =>
+      inviteGateway.sendCourtesyTicket({
+        event_id: eventId,
+        name: data.name,
+        email: data.email,
+        phone_number: data.phone,
+        ticket_pricing_id: data.ticket_pricing_id,
+      }),
     onSuccess: () => {
       setSuccessMessage("Courtesy ticket sent successfully");
       setShowSuccessSnackbar(true);
@@ -166,18 +170,18 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Send className="h-5 w-5" />
-            Send Courtesy Ticket
+            {t("eventManagement.sendTickets.title")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={formik.handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">{t("eventManagement.sendTickets.fields.fullName")}</Label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Enter full name"
+                  placeholder={t("eventManagement.sendTickets.fields.fullNamePlaceholder")}
                   value={formik.values.name}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
@@ -193,11 +197,11 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">{t("eventManagement.sendTickets.fields.email")}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter email address"
+                  placeholder={t("eventManagement.sendTickets.fields.emailPlaceholder")}
                   value={formik.values.email}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
@@ -213,7 +217,7 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone">{t("eventManagement.sendTickets.fields.phone")}</Label>
                 <InputMask
                   mask={PHONE_MASK}
                   value={formik.values.phone}
@@ -225,7 +229,7 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
                       {...inputProps}
                       id="phone"
                       type="tel"
-                      placeholder="+55 (11) 99999-9999"
+                      placeholder={t("eventManagement.sendTickets.fields.phonePlaceholder")}
                       className={
                         formik.touched.phone && formik.errors.phone
                           ? "border-red-500"
@@ -240,7 +244,9 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="ticket_pricing_id">Ticket Type</Label>
+                <Label htmlFor="ticket_pricing_id">
+                  {t("eventManagement.sendTickets.fields.ticketType")}
+                </Label>
                 <Select
                   value={formik.values.ticket_pricing_id}
                   onValueChange={(value) =>
@@ -256,7 +262,7 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
                         : ""
                     }
                   >
-                    <SelectValue placeholder="Select ticket type" />
+                    <SelectValue placeholder={t("eventManagement.sendTickets.fields.ticketTypePlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
                     {activePricings.map((pricing) => (
@@ -264,7 +270,17 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
                         key={pricing.id}
                         value={pricing.id.toString()}
                       >
-                        {pricing.ticket_type} - {pricing.gender === "male" ? "Masculino" : pricing.gender === "female" ? "Feminino" : pricing.gender} ({pricing.lot === 0 ? "Pré-venda" : `Lote ${pricing.lot}`})
+                        {pricing.ticket_type} -{" "}
+                        {pricing.gender === "male"
+                          ? "Masculino"
+                          : pricing.gender === "female"
+                          ? "Feminino"
+                          : pricing.gender}{" "}
+                        (
+                        {pricing.lot === 0
+                          ? "Pré-venda"
+                          : `Lote ${pricing.lot}`}
+                        )
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -284,7 +300,9 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
                 disabled={sendTicketMutation.isPending || isLoadingPricings}
                 className="min-w-32"
               >
-                {sendTicketMutation.isPending ? "Sending..." : "Send Ticket"}
+                {sendTicketMutation.isPending
+                  ? "Sending..."
+                  : t("eventManagement.sendTickets.buttons.send")}
               </Button>
             </div>
           </form>

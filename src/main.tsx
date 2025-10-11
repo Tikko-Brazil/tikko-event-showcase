@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { initMercadoPago } from "@mercadopago/sdk-react";
 import App from "./App.tsx";
 import "./index.css";
+import "./i18n";
 
 // Initialize MercadoPago
 initMercadoPago(import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY, {

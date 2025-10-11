@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,6 +35,7 @@ import {
   DollarSign,
   CheckCircle2,
 } from "lucide-react";
+import LanguageSelector from "@/components/LanguageSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import logoLight from "@/assets/logoLight.png";
@@ -41,6 +43,7 @@ import logoLight from "@/assets/logoLight.png";
 type TabType = "feed" | "explore" | "my-events" | "my-tickets" | "profile";
 
 const Dashboard = () => {
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>("feed");
   const isMobile = useIsMobile();
 
@@ -60,11 +63,27 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const tabs = [
-    { id: "feed" as TabType, label: "Feed", icon: Activity },
-    { id: "explore" as TabType, label: "Explore", icon: Home },
-    { id: "my-events" as TabType, label: "My Events", icon: Calendar },
-    { id: "my-tickets" as TabType, label: "My Tickets", icon: Ticket },
-    { id: "profile" as TabType, label: "Profile", icon: User },
+    { id: "feed" as TabType, label: t("dashboard.tabs.feed"), icon: Activity },
+    {
+      id: "explore" as TabType,
+      label: t("dashboard.tabs.explore"),
+      icon: Home,
+    },
+    {
+      id: "my-events" as TabType,
+      label: t("dashboard.tabs.myEvents"),
+      icon: Calendar,
+    },
+    {
+      id: "my-tickets" as TabType,
+      label: t("dashboard.tabs.myTickets"),
+      icon: Ticket,
+    },
+    {
+      id: "profile" as TabType,
+      label: t("dashboard.tabs.profile"),
+      icon: User,
+    },
   ];
 
   const mockEvents = [
@@ -445,9 +464,9 @@ const Dashboard = () => {
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">My Events</h2>
+              <h2 className="text-2xl font-bold">{t("dashboard.myEvents.title")}</h2>
               <Button onClick={() => navigate("/create-event")}>
-                Create Event
+                {t("dashboard.myEvents.createEvent")}
               </Button>
             </div>
 
@@ -497,7 +516,7 @@ const Dashboard = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                         <div className="absolute top-4 right-4">
                           <Badge variant={isUpcoming ? "default" : "secondary"}>
-                            {isUpcoming ? "Upcoming" : "Past"}
+                            {isUpcoming ? t("dashboard.myEvents.tags.upcoming") : t("dashboard.myEvents.tags.past")}
                           </Badge>
                         </div>
                         <div className="absolute top-4 left-4">
@@ -516,13 +535,13 @@ const Dashboard = () => {
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4" />
                               <span className="text-sm">
-                                {eventDate.toLocaleDateString()}
+                                {eventDate.toLocaleDateString(i18n.language === 'pt' ? 'pt-BR' : 'en-US')}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4" />
                               <span className="text-sm">
-                                {eventDate.toLocaleTimeString([], {
+                                {eventDate.toLocaleTimeString(i18n.language === 'pt' ? 'pt-BR' : 'en-US', {
                                   hour: "2-digit",
                                   minute: "2-digit",
                                 })}
@@ -557,7 +576,7 @@ const Dashboard = () => {
                               className="group"
                             >
                               <Edit className="h-4 w-4 mr-1" />
-                              Manage
+                              {t("dashboard.myEvents.buttons.manage")}
                             </Button>
                           )}
                         </div>
@@ -703,6 +722,7 @@ const Dashboard = () => {
               <Button variant="ghost" size="sm">
                 <Search className="h-5 w-5" />
               </Button>
+              <LanguageSelector />
               <Button variant="ghost" size="sm">
                 <Bell className="h-5 w-5" />
               </Button>
@@ -750,10 +770,11 @@ const Dashboard = () => {
             <img src={logoLight} alt="Tikko" className="h-8" />
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search events..." className="pl-10 w-80" />
+              <Input placeholder={t("dashboard.search.placeholder")} className="pl-10 w-80" />
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSelector />
             <Button variant="ghost" size="sm">
               <Bell className="h-5 w-5" />
             </Button>
@@ -795,7 +816,7 @@ const Dashboard = () => {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Trending Events</CardTitle>
+                <CardTitle className="text-lg">{t("dashboard.trending.title")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {["Music Festival", "Tech Conference", "Art Exhibition"].map(
@@ -811,7 +832,7 @@ const Dashboard = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Suggestions</CardTitle>
+                <CardTitle className="text-lg">{t("dashboard.suggestions.title")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {[

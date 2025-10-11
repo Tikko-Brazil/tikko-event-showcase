@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { EventInfoHeader } from "@/components/EventInfoHeader";
 import { EventOverview } from "@/components/EventOverview";
@@ -37,6 +38,7 @@ import { EventGateway } from "@/lib/EventGateway";
 const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
 const EventManagement = () => {
+  const { t, i18n } = useTranslation();
   const { eventId } = useParams();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -377,16 +379,16 @@ const EventManagement = () => {
   ];
 
   const managementSections = [
-    { id: "overview", label: "Overview", icon: BarChart3 },
-    { id: "edit", label: "Edit Event", icon: Edit },
-    { id: "analytics", label: "Analytics", icon: TrendingUp },
-    { id: "participants", label: "Participants", icon: Users },
-    { id: "tickets", label: "Ticket Types", icon: Ticket },
-    { id: "coupons", label: "Coupons", icon: Gift },
-    { id: "staff", label: "Staff", icon: UsersRound },
-    { id: "send-tickets", label: "Send Tickets", icon: Send },
-    { id: "validate", label: "Validate Tickets", icon: CheckCircle2 },
-    { id: "requests", label: "Join Requests", icon: UserPlus },
+    { id: "overview", label: t("eventManagement.tabs.overview"), icon: BarChart3 },
+    { id: "edit", label: t("eventManagement.tabs.edit"), icon: Edit },
+    { id: "analytics", label: t("eventManagement.tabs.analytics"), icon: TrendingUp },
+    { id: "participants", label: t("eventManagement.tabs.participants"), icon: Users },
+    { id: "tickets", label: t("eventManagement.tabs.tickets"), icon: Ticket },
+    { id: "coupons", label: t("eventManagement.tabs.coupons"), icon: Gift },
+    { id: "staff", label: t("eventManagement.tabs.staff"), icon: UsersRound },
+    { id: "send-tickets", label: t("eventManagement.tabs.sendTickets"), icon: Send },
+    { id: "validate", label: t("eventManagement.tabs.validate"), icon: CheckCircle2 },
+    { id: "requests", label: t("eventManagement.tabs.requests"), icon: UserPlus },
   ];
 
   const renderOverview = () => <EventOverview eventData={mockEventData} />;
@@ -738,7 +740,7 @@ const EventManagement = () => {
 
         {/* Management Grid Menu */}
         <div className="p-4">
-          <h2 className="text-lg font-semibold mb-4">Event Management</h2>
+          <h2 className="text-lg font-semibold mb-4">{t("eventManagement.header.eventManagement")}</h2>
           <div className="grid grid-cols-3 gap-6 justify-items-center">
             {managementSections.map((section) => {
               const Icon = section.icon;
@@ -771,13 +773,13 @@ const EventManagement = () => {
           <div className="flex items-center gap-4">
             <Button variant="ghost" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              {t("eventManagement.header.backToDashboard")}
             </Button>
             <img src={logoLight} alt="Tikko" className="h-8" />
           </div>
           <Button variant="outline">
             <Users className="h-4 w-4 mr-2" />
-            View Participant List
+            {t("eventManagement.buttons.viewParticipantList")}
           </Button>
         </div>
       </header>
@@ -817,10 +819,9 @@ const EventManagement = () => {
         {/* Desktop Main Content */}
         <main className="flex-1 overflow-auto p-6">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">Event Management</h1>
+            <h1 className="text-3xl font-bold mb-2">{t("eventManagement.header.eventManagement")}</h1>
             <p className="text-muted-foreground">
-              Manage your event settings, view analytics, and interact with
-              participants.
+              {t("eventManagement.header.description")}
             </p>
           </div>
           {renderContent()}

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
 import { Formik } from "formik";
@@ -62,6 +63,7 @@ const validationSchema = Yup.object({
 });
 
 export const EventCoupons = ({ eventId }: EventCouponsProps) => {
+  const { t, i18n } = useTranslation();
   const [couponSearch, setCouponSearch] = useState("");
   const [couponFilter, setCouponFilter] = useState("all");
   const [couponPage, setCouponPage] = useState(1);
@@ -77,6 +79,22 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const queryClient = useQueryClient();
+
+  // Helper function to format numbers according to current locale
+  const formatNumber = (value: number, options?: Intl.NumberFormatOptions) => {
+    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
+    return value.toLocaleString(locale, options);
+  };
+
+  // Helper function to format currency
+  const formatCurrency = (value: number) => {
+    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
+    const currency = i18n.language === 'pt' ? 'BRL' : 'USD';
+    return value.toLocaleString(locale, {
+      style: 'currency',
+      currency: currency,
+    });
+  };
 
   const itemsPerPage = 6;
   const couponGateway = new CouponGateway(
@@ -203,9 +221,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
   const paginatedCoupons = filteredCoupons.slice(from, to);
 
   const filterOptions = [
-    { value: "all", label: "All Coupons" },
-    { value: "active", label: "Active" },
-    { value: "inactive", label: "Inactive" },
+    { value: "all", label: t("eventManagement.coupons.search.filters.all") },
+    { value: "active", label: t("eventManagement.coupons.search.filters.active") },
+    { value: "inactive", label: t("eventManagement.coupons.search.filters.inactive") },
   ];
 
   const onEditCoupon = (coupon: any) => {
@@ -234,7 +252,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
         <SearchAndFilter
           searchValue={couponSearch}
           onSearchChange={setCouponSearch}
-          searchPlaceholder="Buscar cupons..."
+          searchPlaceholder={t("eventManagement.coupons.search.placeholder")}
           filterValue={couponFilter}
           onFilterChange={setCouponFilter}
           filterOptions={filterOptions}
@@ -245,14 +263,14 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Criar Cupom
+              {t("eventManagement.coupons.actions.createCoupon")}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Criar Novo Cupom</DialogTitle>
+              <DialogTitle>{t("eventManagement.coupons.createDialog.title")}</DialogTitle>
               <DialogDescription>
-                Crie um novo cupom de desconto para o evento.
+                {t("eventManagement.coupons.createDialog.description")}
               </DialogDescription>
             </DialogHeader>
 
@@ -294,7 +312,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                 return (
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                      <Label htmlFor="code">Coupon Code</Label>
+                      <Label htmlFor="code">{t("eventManagement.coupons.createDialog.fields.code")}</Label>
                       <Input
                         id="code"
                         name="code"
@@ -303,7 +321,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                           setFieldValue("code", e.target.value.toUpperCase())
                         }
                         onBlur={handleBlur}
-                        placeholder="DISCOUNT20"
+                        placeholder={t("eventManagement.coupons.createDialog.fields.codePlaceholder")}
                         className="uppercase"
                       />
                       {touched.code && errors.code && (
@@ -314,7 +332,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                     </div>
 
                     <div>
-                      <Label>Discount Type</Label>
+                      <Label>{t("eventManagement.coupons.createDialog.fields.type")}</Label>
                       <Select
                         value={values.type}
                         onValueChange={(value) => setFieldValue("type", value)}
@@ -324,10 +342,10 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="percentage">
-                            Percentage Discount
+                            {t("eventManagement.coupons.types.percentage")}
                           </SelectItem>
                           <SelectItem value="fixed">
-                            Fixed Amount (R$)
+                            {t("eventManagement.coupons.types.fixed")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -335,7 +353,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
 
                     {values.type === "percentage" ? (
                       <div>
-                        <Label>Discount Percentage</Label>
+                        <Label>{t("eventManagement.coupons.createDialog.fields.value")}</Label>
                         <div className="space-y-2">
                           <Slider
                             value={[values.value]}
@@ -375,7 +393,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                       </div>
                     ) : (
                       <div>
-                        <Label>Fixed Discount Amount (BRL)</Label>
+                        <Label>{t("eventManagement.coupons.createDialog.fields.value")}</Label>
                         <div className="space-y-2">
                           <Slider
                             value={[values.value]}
@@ -417,7 +435,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                     )}
 
                     <div>
-                      <Label>Max Usage</Label>
+                      <Label>{t("eventManagement.coupons.createDialog.fields.maxUsage")}</Label>
                       <div className="space-y-2">
                         <Slider
                           value={[values.maxUsage]}
@@ -469,7 +487,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                           setFieldValue("isActive", !!checked)
                         }
                       />
-                      <Label htmlFor="active">Active</Label>
+                      <Label htmlFor="active">{t("eventManagement.coupons.status.active")}</Label>
                     </div>
 
                     <div className="flex items-center space-x-2">
@@ -481,7 +499,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                         }
                       />
                       <Label htmlFor="ticketSpecific">
-                        Apply to specific ticket type only
+                        {t("eventManagement.coupons.createDialog.fields.ticketSpecific")}
                       </Label>
                     </div>
 
@@ -549,7 +567,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                         variant="outline"
                         onClick={() => setIsCreateCouponOpen(false)}
                       >
-                        Cancel
+                        {t("eventManagement.coupons.createDialog.buttons.cancel")}
                       </Button>
                       <Button
                         type="submit"
@@ -557,7 +575,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                       >
                         {createCouponMutation.isPending
                           ? "Criando..."
-                          : "Create Coupon"}
+                          : t("eventManagement.coupons.createDialog.buttons.create")}
                       </Button>
                     </DialogFooter>
                   </form>
@@ -570,7 +588,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Cupons do Evento</CardTitle>
+          <CardTitle>{t("eventManagement.coupons.title")}</CardTitle>
           <CardDescription>
             Mostrando {from + 1}-{to} de {filteredCoupons.length} cupons
           </CardDescription>
@@ -579,26 +597,26 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
           <div className="space-y-4">
             {/* Mobile Header - Visible only on mobile */}
             <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground border-b pb-2 md:hidden">
-              <span className="col-span-4">Code</span>
-              <span className="col-span-2">Value</span>
-              <span className="col-span-2">Usage</span>
-              <span className="col-span-2 text-center">Status</span>
-              <span className="col-span-1 text-center">Actions</span>
+              <span className="col-span-4">{t("eventManagement.coupons.table.code")}</span>
+              <span className="col-span-2">{t("eventManagement.coupons.table.value")}</span>
+              <span className="col-span-2">{t("eventManagement.coupons.table.currentUsage")}</span>
+              <span className="col-span-2 text-center">{t("eventManagement.coupons.table.status")}</span>
+              <span className="col-span-1 text-center">{t("eventManagement.coupons.table.actions")}</span>
             </div>
 
             {/* Desktop Header - Hidden on mobile */}
             <div className="hidden md:grid md:grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
-              <span className="col-span-4">Code</span>
-              <span className="col-span-2">Value</span>
-              <span className="col-span-3">Usage</span>
-              <span className="col-span-2 text-center">Status</span>
-              <span className="col-span-1 text-center">Actions</span>
+              <span className="col-span-4">{t("eventManagement.coupons.table.code")}</span>
+              <span className="col-span-2">{t("eventManagement.coupons.table.value")}</span>
+              <span className="col-span-3">{t("eventManagement.coupons.table.currentUsage")}</span>
+              <span className="col-span-2 text-center">{t("eventManagement.coupons.table.status")}</span>
+              <span className="col-span-1 text-center">{t("eventManagement.coupons.table.actions")}</span>
             </div>
 
             <div className="space-y-2">
               {paginatedCoupons.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  Nenhum cupom encontrado
+                  {t("eventManagement.coupons.noCouponsFound")}
                 </div>
               ) : (
                 paginatedCoupons.map((coupon, index) => (
@@ -618,7 +636,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                       <span className="text-xs md:text-sm">
                         {coupon.discount_type === "percentage"
                           ? `${coupon.discount_value}%`
-                          : `R$ ${coupon.discount_value}`}
+                          : formatCurrency(coupon.discount_value)}
                       </span>
                     </div>
 
@@ -647,7 +665,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                           className={`w-3 h-3 rounded-full ${
                             coupon.active ? "bg-green-500" : "bg-gray-400"
                           }`}
-                          title={coupon.active ? "Ativo" : "Inativo"}
+                          title={coupon.active 
+                            ? t("eventManagement.coupons.status.active") 
+                            : t("eventManagement.coupons.status.inactive")}
                         />
                       </div>
                       {/* Desktop: Badge with text */}
@@ -655,7 +675,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                         <Badge
                           variant={coupon.active ? "default" : "secondary"}
                         >
-                          {coupon.active ? "Ativo" : "Inativo"}
+                          {coupon.active 
+                            ? t("eventManagement.coupons.status.active") 
+                            : t("eventManagement.coupons.status.inactive")}
                         </Badge>
                       </div>
                     </div>
@@ -702,9 +724,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
         >
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Edit Coupon: {editingCoupon.code}</DialogTitle>
+              <DialogTitle>{t("eventManagement.coupons.editDialog.title")}: {editingCoupon.code}</DialogTitle>
               <DialogDescription>
-                Modify coupon settings and restrictions.
+                {t("eventManagement.coupons.editDialog.description")}
               </DialogDescription>
             </DialogHeader>
 
@@ -757,7 +779,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                 return (
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                      <Label>Max Usage</Label>
+                      <Label>{t("eventManagement.coupons.createDialog.fields.maxUsage")}</Label>
                       <div className="space-y-2">
                         <Slider
                           value={[values.maxUsage]}
@@ -813,7 +835,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                           setFieldValue("isActive", checked)
                         }
                       />
-                      <Label htmlFor="editActive">Active</Label>
+                      <Label htmlFor="editActive">{t("eventManagement.coupons.status.active")}</Label>
                     </div>
 
                     <div className="flex items-center space-x-2">
@@ -825,7 +847,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                         }
                       />
                       <Label htmlFor="editTicketSpecific">
-                        Apply to specific ticket type only
+                        {t("eventManagement.coupons.createDialog.fields.ticketSpecific")}
                       </Label>
                     </div>
 
@@ -893,7 +915,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                         variant="outline"
                         onClick={() => setEditingCoupon(null)}
                       >
-                        Cancel
+                        {t("eventManagement.coupons.editDialog.buttons.cancel")}
                       </Button>
                       <Button
                         type="submit"
@@ -907,7 +929,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                         ) : (
                           <>
                             <Save className="h-4 w-4 mr-2" />
-                            Save Changes
+                            {t("eventManagement.coupons.editDialog.buttons.save")}
                           </>
                         )}
                       </Button>

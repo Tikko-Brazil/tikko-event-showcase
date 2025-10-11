@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
 import { Formik, Form, Field, ErrorMessage } from "formik";
@@ -38,6 +39,7 @@ interface EventTicketTypesProps {
 }
 
 export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
+  const { t, i18n } = useTranslation();
   const [ticketTypeSearch, setTicketTypeSearch] = useState("");
   const [ticketTypeFilter, setTicketTypeFilter] = useState("all");
   const [ticketTypePage, setTicketTypePage] = useState(1);
@@ -56,6 +58,22 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
     import.meta.env.VITE_BACKEND_BASE_URL
   );
   const queryClient = useQueryClient();
+
+  // Helper function to format numbers according to current locale
+  const formatNumber = (value: number, options?: Intl.NumberFormatOptions) => {
+    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
+    return value.toLocaleString(locale, options);
+  };
+
+  // Helper function to format currency
+  const formatCurrency = (value: number) => {
+    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
+    const currency = i18n.language === 'pt' ? 'BRL' : 'USD';
+    return value.toLocaleString(locale, {
+      style: 'currency',
+      currency: currency,
+    });
+  };
 
   // Validation schema for create
   const createValidationSchema = Yup.object({
@@ -201,9 +219,9 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
   );
 
   const filterOptions = [
-    { value: "all", label: "All Ticket Types" },
-    { value: "active", label: "Active Only" },
-    { value: "inactive", label: "Inactive Only" },
+    { value: "all", label: t("eventManagement.ticketTypes.search.filters.all") },
+    { value: "active", label: t("eventManagement.ticketTypes.search.filters.active") },
+    { value: "inactive", label: t("eventManagement.ticketTypes.search.filters.inactive") },
   ];
 
   if (isLoading) {
@@ -226,20 +244,20 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
     <div className="space-y-6">
       {/* Header Actions */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <h2 className="text-2xl font-bold">Ticket Types Management</h2>
+        <h2 className="text-2xl font-bold">{t("eventManagement.ticketTypes.title")}</h2>
 
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Create Ticket Type
+              {t("eventManagement.ticketTypes.actions.createTicketType")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Create New Ticket Type</DialogTitle>
+              <DialogTitle>{t("eventManagement.ticketTypes.createDialog.title")}</DialogTitle>
               <DialogDescription>
-                Configure your new ticket type settings.
+                {t("eventManagement.ticketTypes.createDialog.description")}
               </DialogDescription>
             </DialogHeader>
             <Formik
@@ -259,12 +277,12 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
               {({ isSubmitting }) => (
                 <Form className="space-y-4">
                   <div>
-                    <Label htmlFor="ticket_type">Ticket Type Name</Label>
+                    <Label htmlFor="ticket_type">{t("eventManagement.ticketTypes.createDialog.fields.ticketType")}</Label>
                     <Field
                       as={Input}
                       id="ticket_type"
                       name="ticket_type"
-                      placeholder="VIP, General Admission, etc."
+                      placeholder={t("eventManagement.ticketTypes.createDialog.fields.ticketTypePlaceholder")}
                     />
                     <ErrorMessage
                       name="ticket_type"
@@ -273,7 +291,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                     />
                   </div>
                   <div>
-                    <Label>Gender</Label>
+                    <Label>{t("eventManagement.ticketTypes.createDialog.fields.gender")}</Label>
                     <div className="flex items-center space-x-4 mt-2">
                       <div className="flex items-center space-x-2">
                         <Field
@@ -284,7 +302,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                           className="h-4 w-4"
                         />
                         <Label htmlFor="male" className="text-sm font-normal">
-                          Male
+                          {t("eventManagement.ticketTypes.createDialog.fields.male")}
                         </Label>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -296,7 +314,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                           className="h-4 w-4"
                         />
                         <Label htmlFor="female" className="text-sm font-normal">
-                          Female
+                          {t("eventManagement.ticketTypes.createDialog.fields.female")}
                         </Label>
                       </div>
                     </div>
@@ -307,14 +325,14 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="price">Price (R$)</Label>
+                    <Label htmlFor="price">{t("eventManagement.ticketTypes.createDialog.fields.price")}</Label>
                     <Field
                       as={Input}
                       id="price"
                       name="price"
                       type="number"
                       step="0.01"
-                      placeholder="50.00"
+                      placeholder={t("eventManagement.ticketTypes.createDialog.fields.pricePlaceholder")}
                     />
                     <ErrorMessage
                       name="price"
@@ -328,7 +346,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                       variant="outline"
                       onClick={() => setIsCreateDialogOpen(false)}
                     >
-                      Cancel
+                      {t("eventManagement.ticketTypes.createDialog.buttons.cancel")}
                     </Button>
                     <Button
                       type="submit"
@@ -338,7 +356,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                     >
                       {createTicketPricingMutation.isPending
                         ? "Creating..."
-                        : "Create Ticket Type"}
+                        : t("eventManagement.ticketTypes.createDialog.buttons.create")}
                     </Button>
                   </DialogFooter>
                 </Form>
@@ -352,7 +370,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
       <SearchAndFilter
         searchValue={ticketTypeSearch}
         onSearchChange={setTicketTypeSearch}
-        searchPlaceholder="Search ticket types..."
+        searchPlaceholder={t("eventManagement.ticketTypes.search.placeholder")}
         filterValue={ticketTypeFilter}
         onFilterChange={setTicketTypeFilter}
         filterOptions={filterOptions}
@@ -373,10 +391,14 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                     <Badge
                       variant={ticketType.active ? "default" : "secondary"}
                     >
-                      {ticketType.active ? "Active" : "Inactive"}
+                      {ticketType.active 
+                        ? t("eventManagement.ticketTypes.status.active") 
+                        : t("eventManagement.ticketTypes.status.inactive")}
                     </Badge>
                     <Badge variant="outline">
-                      {ticketType.gender === "male" ? "Masculino" : "Feminino"}
+                      {ticketType.gender === "male" 
+                        ? t("eventManagement.ticketTypes.createDialog.fields.male") 
+                        : t("eventManagement.ticketTypes.createDialog.fields.female")}
                     </Badge>
                   </div>
                 </div>
@@ -405,18 +427,18 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
             <CardContent className="pt-0">
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Price</span>
+                  <span className="text-sm text-muted-foreground">{t("eventManagement.ticketTypes.labels.price")}</span>
                   <span className="text-lg font-bold">
-                    R$ {ticketType.price}
+                    {formatCurrency(ticketType.price)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Lot</span>
+                  <span className="text-sm text-muted-foreground">{t("eventManagement.ticketTypes.labels.lot")}</span>
                   <span className="text-sm font-medium">{ticketType.lot}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">
-                    Total Sold
+                    {t("eventManagement.ticketTypes.labels.totalSold")}
                   </span>
                   <span className="text-sm font-medium">
                     {ticketType.sold_count}
@@ -439,7 +461,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
           filteredTicketTypes.length
         )}
         totalItems={filteredTicketTypes.length}
-        itemName="ticket types"
+        itemName={t("eventManagement.ticketTypes.title").toLowerCase()}
       />
 
       {/* Edit Ticket Type Dialog */}
@@ -447,9 +469,9 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Edit Ticket Type</DialogTitle>
+              <DialogTitle>{t("eventManagement.ticketTypes.editDialog.title")}</DialogTitle>
               <DialogDescription>
-                Modify ticket type settings and pricing.
+                {t("eventManagement.ticketTypes.editDialog.description")}
               </DialogDescription>
             </DialogHeader>
             <Formik
@@ -470,12 +492,12 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
               {({ isSubmitting, values, setFieldValue }) => (
                 <Form className="space-y-4">
                   <div>
-                    <Label htmlFor="edit_ticket_type">Ticket Type Name</Label>
+                    <Label htmlFor="edit_ticket_type">{t("eventManagement.ticketTypes.createDialog.fields.ticketType")}</Label>
                     <Field
                       as={Input}
                       id="edit_ticket_type"
                       name="ticket_type"
-                      placeholder="VIP, General Admission, etc."
+                      placeholder={t("eventManagement.ticketTypes.createDialog.fields.ticketTypePlaceholder")}
                     />
                     <ErrorMessage
                       name="ticket_type"
@@ -484,7 +506,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                     />
                   </div>
                   <div>
-                    <Label>Gender</Label>
+                    <Label>{t("eventManagement.ticketTypes.createDialog.fields.gender")}</Label>
                     <div className="flex items-center space-x-4 mt-2">
                       <div className="flex items-center space-x-2">
                         <Field
@@ -494,7 +516,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                           value={TicketGender.MALE}
                           className="h-4 w-4"
                         />
-                        <Label htmlFor="edit_male" className="text-sm font-normal">Male</Label>
+                        <Label htmlFor="edit_male" className="text-sm font-normal">{t("eventManagement.ticketTypes.createDialog.fields.male")}</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Field
@@ -504,7 +526,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                           value={TicketGender.FEMALE}
                           className="h-4 w-4"
                         />
-                        <Label htmlFor="edit_female" className="text-sm font-normal">Female</Label>
+                        <Label htmlFor="edit_female" className="text-sm font-normal">{t("eventManagement.ticketTypes.createDialog.fields.female")}</Label>
                       </div>
                     </div>
                     <ErrorMessage
@@ -514,14 +536,14 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="edit_price">Price (R$)</Label>
+                    <Label htmlFor="edit_price">{t("eventManagement.ticketTypes.createDialog.fields.price")}</Label>
                     <Field
                       as={Input}
                       id="edit_price"
                       name="price"
                       type="number"
                       step="0.01"
-                      placeholder="50.00"
+                      placeholder={t("eventManagement.ticketTypes.createDialog.fields.pricePlaceholder")}
                     />
                     <ErrorMessage
                       name="price"
@@ -538,7 +560,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                       onChange={(e: any) => setFieldValue("active", e.target.checked)}
                       className="h-4 w-4"
                     />
-                    <Label htmlFor="edit_active">Active</Label>
+                    <Label htmlFor="edit_active">{t("eventManagement.ticketTypes.createDialog.fields.isActive")}</Label>
                   </div>
                   <DialogFooter>
                     <Button
@@ -549,13 +571,13 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                         setEditingTicket(null);
                       }}
                     >
-                      Cancel
+                      {t("eventManagement.ticketTypes.editDialog.buttons.cancel")}
                     </Button>
                     <Button
                       type="submit"
                       disabled={isSubmitting || updateTicketPricingMutation.isPending}
                     >
-                      {updateTicketPricingMutation.isPending ? "Updating..." : "Update Ticket Type"}
+                      {updateTicketPricingMutation.isPending ? "Updating..." : t("eventManagement.ticketTypes.editDialog.buttons.save")}
                     </Button>
                   </DialogFooter>
                 </Form>

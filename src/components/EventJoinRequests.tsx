@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,6 +29,7 @@ interface EventJoinRequestsProps {
 }
 
 export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
+  const { t } = useTranslation();
   const [requestSearch, setRequestSearch] = useState("");
   const [requestPage, setRequestPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -164,9 +166,11 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
       {/* Header and Controls */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Join Requests</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            {t("eventManagement.joinRequests.title")}
+          </h2>
           <p className="text-muted-foreground">
-            Review and approve pending join requests from ticket purchasers
+            {t("eventManagement.joinRequests.subtitle")}
           </p>
         </div>
       </div>
@@ -176,7 +180,7 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search join requests..."
+            placeholder={t("eventManagement.joinRequests.search.placeholder")}
             value={requestSearch}
             onChange={(e) => setRequestSearch(e.target.value)}
             className="pl-9"
@@ -209,7 +213,9 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
                     </p>
                   </div>
                 </div>
-                <Badge variant="secondary">Pending</Badge>
+                <Badge variant="secondary">
+                  {t("eventManagement.joinRequests.status.pending")}
+                </Badge>
               </div>
 
               <div className="space-y-3 text-sm">
@@ -221,21 +227,30 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Ticket Type:</span>
+                  <span className="text-muted-foreground">
+                    {t("eventManagement.joinRequests.fields.ticketType")}:
+                  </span>
                   <Badge variant="outline">
                     {request.ticket_pricing.ticket_type}
                   </Badge>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Paid Value:</span>
+                  <span className="text-muted-foreground">
+                    {t("eventManagement.joinRequests.fields.paidValue")}:
+                  </span>
                   <span className="font-medium">
-                    R$ {request.payment_details.authorized_amount}
+                    {new Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }).format(request.payment_details.authorized_amount / 100)}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Coupon:</span>
+                  <span className="text-muted-foreground">
+                    {t("eventManagement.joinRequests.fields.coupon")}:
+                  </span>
                   <span className="font-medium">
                     {request.payment_details.coupon ? (
                       <Badge variant="secondary">
@@ -263,24 +278,33 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
                       <X className="h-4 w-4 mr-2" />
                       {rejectRequestMutation.isPending
                         ? "Rejeitando..."
-                        : "Reject"}
+                        : t("eventManagement.joinRequests.actions.reject")}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Reject Join Request</AlertDialogTitle>
+                      <AlertDialogTitle>
+                        {t("eventManagement.joinRequests.rejectDialog.title")}
+                      </AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to reject {request.user.username}
-                        's join request? They will be notified of this decision.
+                        {t(
+                          "eventManagement.joinRequests.rejectDialog.description"
+                        )}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>
+                        {t(
+                          "eventManagement.joinRequests.rejectDialog.buttons.cancel"
+                        )}
+                      </AlertDialogCancel>
                       <AlertDialogAction
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         onClick={() => onRejectRequest(request.invite_id)}
                       >
-                        Reject
+                        {t(
+                          "eventManagement.joinRequests.rejectDialog.buttons.reject"
+                        )}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -299,24 +323,32 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
                       <CheckCircle2 className="h-4 w-4 mr-2" />
                       {acceptRequestMutation.isPending
                         ? "Aceitando..."
-                        : "Accept"}
+                        : t("eventManagement.joinRequests.actions.accept")}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Accept Join Request</AlertDialogTitle>
+                      <AlertDialogTitle>
+                        {t("eventManagement.joinRequests.acceptDialog.title")}
+                      </AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to accept {request.user.username}
-                        's join request? They will be added to the approved
-                        participants list.
+                        {t(
+                          "eventManagement.joinRequests.acceptDialog.description"
+                        )}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>
+                        {t(
+                          "eventManagement.joinRequests.acceptDialog.buttons.cancel"
+                        )}
+                      </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => onAcceptRequest(request.invite_id)}
                       >
-                        Accept
+                        {t(
+                          "eventManagement.joinRequests.acceptDialog.buttons.accept"
+                        )}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -335,7 +367,7 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
           <p className="text-muted-foreground">
             {requestSearch
               ? "No requests match your search."
-              : "All join requests have been processed."}
+              : t("eventManagement.joinRequests.noRequestsFound")}
           </p>
         </div>
       )}

@@ -1,0 +1,515 @@
+{
+  "dashboard": {
+    "tabs": {
+      "feed": "Feed",
+      "explore": "Explore",
+      "myEvents": "My Events",
+      "myTickets": "My Tickets",
+      "profile": "Profile"
+    },
+    "myEvents": {
+      "title": "My Events",
+      "createEvent": "Create Event",
+      "tags": {
+        "upcoming": "Upcoming",
+        "past": "Past",
+        "draft": "Draft",
+        "published": "Published"
+      },
+      "buttons": {
+        "viewDetails": "View Details",
+        "edit": "Edit",
+        "manage": "Manage"
+      }
+    },
+    "trending": {
+      "title": "Trending Events",
+      "viewAll": "View All"
+    },
+    "suggestions": {
+      "title": "Suggestions for You"
+    },
+    "search": {
+      "placeholder": "Search events..."
+    }
+  },
+  "eventManagement": {
+    "header": {
+      "backToDashboard": "Back to Dashboard",
+      "eventManagement": "Event Management",
+      "description": "Manage your event settings, view analytics, and interact with participants."
+    },
+    "tabs": {
+      "overview": "Overview",
+      "tickets": "Ticket Types",
+      "coupons": "Coupons",
+      "staff": "Staff",
+      "sendTickets": "Send Tickets",
+      "validate": "Validate Tickets",
+      "requests": "Join Requests",
+      "analytics": "Analytics",
+      "settings": "Settings",
+      "participants": "Participants",
+      "edit": "Edit Event"
+    },
+    "buttons": {
+      "viewParticipantList": "View Participant List"
+    },
+    "tags": {
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "active": "Active",
+      "inactive": "Inactive",
+      "draft": "Draft",
+      "published": "Published"
+    },
+    "overview": {
+      "cards": {
+        "totalTickets": "Total Tickets",
+        "soldTickets": "Sold Tickets",
+        "revenue": "Revenue",
+        "attendees": "Attendees",
+        "conversionRate": "Conversion Rate"
+      },
+      "recentActivity": {
+        "title": "Recent Activity",
+        "ticketPurchased": "Ticket purchased",
+        "newRegistration": "New registration",
+        "paymentReceived": "Payment received",
+        "ticketValidated": "Ticket validated",
+        "ago": "ago",
+        "minutes": "minutes",
+        "hours": "hours",
+        "days": "days"
+      },
+      "stats": {
+        "spotsRemaining": "spots remaining",
+        "fromLastWeek": "from last week",
+        "available": "available",
+        "increase": "increase"
+      },
+      "quickActions": {
+        "title": "Quick Actions",
+        "sendInvitations": "Send Invitations",
+        "downloadReport": "Download Report",
+        "editEvent": "Edit Event Details",
+        "viewAnalytics": "View Analytics",
+        "viewParticipantList": "View Participant List",
+        "createDiscountCode": "Create Discount Code",
+        "validateTickets": "Validate Tickets"
+      }
+    },
+    "editEvent": {
+      "title": "Edit Event",
+      "subtitle": "Edit your event's basic information",
+      "sections": {
+        "eventInfo": "Event Information",
+        "settings": "Settings"
+      },
+      "fields": {
+        "eventName": "Event Name",
+        "eventNamePlaceholder": "Enter event name",
+        "description": "Description",
+        "descriptionPlaceholder": "Enter event description",
+        "startDate": "Start Date",
+        "startTime": "Start Time",
+        "startTimePlaceholder": "Enter start time",
+        "endDate": "End Date",
+        "endTime": "End Time",
+        "endTimePlaceholder": "Enter end time",
+        "location": "Location",
+        "locationPlaceholder": "Enter event location",
+        "address": "Address",
+        "addressPlaceholder": "Enter complete address",
+        "addressComplement": "Address complement",
+        "addressComplementPlaceholder": "Apartment, suite, etc. (optional)",
+        "eventImage": "Event image",
+        "autoAccept": "Auto-accept participants",
+        "autoAcceptDescription": "Participation requests will be accepted automatically",
+        "privateEvent": "Private event",
+        "activeEvent": "Active event"
+      },
+      "buttons": {
+        "saveChanges": "Save Changes",
+        "cancel": "Cancel",
+        "selectImage": "Select image"
+      },
+      "validation": {
+        "nameRequired": "Event name is required",
+        "nameMinLength": "Name must be at least 3 characters",
+        "nameMaxLength": "Name must be at most 100 characters",
+        "descriptionRequired": "Description is required",
+        "descriptionMinLength": "Description must be at least 10 characters",
+        "descriptionMaxLength": "Description must be at most 1500 characters",
+        "startDateRequired": "Start date is required",
+        "startTimeRequired": "Start time is required",
+        "startTimeFormat": "Invalid time format (HH:MM)",
+        "endDateRequired": "End date is required",
+        "endTimeRequired": "End time is required",
+        "endTimeFormat": "Invalid time format (HH:MM)",
+        "locationRequired": "Location is required",
+        "coordinatesRequired": "Location coordinates are required"
+      },
+      "messages": {
+        "eventUpdated": "Event updated successfully!",
+        "updateError": "Error updating event"
+      }
+    },
+    "analytics": {
+      "title": "Analytics",
+      "cards": {
+        "totalRevenue": {
+          "title": "Total Revenue",
+          "subtitle": "Revenue generated"
+        },
+        "ticketsSold": {
+          "title": "Tickets Sold",
+          "subtitle": "Total tickets sold"
+        },
+        "conversionRate": {
+          "title": "Conversion Rate",
+          "subtitle": "Visitors to buyers"
+        },
+        "dailySales": {
+          "title": "Daily Sales",
+          "subtitle": "Sales over time"
+        },
+        "validatedTickets": {
+          "title": "Validated Tickets",
+          "subtitle": "Real-time validation"
+        },
+        "ticketsByType": {
+          "title": "Tickets by Type",
+          "subtitle": "Distribution by category"
+        },
+        "genderDistribution": {
+          "title": "Gender Distribution",
+          "subtitle": "Participant demographics"
+        },
+        "ageStatistics": {
+          "title": "Age Statistics",
+          "subtitle": "Age demographics"
+        },
+        "joinRequests": {
+          "title": "Join Requests",
+          "subtitle": "Participation requests"
+        },
+        "ageDistribution": {
+          "title": "Age Distribution",
+          "subtitle": "Age breakdown"
+        },
+        "ticketDistribution": {
+          "title": "Ticket Distribution",
+          "subtitle": "Ticket allocation"
+        },
+        "quickActions": {
+          "title": "Quick Actions",
+          "subtitle": "Management tools"
+        }
+      },
+      "timeWindows": {
+        "7d": "7d",
+        "14d": "14d",
+        "30d": "30d",
+        "30m": "30min",
+        "2h": "2h",
+        "5h": "5h",
+        "24h": "24h"
+      },
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "page": "Page",
+        "of": "of"
+      },
+      "noData": "No data available",
+      "loading": "Loading...",
+      "error": "Error loading data",
+      "labels": {
+        "ofTotal": "of total",
+        "pageVisits": "page visits",
+        "male": "Male",
+        "female": "Female",
+        "averageAge": "Average age",
+        "avgMaleAge": "Avg Male Age",
+        "avgFemaleAge": "Avg Female Age",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "type": "Type",
+        "lot": "Lot",
+        "amount": "Amount",
+        "revenue": "Revenue",
+        "paidTickets": "Paid tickets",
+        "freeTickets": "Free tickets"
+      },
+      "actions": {
+        "exportReport": "Export Analytics Report",
+        "viewDetailedCharts": "View Detailed Charts"
+      }
+    },
+    "participants": {
+      "title": "Participants",
+      "search": {
+        "placeholder": "Search participants...",
+        "filters": {
+          "all": "All",
+          "approved": "Approved",
+          "rejected": "Rejected",
+          "pending": "Pending"
+        }
+      },
+      "status": {
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "pending": "Pending"
+      },
+      "labels": {
+        "ticketType": "Ticket Type",
+        "paidValue": "Paid Value",
+        "coupon": "Coupon",
+        "validated": "Validated",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "actions": {
+        "refundTicket": "Refund Ticket"
+      },
+      "refundDialog": {
+        "title": "Refund Ticket",
+        "description": "Are you sure you want to refund this ticket? This action cannot be undone.",
+        "cancel": "Cancel",
+        "confirm": "Refund"
+      },
+      "pagination": {
+        "showing": "Showing",
+        "to": "to",
+        "of": "of",
+        "participants": "participants",
+        "previous": "Previous",
+        "next": "Next"
+      }
+    },
+    "ticketTypes": {
+      "title": "Ticket Types",
+      "search": {
+        "placeholder": "Search ticket types...",
+        "filters": {
+          "all": "All",
+          "active": "Active",
+          "inactive": "Inactive"
+        }
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "labels": {
+        "price": "Price",
+        "lot": "Lot",
+        "totalSold": "Total Sold"
+      },
+      "actions": {
+        "createTicketType": "Create Ticket Type",
+        "edit": "Edit"
+      },
+      "createDialog": {
+        "title": "Create New Ticket Type",
+        "description": "Add a new ticket type for your event",
+        "fields": {
+          "ticketType": "Ticket Type",
+          "ticketTypePlaceholder": "Enter ticket type name",
+          "price": "Price",
+          "pricePlaceholder": "Enter price",
+          "lot": "Lot",
+          "lotPlaceholder": "Enter lot number",
+          "totalTickets": "Total Tickets",
+          "totalTicketsPlaceholder": "Enter total tickets",
+          "isActive": "Active",
+          "gender": "Gender",
+          "male": "Male",
+          "female": "Female"
+        },
+        "buttons": {
+          "cancel": "Cancel",
+          "create": "Create"
+        }
+      },
+      "editDialog": {
+        "title": "Edit Ticket Type",
+        "description": "Update ticket type information",
+        "buttons": {
+          "cancel": "Cancel",
+          "save": "Save Changes"
+        }
+      }
+    },
+    "coupons": {
+      "title": "Coupons",
+      "search": {
+        "placeholder": "Search coupons...",
+        "filters": {
+          "all": "All",
+          "active": "Active",
+          "inactive": "Inactive"
+        }
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "types": {
+        "percentage": "Percentage",
+        "fixed": "Fixed Amount"
+      },
+      "table": {
+        "code": "Code",
+        "type": "Type",
+        "value": "Value",
+        "maxUsage": "Max Usage",
+        "currentUsage": "Current Usage",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "actions": {
+        "createCoupon": "Create Coupon",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "createDialog": {
+        "title": "Create New Coupon",
+        "description": "Add a new coupon for your event",
+        "fields": {
+          "code": "Coupon Code",
+          "codePlaceholder": "Enter coupon code",
+          "type": "Discount Type",
+          "value": "Discount Value",
+          "valuePlaceholder": "Enter discount value",
+          "maxUsage": "Maximum Usage",
+          "maxUsagePlaceholder": "Enter maximum usage",
+          "ticketSpecific": "Ticket Type Specific",
+          "selectTicketTypes": "Select Ticket Types"
+        },
+        "buttons": {
+          "cancel": "Cancel",
+          "create": "Create"
+        }
+      },
+      "editDialog": {
+        "title": "Edit Coupon",
+        "description": "Update coupon information",
+        "buttons": {
+          "cancel": "Cancel",
+          "save": "Save Changes"
+        }
+      },
+      "noCouponsFound": "No coupons found"
+    },
+    "staff": {
+      "title": "Event Staff",
+      "search": {
+        "placeholder": "Search staff...",
+        "filters": {
+          "all": "All",
+          "host": "Host",
+          "manager": "Manager",
+          "coordinator": "Coordinator",
+          "validator": "Validator"
+        }
+      },
+      "roles": {
+        "host": "Host",
+        "manager": "Manager", 
+        "coordinator": "Coordinator",
+        "validator": "Validator"
+      },
+      "actions": {
+        "addStaff": "Add Staff",
+        "edit": "Edit",
+        "remove": "Remove"
+      },
+      "addDialog": {
+        "title": "Add Staff Member",
+        "description": "Add a new staff member to your event",
+        "fields": {
+          "email": "Email",
+          "emailPlaceholder": "Enter staff member's email",
+          "role": "Role"
+        },
+        "buttons": {
+          "cancel": "Cancel",
+          "add": "Add Staff"
+        }
+      },
+      "editDialog": {
+        "title": "Edit Staff Member",
+        "description": "Update staff member role",
+        "buttons": {
+          "cancel": "Cancel",
+          "save": "Save Changes"
+        }
+      },
+      "removeDialog": {
+        "title": "Remove Staff Member",
+        "description": "Are you sure you want to remove this staff member? This action cannot be undone.",
+        "buttons": {
+          "cancel": "Cancel",
+          "remove": "Remove"
+        }
+      },
+      "noStaffFound": "No staff members found"
+    },
+    "sendTickets": {
+      "title": "Send Courtesy Ticket",
+      "fields": {
+        "fullName": "Full Name",
+        "fullNamePlaceholder": "Enter full name",
+        "email": "Email",
+        "emailPlaceholder": "Enter email address",
+        "phone": "Phone",
+        "phonePlaceholder": "+55 (11) 99999-9999",
+        "ticketType": "Ticket Type",
+        "ticketTypePlaceholder": "Select ticket type"
+      },
+      "buttons": {
+        "send": "Send Ticket"
+      }
+    },
+    "joinRequests": {
+      "title": "Join Requests",
+      "subtitle": "Manage pending join requests for your event",
+      "search": {
+        "placeholder": "Search join requests..."
+      },
+      "status": {
+        "pending": "Pending"
+      },
+      "fields": {
+        "ticketType": "Ticket Type",
+        "paidValue": "Paid Value",
+        "coupon": "Coupon"
+      },
+      "actions": {
+        "accept": "Accept",
+        "reject": "Reject"
+      },
+      "acceptDialog": {
+        "title": "Accept Join Request",
+        "description": "Are you sure you want to accept this join request?",
+        "buttons": {
+          "cancel": "Cancel",
+          "accept": "Accept"
+        }
+      },
+      "rejectDialog": {
+        "title": "Reject Join Request", 
+        "description": "Are you sure you want to reject this join request?",
+        "buttons": {
+          "cancel": "Cancel",
+          "reject": "Reject"
+        }
+      },
+      "noRequestsFound": "No join requests found"
+    }
+  }
+}

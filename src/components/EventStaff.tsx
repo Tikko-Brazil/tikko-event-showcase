@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
 import { useFormik } from "formik";
@@ -79,19 +80,20 @@ const getRoleIcon = (role: string | number) => {
   }
 };
 
-const getRoleLabel = (role: string | number) => {
+const getRoleLabel = (role: string | number, t: any) => {
   const roleStr = role.toString();
-  const labels = {
-    "4": "Host",
-    "3": "Manager",
-    "2": "Coordinator",
-    "1": "Validator",
-    host: "Host",
-    manager: "Manager",
-    coordinator: "Coordinator",
-    validator: "Validator",
+  const roleKeys = {
+    "4": "host",
+    "3": "manager", 
+    "2": "coordinator",
+    "1": "validator",
+    host: "host",
+    manager: "manager",
+    coordinator: "coordinator", 
+    validator: "validator",
   };
-  return labels[roleStr as keyof typeof labels] || roleStr;
+  const roleKey = roleKeys[roleStr as keyof typeof roleKeys];
+  return roleKey ? t(`eventManagement.staff.roles.${roleKey}`) : roleStr;
 };
 
 const getRoleBadgeVariant = (role: string | number) => {
@@ -109,6 +111,7 @@ const getRoleBadgeVariant = (role: string | number) => {
 };
 
 export const EventStaff = ({ eventId }: EventStaffProps) => {
+  const { t } = useTranslation();
   const [staffSearch, setStaffSearch] = useState("");
   const [staffFilter, setStaffFilter] = useState("all");
   const [staffPage, setStaffPage] = useState(1);
@@ -277,11 +280,11 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
   const paginatedStaff = staff?.slice(from, to) || [];
 
   const filterOptions = [
-    { value: "all", label: "All Roles" },
-    { value: "host", label: "Host" },
-    { value: "manager", label: "Manager" },
-    { value: "coordinator", label: "Coordinator" },
-    { value: "validator", label: "Validator" },
+    { value: "all", label: t("eventManagement.staff.search.filters.all") },
+    { value: "host", label: t("eventManagement.staff.search.filters.host") },
+    { value: "manager", label: t("eventManagement.staff.search.filters.manager") },
+    { value: "coordinator", label: t("eventManagement.staff.search.filters.coordinator") },
+    { value: "validator", label: t("eventManagement.staff.search.filters.validator") },
   ];
 
   if (isLoading) {
@@ -303,7 +306,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Staff Management</h2>
+        <h2 className="text-2xl font-bold">{t("eventManagement.staff.title")}</h2>
         <Dialog
           open={isAddDialogOpen}
           onOpenChange={(open) => {
@@ -316,14 +319,14 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
           <DialogTrigger asChild>
             <Button className="whitespace-nowrap">
               <UserPlus className="h-4 w-4 mr-2" />
-              Add Staff
+              {t("eventManagement.staff.actions.addStaff")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Staff Member</DialogTitle>
+              <DialogTitle>{t("eventManagement.staff.addDialog.title")}</DialogTitle>
               <DialogDescription>
-                Add a new staff member to your event team.
+                {t("eventManagement.staff.addDialog.description")}
               </DialogDescription>
             </DialogHeader>
             <form
@@ -331,11 +334,11 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
               className="space-y-4 py-4"
             >
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email">{t("eventManagement.staff.addDialog.fields.email")}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="staff@example.com"
+                  placeholder={t("eventManagement.staff.addDialog.fields.emailPlaceholder")}
                   value={addStaffFormik.values.email}
                   onChange={addStaffFormik.handleChange}
                   onBlur={addStaffFormik.handleBlur}
@@ -353,7 +356,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                   )}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
+                <Label htmlFor="role">{t("eventManagement.staff.addDialog.fields.role")}</Label>
                 <Select
                   value={addStaffFormik.values.role}
                   onValueChange={(value) =>
@@ -364,9 +367,9 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="coordinator">Coordinator</SelectItem>
-                    <SelectItem value="validator">Validator</SelectItem>
+                    <SelectItem value="manager">{t("eventManagement.staff.roles.manager")}</SelectItem>
+                    <SelectItem value="coordinator">{t("eventManagement.staff.roles.coordinator")}</SelectItem>
+                    <SelectItem value="validator">{t("eventManagement.staff.roles.validator")}</SelectItem>
                   </SelectContent>
                 </Select>
                 {addStaffFormik.touched.role && addStaffFormik.errors.role && (
@@ -381,10 +384,10 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                   variant="outline"
                   onClick={() => setIsAddDialogOpen(false)}
                 >
-                  Cancel
+                  {t("eventManagement.staff.addDialog.buttons.cancel")}
                 </Button>
                 <Button type="submit" disabled={addStaffMutation.isPending}>
-                  {addStaffMutation.isPending ? "Adding..." : "Add Staff"}
+                  {addStaffMutation.isPending ? "Adding..." : t("eventManagement.staff.addDialog.buttons.add")}
                 </Button>
               </div>
             </form>
@@ -395,7 +398,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
       <SearchAndFilter
         searchValue={staffSearch}
         onSearchChange={setStaffSearch}
-        searchPlaceholder="Search staff..."
+        searchPlaceholder={t("eventManagement.staff.search.placeholder")}
         filterValue={staffFilter}
         onFilterChange={setStaffFilter}
         filterOptions={filterOptions}
@@ -408,7 +411,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
           <div className="col-span-full">
             <Card>
               <CardContent className="flex items-center justify-center h-32">
-                <p className="text-muted-foreground">No staff members found</p>
+                <p className="text-muted-foreground">{t("eventManagement.staff.noStaffFound")}</p>
               </CardContent>
             </Card>
           </div>
@@ -441,7 +444,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                   <Badge variant={getRoleBadgeVariant(member.role)}>
                     <div className="flex items-center gap-1">
                       {getRoleIcon(member.role)}
-                      <span>{getRoleLabel(member.role)}</span>
+                      <span>{getRoleLabel(member.role, t)}</span>
                     </div>
                   </Badge>
                 </div>
@@ -487,14 +490,14 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="flex-1">
                         <Pencil className="h-4 w-4 mr-2" />
-                        Edit
+                        {t("eventManagement.staff.actions.edit")}
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Edit Staff Member</DialogTitle>
+                        <DialogTitle>{t("eventManagement.staff.editDialog.title")}</DialogTitle>
                         <DialogDescription>
-                          Update the role for {member.username}.
+                          {t("eventManagement.staff.editDialog.description")}
                         </DialogDescription>
                       </DialogHeader>
                       <form
@@ -502,7 +505,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                         className="space-y-4 py-4"
                       >
                         <div className="space-y-2">
-                          <Label htmlFor="edit-role">Role</Label>
+                          <Label htmlFor="edit-role">{t("eventManagement.staff.addDialog.fields.role")}</Label>
                           <Select
                             value={updateStaffFormik.values.role}
                             onValueChange={(value) =>
@@ -513,12 +516,12 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="manager">Manager</SelectItem>
+                              <SelectItem value="manager">{t("eventManagement.staff.roles.manager")}</SelectItem>
                               <SelectItem value="coordinator">
-                                Coordinator
+                                {t("eventManagement.staff.roles.coordinator")}
                               </SelectItem>
                               <SelectItem value="validator">
-                                Validator
+                                {t("eventManagement.staff.roles.validator")}
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -535,7 +538,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                             variant="outline"
                             onClick={() => setEditingStaff(null)}
                           >
-                            Cancel
+                            {t("eventManagement.staff.editDialog.buttons.cancel")}
                           </Button>
                           <Button
                             type="submit"
@@ -543,7 +546,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                           >
                             {updateStaffMutation.isPending
                               ? "Updating..."
-                              : "Update"}
+                              : t("eventManagement.staff.editDialog.buttons.save")}
                           </Button>
                         </div>
                       </form>
@@ -558,19 +561,18 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                         className="flex-1"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
-                        Remove
+                        {t("eventManagement.staff.actions.remove")}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Removal</AlertDialogTitle>
+                        <AlertDialogTitle>{t("eventManagement.staff.removeDialog.title")}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to remove {member.username} from
-                          the event staff? This action cannot be undone.
+                          {t("eventManagement.staff.removeDialog.description")}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{t("eventManagement.staff.removeDialog.buttons.cancel")}</AlertDialogCancel>
                         <AlertDialogAction
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           onClick={() => removeStaffMutation.mutate(member.id)}
@@ -578,7 +580,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                         >
                           {removeStaffMutation.isPending
                             ? "Removing..."
-                            : "Remove"}
+                            : t("eventManagement.staff.removeDialog.buttons.remove")}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -601,7 +603,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
           startIndex={from + 1}
           endIndex={to}
           totalItems={staff?.length || 0}
-          itemName="staff members"
+          itemName={t("eventManagement.staff.title").toLowerCase()}
         />
       )}
 

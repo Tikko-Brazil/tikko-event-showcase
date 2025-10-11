@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface PaginationProps {
   currentPage: number;
@@ -20,12 +21,20 @@ export const Pagination = ({
   totalItems,
   itemName,
 }: PaginationProps) => {
+  const { t, i18n } = useTranslation();
+  
+  // Helper function to format numbers according to current locale
+  const formatNumber = (value: number) => {
+    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
+    return value.toLocaleString(locale);
+  };
+
   if (totalPages <= 1) return null;
 
   return (
     <div className="flex items-center justify-between pt-4">
       <p className="text-xs md:text-sm text-muted-foreground">
-        {startIndex + 1}-{endIndex} of {totalItems} {itemName}
+        {t("eventManagement.participants.pagination.showing")} {formatNumber(startIndex)} {t("eventManagement.participants.pagination.to")} {formatNumber(endIndex)} {t("eventManagement.participants.pagination.of")} {formatNumber(totalItems)} {itemName}
       </p>
 
       <div className="flex items-center gap-2">
@@ -38,7 +47,7 @@ export const Pagination = ({
             disabled={currentPage <= 1}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
+            {t("eventManagement.participants.pagination.previous")}
           </Button>
           <Button
             variant="outline"
@@ -46,7 +55,7 @@ export const Pagination = ({
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage >= totalPages}
           >
-            Next
+            {t("eventManagement.participants.pagination.next")}
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>

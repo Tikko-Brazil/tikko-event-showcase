@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Formik, FormikProps } from "formik";
 import * as Yup from "yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -80,49 +81,51 @@ interface EventEditFormProps {
   event: Event;
 }
 
-const EventEditSchema = Yup.object().shape({
-  name: Yup.string()
-    .required("Nome do evento é obrigatório")
-    .min(3, "Nome deve ter pelo menos 3 caracteres")
-    .max(100, "Nome deve ter no máximo 100 caracteres"),
-  description: Yup.string()
-    .required("Descrição é obrigatória")
-    .min(10, "Descrição deve ter pelo menos 10 caracteres")
-    .max(1500, "Descrição deve ter no máximo 1500 caracteres"),
-  startDate: Yup.string().required("Data de início é obrigatória"),
-  startTime: Yup.string()
-    .required("Horário de início é obrigatório")
-    .matches(
-      /^([01][0-9]|2[0-3]):([0-5][0-9])$/,
-      "Formato de horário inválido (HH:MM)"
-    ),
-  endDate: Yup.string().required("Data de término é obrigatória"),
-  endTime: Yup.string()
-    .required("Horário de término é obrigatório")
-    .matches(
-      /^([01][0-9]|2[0-3]):([0-5][0-9])$/,
-      "Formato de horário inválido (HH:MM)"
-    ),
-  locationName: Yup.string()
-    .required("Nome do local é obrigatório")
-    .min(3, "Nome do local deve ter pelo menos 3 caracteres")
-    .max(100, "Nome do local deve ter no máximo 100 caracteres"),
-  addressName: Yup.string()
-    .required("Endereço é obrigatório")
-    .min(5, "Endereço deve ter pelo menos 5 caracteres")
-    .max(400, "Endereço deve ter no máximo 400 caracteres"),
-  latitude: Yup.number()
-    .nullable()
-    .required("Coordenadas do local são obrigatórias"),
-  longitude: Yup.number()
-    .nullable()
-    .required("Coordenadas do local são obrigatórias"),
-  autoAccept: Yup.boolean(),
-  isPrivate: Yup.boolean(),
-  isActive: Yup.boolean(),
-});
-
 export const EventEditForm = ({ event }: EventEditFormProps) => {
+  const { t } = useTranslation();
+  
+  const EventEditSchema = Yup.object().shape({
+    name: Yup.string()
+      .required(t("eventManagement.editEvent.validation.nameRequired"))
+      .min(3, t("eventManagement.editEvent.validation.nameMinLength"))
+      .max(100, t("eventManagement.editEvent.validation.nameMaxLength")),
+    description: Yup.string()
+      .required(t("eventManagement.editEvent.validation.descriptionRequired"))
+      .min(10, t("eventManagement.editEvent.validation.descriptionMinLength"))
+      .max(1500, t("eventManagement.editEvent.validation.descriptionMaxLength")),
+    startDate: Yup.string().required(t("eventManagement.editEvent.validation.startDateRequired")),
+    startTime: Yup.string()
+      .required(t("eventManagement.editEvent.validation.startTimeRequired"))
+      .matches(
+        /^([01][0-9]|2[0-3]):([0-5][0-9])$/,
+        t("eventManagement.editEvent.validation.startTimeFormat")
+      ),
+    endDate: Yup.string().required(t("eventManagement.editEvent.validation.endDateRequired")),
+    endTime: Yup.string()
+      .required(t("eventManagement.editEvent.validation.endTimeRequired"))
+      .matches(
+        /^([01][0-9]|2[0-3]):([0-5][0-9])$/,
+        t("eventManagement.editEvent.validation.endTimeFormat")
+      ),
+    locationName: Yup.string()
+      .required(t("eventManagement.editEvent.validation.locationRequired"))
+      .min(3, t("eventManagement.editEvent.validation.nameMinLength"))
+      .max(100, t("eventManagement.editEvent.validation.nameMaxLength")),
+    addressName: Yup.string()
+      .required(t("eventManagement.editEvent.validation.locationRequired"))
+      .min(5, "Endereço deve ter pelo menos 5 caracteres")
+      .max(400, "Endereço deve ter no máximo 400 caracteres"),
+    latitude: Yup.number()
+      .nullable()
+      .required(t("eventManagement.editEvent.validation.coordinatesRequired")),
+    longitude: Yup.number()
+      .nullable()
+      .required(t("eventManagement.editEvent.validation.coordinatesRequired")),
+    autoAccept: Yup.boolean(),
+    isPrivate: Yup.boolean(),
+    isActive: Yup.boolean(),
+  });
+  
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(event.image || "");
   const [imageKey, setImageKey] = useState<string | undefined>(
@@ -297,10 +300,10 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
             <Card className="shadow-card border-border/50">
               <CardHeader>
                 <CardTitle className="text-2xl text-foreground">
-                  Informações do Evento
+                  {t("eventManagement.editEvent.sections.eventInfo")}
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
-                  Edite as informações básicas do seu evento
+                  {t("eventManagement.editEvent.subtitle")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -310,7 +313,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     htmlFor="name"
                     className="text-sm font-medium text-foreground"
                   >
-                    Nome do Evento *
+                    {t("eventManagement.editEvent.fields.eventName")} *
                   </Label>
                   <Input
                     id="name"
@@ -318,7 +321,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     value={values.name}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    placeholder="Digite o nome do evento"
+                    placeholder={t("eventManagement.editEvent.fields.eventNamePlaceholder")}
                     className={cn(
                       "w-full",
                       errors.name && touched.name && "border-red-500"
@@ -332,7 +335,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                 {/* Event Image */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-foreground">
-                    Imagem do Evento
+                    {t("eventManagement.editEvent.fields.eventImage")}
                   </Label>
                   <div className="flex flex-col space-y-4">
                     {imagePreview && (
@@ -377,7 +380,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                         ) : (
                           <>
                             <ImageIcon className="h-4 w-4" />
-                            <span>Selecionar Imagem</span>
+                            <span>{t("eventManagement.editEvent.buttons.selectImage")}</span>
                           </>
                         )}
                       </Label>
@@ -391,7 +394,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     htmlFor="description"
                     className="text-sm font-medium text-foreground"
                   >
-                    Descrição *
+                    {t("eventManagement.editEvent.fields.description")} *
                   </Label>
                   <Textarea
                     id="description"
@@ -399,7 +402,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     value={values.description}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    placeholder="Describe your event..."
+                    placeholder={t("eventManagement.editEvent.fields.descriptionPlaceholder")}
                     className={cn(
                       "min-h-[100px] resize-y",
                       errors.description &&
@@ -417,7 +420,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                   {/* Start Date and Time */}
                   <div className="space-y-4">
                     <Label className="text-sm font-medium text-foreground">
-                      Data e Horário de Início *
+                      {t("eventManagement.editEvent.fields.startDate")} e {t("eventManagement.editEvent.fields.startTime")} *
                     </Label>
                     <div className="space-y-3">
                       <Popover
@@ -481,7 +484,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                           {(inputProps: any) => (
                             <Input
                               {...inputProps}
-                              placeholder="Digite o horário de início"
+                              placeholder={t("eventManagement.editEvent.fields.startTimePlaceholder")}
                               className={cn(
                                 "w-full pl-10",
                                 errors.startTime &&
@@ -503,7 +506,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                   {/* End Date and Time */}
                   <div className="space-y-4">
                     <Label className="text-sm font-medium text-foreground">
-                      Data e Horário de Término *
+                      {t("eventManagement.editEvent.fields.endDate")} e {t("eventManagement.editEvent.fields.endTime")} *
                     </Label>
                     <div className="space-y-3">
                       <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
@@ -562,7 +565,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                           {(inputProps: any) => (
                             <Input
                               {...inputProps}
-                              placeholder="Digite o horário de término"
+                              placeholder={t("eventManagement.editEvent.fields.endTimePlaceholder")}
                               className={cn(
                                 "w-full pl-10",
                                 errors.endTime &&
@@ -588,7 +591,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       htmlFor="locationName"
                       className="text-sm font-medium text-foreground"
                     >
-                      Nome do Local *
+                      {t("eventManagement.editEvent.fields.location")} *
                     </Label>
                     <Input
                       id="locationName"
@@ -596,7 +599,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       value={values.locationName}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      placeholder="Ex: Aurora Concert Hall"
+                      placeholder={t("eventManagement.editEvent.fields.locationPlaceholder")}
                       className={cn(
                         "w-full",
                         errors.locationName &&
@@ -617,7 +620,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       htmlFor="addressName"
                       className="text-sm font-medium text-foreground"
                     >
-                      Endereço *
+                      {t("eventManagement.editEvent.fields.address")} *
                     </Label>
                     <div className="relative">
                       <Input
@@ -633,7 +636,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                           debouncedLocationSearch(e.target.value);
                         }}
                         onBlur={handleBlur}
-                        placeholder="Digite o endereço completo"
+                        placeholder={t("eventManagement.editEvent.fields.addressPlaceholder")}
                         disabled={addressLoading}
                         className={cn(
                           "w-full pl-10",
@@ -698,7 +701,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     htmlFor="addressComplement"
                     className="text-sm font-medium text-foreground"
                   >
-                    Complemento do Endereço
+                    {t("eventManagement.editEvent.fields.addressComplement")}
                   </Label>
                   <Input
                     id="addressComplement"
@@ -706,7 +709,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     value={values.addressComplement}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    placeholder="Apartment, suite, etc. (optional)"
+                    placeholder={t("eventManagement.editEvent.fields.addressComplementPlaceholder")}
                     className="w-full"
                   />
                 </div>
@@ -714,7 +717,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                 {/* Settings */}
                 <div className="space-y-4 pt-4 border-t border-border">
                   <h3 className="text-lg font-medium text-foreground">
-                    Configurações
+                    {t("eventManagement.editEvent.sections.settings")}
                   </h3>
 
                   {/* Auto Accept Requests */}
@@ -730,7 +733,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       htmlFor="autoAccept"
                       className="text-sm text-foreground cursor-pointer"
                     >
-                      Solicitações de participação serão aceitas automaticamente
+                      {t("eventManagement.editEvent.fields.autoAcceptDescription")}
                     </Label>
                   </div>
 
@@ -747,7 +750,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       htmlFor="isPrivate"
                       className="text-sm text-foreground cursor-pointer"
                     >
-                      Evento privado (apenas por convite)
+                      {t("eventManagement.editEvent.fields.privateEvent")} (apenas por convite)
                     </Label>
                   </div>
 
@@ -764,7 +767,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       htmlFor="isActive"
                       className="text-sm text-foreground cursor-pointer"
                     >
-                      Evento está ativo
+                      {t("eventManagement.editEvent.fields.activeEvent")}
                     </Label>
                   </div>
                 </div>
@@ -784,7 +787,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-2" />
-                        Salvar Alterações
+                        {t("eventManagement.editEvent.buttons.saveChanges")}
                       </>
                     )}
                   </Button>
@@ -798,7 +801,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
       <SuccessSnackbar
         visible={showSuccess}
         onDismiss={() => setShowSuccess(false)}
-        message="Evento atualizado com sucesso!"
+        message={t("eventManagement.editEvent.messages.eventUpdated")}
       />
 
       <ErrorSnackbar

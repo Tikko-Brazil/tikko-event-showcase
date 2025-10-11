@@ -1,0 +1,515 @@
+{
+  "dashboard": {
+    "tabs": {
+      "feed": "Feed",
+      "explore": "Explorar",
+      "myEvents": "Meus Eventos",
+      "myTickets": "Meus Ingressos",
+      "profile": "Perfil"
+    },
+    "myEvents": {
+      "title": "Meus Eventos",
+      "createEvent": "Criar Evento",
+      "tags": {
+        "upcoming": "Próximo",
+        "past": "Passado",
+        "draft": "Rascunho",
+        "published": "Publicado"
+      },
+      "buttons": {
+        "viewDetails": "Ver Detalhes",
+        "edit": "Editar",
+        "manage": "Gerenciar"
+      }
+    },
+    "trending": {
+      "title": "Eventos em Alta",
+      "viewAll": "Ver Todos"
+    },
+    "suggestions": {
+      "title": "Sugestões para Você"
+    },
+    "search": {
+      "placeholder": "Buscar eventos..."
+    }
+  },
+  "eventManagement": {
+    "header": {
+      "backToDashboard": "Voltar ao Dashboard",
+      "eventManagement": "Gerenciamento do Evento",
+      "description": "Gerencie as configurações do seu evento, visualize análises e interaja com os participantes."
+    },
+    "tabs": {
+      "overview": "Visão Geral",
+      "tickets": "Tipos de Ingresso",
+      "coupons": "Cupons",
+      "staff": "Equipe",
+      "sendTickets": "Enviar Ingressos",
+      "validate": "Validar Ingressos",
+      "requests": "Solicitações",
+      "analytics": "Análises",
+      "settings": "Configurações",
+      "participants": "Participantes",
+      "edit": "Editar Evento"
+    },
+    "buttons": {
+      "viewParticipantList": "Ver Lista de Participantes"
+    },
+    "tags": {
+      "upcoming": "Próximo",
+      "past": "Passado",
+      "active": "Ativo",
+      "inactive": "Inativo",
+      "draft": "Rascunho",
+      "published": "Publicado"
+    },
+    "overview": {
+      "cards": {
+        "totalTickets": "Total de Ingressos",
+        "soldTickets": "Ingressos Vendidos",
+        "revenue": "Receita",
+        "attendees": "Participantes",
+        "conversionRate": "Taxa de Conversão"
+      },
+      "recentActivity": {
+        "title": "Atividade Recente",
+        "ticketPurchased": "Ingresso comprado",
+        "newRegistration": "Nova inscrição",
+        "paymentReceived": "Pagamento recebido",
+        "ticketValidated": "Ingresso validado",
+        "ago": "atrás",
+        "minutes": "minutos",
+        "hours": "horas",
+        "days": "dias"
+      },
+      "stats": {
+        "spotsRemaining": "vagas restantes",
+        "fromLastWeek": "da semana passada",
+        "available": "disponíveis",
+        "increase": "aumento"
+      },
+      "quickActions": {
+        "title": "Ações Rápidas",
+        "sendInvitations": "Enviar Convites",
+        "downloadReport": "Baixar Relatório",
+        "editEvent": "Editar Detalhes do Evento",
+        "viewAnalytics": "Ver Análises",
+        "viewParticipantList": "Ver Lista de Participantes",
+        "createDiscountCode": "Criar Código de Desconto",
+        "validateTickets": "Validar Ingressos"
+      }
+    },
+    "editEvent": {
+      "title": "Editar Evento",
+      "subtitle": "Edite as informações básicas do seu evento",
+      "sections": {
+        "eventInfo": "Informações do Evento",
+        "settings": "Configurações"
+      },
+      "fields": {
+        "eventName": "Nome do Evento",
+        "eventNamePlaceholder": "Digite o nome do evento",
+        "description": "Descrição",
+        "descriptionPlaceholder": "Digite a descrição do evento",
+        "startDate": "Data de Início",
+        "startTime": "Horário de Início",
+        "startTimePlaceholder": "Digite o horário de início",
+        "endDate": "Data de Término",
+        "endTime": "Horário de Término",
+        "endTimePlaceholder": "Digite o horário de término",
+        "location": "Local",
+        "locationPlaceholder": "Digite o local do evento",
+        "address": "Endereço",
+        "addressPlaceholder": "Digite o endereço completo",
+        "addressComplement": "Complemento do endereço",
+        "addressComplementPlaceholder": "Apartamento, suíte, etc. (opcional)",
+        "eventImage": "Imagem do evento",
+        "autoAccept": "Aceitar participantes automaticamente",
+        "autoAcceptDescription": "Solicitações de participação serão aceitas automaticamente",
+        "privateEvent": "Evento privado",
+        "activeEvent": "Evento ativo"
+      },
+      "buttons": {
+        "saveChanges": "Salvar Alterações",
+        "cancel": "Cancelar",
+        "selectImage": "Selecionar imagem"
+      },
+      "validation": {
+        "nameRequired": "Nome do evento é obrigatório",
+        "nameMinLength": "Nome deve ter pelo menos 3 caracteres",
+        "nameMaxLength": "Nome deve ter no máximo 100 caracteres",
+        "descriptionRequired": "Descrição é obrigatória",
+        "descriptionMinLength": "Descrição deve ter pelo menos 10 caracteres",
+        "descriptionMaxLength": "Descrição deve ter no máximo 1500 caracteres",
+        "startDateRequired": "Data de início é obrigatória",
+        "startTimeRequired": "Horário de início é obrigatório",
+        "startTimeFormat": "Formato de horário inválido (HH:MM)",
+        "endDateRequired": "Data de término é obrigatória",
+        "endTimeRequired": "Horário de término é obrigatório",
+        "endTimeFormat": "Formato de horário inválido (HH:MM)",
+        "locationRequired": "Local é obrigatório",
+        "coordinatesRequired": "Coordenadas do local são obrigatórias"
+      },
+      "messages": {
+        "eventUpdated": "Evento atualizado com sucesso!",
+        "updateError": "Erro ao atualizar evento"
+      }
+    },
+    "analytics": {
+      "title": "Análises",
+      "cards": {
+        "totalRevenue": {
+          "title": "Receita Total",
+          "subtitle": "Receita gerada"
+        },
+        "ticketsSold": {
+          "title": "Ingressos Vendidos",
+          "subtitle": "Total de ingressos vendidos"
+        },
+        "conversionRate": {
+          "title": "Taxa de Conversão",
+          "subtitle": "Visitantes para compradores"
+        },
+        "dailySales": {
+          "title": "Vendas Diárias",
+          "subtitle": "Vendas ao longo do tempo"
+        },
+        "validatedTickets": {
+          "title": "Ingressos Validados",
+          "subtitle": "Validação em tempo real"
+        },
+        "ticketsByType": {
+          "title": "Ingressos por Tipo",
+          "subtitle": "Distribuição por categoria"
+        },
+        "genderDistribution": {
+          "title": "Distribuição por Gênero",
+          "subtitle": "Demografia dos participantes"
+        },
+        "ageStatistics": {
+          "title": "Estatísticas de Idade",
+          "subtitle": "Demografia de idade"
+        },
+        "joinRequests": {
+          "title": "Solicitações de Participação",
+          "subtitle": "Pedidos de participação"
+        },
+        "ageDistribution": {
+          "title": "Distribuição por Idade",
+          "subtitle": "Divisão por idade"
+        },
+        "ticketDistribution": {
+          "title": "Distribuição de Ingressos",
+          "subtitle": "Alocação de ingressos"
+        },
+        "quickActions": {
+          "title": "Ações Rápidas",
+          "subtitle": "Ferramentas de gerenciamento"
+        }
+      },
+      "timeWindows": {
+        "7d": "7d",
+        "14d": "14d",
+        "30d": "30d",
+        "30m": "30min",
+        "2h": "2h",
+        "5h": "5h",
+        "24h": "24h"
+      },
+      "pagination": {
+        "previous": "Anterior",
+        "next": "Próximo",
+        "page": "Página",
+        "of": "de"
+      },
+      "noData": "Nenhum dado disponível",
+      "loading": "Carregando...",
+      "error": "Erro ao carregar dados",
+      "labels": {
+        "ofTotal": "do total",
+        "pageVisits": "visitas à página",
+        "male": "Masculino",
+        "female": "Feminino",
+        "averageAge": "Idade média",
+        "avgMaleAge": "Idade Média Masculina",
+        "avgFemaleAge": "Idade Média Feminina",
+        "pending": "Pendente",
+        "approved": "Aprovado",
+        "rejected": "Rejeitado",
+        "type": "Tipo",
+        "lot": "Lote",
+        "amount": "Quantidade",
+        "revenue": "Receita",
+        "paidTickets": "Ingressos pagos",
+        "freeTickets": "Ingressos gratuitos"
+      },
+      "actions": {
+        "exportReport": "Exportar Relatório de Análises",
+        "viewDetailedCharts": "Ver Gráficos Detalhados"
+      }
+    },
+    "participants": {
+      "title": "Participantes",
+      "search": {
+        "placeholder": "Buscar participantes...",
+        "filters": {
+          "all": "Todos",
+          "approved": "Aprovados",
+          "rejected": "Rejeitados",
+          "pending": "Pendentes"
+        }
+      },
+      "status": {
+        "approved": "Aprovado",
+        "rejected": "Rejeitado",
+        "pending": "Pendente"
+      },
+      "labels": {
+        "ticketType": "Tipo de Ingresso",
+        "paidValue": "Valor Pago",
+        "coupon": "Cupom",
+        "validated": "Validado",
+        "yes": "Sim",
+        "no": "Não"
+      },
+      "actions": {
+        "refundTicket": "Reembolsar Ingresso"
+      },
+      "refundDialog": {
+        "title": "Reembolsar Ingresso",
+        "description": "Tem certeza de que deseja reembolsar este ingresso? Esta ação não pode ser desfeita.",
+        "cancel": "Cancelar",
+        "confirm": "Reembolsar"
+      },
+      "pagination": {
+        "showing": "Mostrando",
+        "to": "a",
+        "of": "de",
+        "participants": "participantes",
+        "previous": "Anterior",
+        "next": "Próximo"
+      }
+    },
+    "ticketTypes": {
+      "title": "Tipos de Ingresso",
+      "search": {
+        "placeholder": "Buscar tipos de ingresso...",
+        "filters": {
+          "all": "Todos",
+          "active": "Ativos",
+          "inactive": "Inativos"
+        }
+      },
+      "status": {
+        "active": "Ativo",
+        "inactive": "Inativo"
+      },
+      "labels": {
+        "price": "Preço",
+        "lot": "Lote",
+        "totalSold": "Total Vendido"
+      },
+      "actions": {
+        "createTicketType": "Criar Tipo de Ingresso",
+        "edit": "Editar"
+      },
+      "createDialog": {
+        "title": "Criar Novo Tipo de Ingresso",
+        "description": "Adicione um novo tipo de ingresso para seu evento",
+        "fields": {
+          "ticketType": "Tipo de Ingresso",
+          "ticketTypePlaceholder": "Digite o nome do tipo de ingresso",
+          "price": "Preço",
+          "pricePlaceholder": "Digite o preço",
+          "lot": "Lote",
+          "lotPlaceholder": "Digite o número do lote",
+          "totalTickets": "Total de Ingressos",
+          "totalTicketsPlaceholder": "Digite o total de ingressos",
+          "isActive": "Ativo",
+          "gender": "Gênero",
+          "male": "Masculino",
+          "female": "Feminino"
+        },
+        "buttons": {
+          "cancel": "Cancelar",
+          "create": "Criar"
+        }
+      },
+      "editDialog": {
+        "title": "Editar Tipo de Ingresso",
+        "description": "Atualizar informações do tipo de ingresso",
+        "buttons": {
+          "cancel": "Cancelar",
+          "save": "Salvar Alterações"
+        }
+      }
+    },
+    "coupons": {
+      "title": "Cupons",
+      "search": {
+        "placeholder": "Buscar cupons...",
+        "filters": {
+          "all": "Todos",
+          "active": "Ativos",
+          "inactive": "Inativos"
+        }
+      },
+      "status": {
+        "active": "Ativo",
+        "inactive": "Inativo"
+      },
+      "types": {
+        "percentage": "Porcentagem",
+        "fixed": "Valor Fixo"
+      },
+      "table": {
+        "code": "Código",
+        "type": "Tipo",
+        "value": "Valor",
+        "maxUsage": "Uso Máximo",
+        "currentUsage": "Uso Atual",
+        "status": "Status",
+        "actions": "Ações"
+      },
+      "actions": {
+        "createCoupon": "Criar Cupom",
+        "edit": "Editar",
+        "delete": "Excluir"
+      },
+      "createDialog": {
+        "title": "Criar Novo Cupom",
+        "description": "Adicione um novo cupom para seu evento",
+        "fields": {
+          "code": "Código do Cupom",
+          "codePlaceholder": "Digite o código do cupom",
+          "type": "Tipo de Desconto",
+          "value": "Valor do Desconto",
+          "valuePlaceholder": "Digite o valor do desconto",
+          "maxUsage": "Uso Máximo",
+          "maxUsagePlaceholder": "Digite o uso máximo",
+          "ticketSpecific": "Específico por Tipo de Ingresso",
+          "selectTicketTypes": "Selecionar Tipos de Ingresso"
+        },
+        "buttons": {
+          "cancel": "Cancelar",
+          "create": "Criar"
+        }
+      },
+      "editDialog": {
+        "title": "Editar Cupom",
+        "description": "Atualizar informações do cupom",
+        "buttons": {
+          "cancel": "Cancelar",
+          "save": "Salvar Alterações"
+        }
+      },
+      "noCouponsFound": "Nenhum cupom encontrado"
+    },
+    "staff": {
+      "title": "Equipe do Evento",
+      "search": {
+        "placeholder": "Buscar equipe...",
+        "filters": {
+          "all": "Todos",
+          "host": "Anfitrião",
+          "manager": "Gerente",
+          "coordinator": "Coordenador",
+          "validator": "Validador"
+        }
+      },
+      "roles": {
+        "host": "Anfitrião",
+        "manager": "Gerente",
+        "coordinator": "Coordenador", 
+        "validator": "Validador"
+      },
+      "actions": {
+        "addStaff": "Adicionar Equipe",
+        "edit": "Editar",
+        "remove": "Remover"
+      },
+      "addDialog": {
+        "title": "Adicionar Membro da Equipe",
+        "description": "Adicione um novo membro à equipe do seu evento",
+        "fields": {
+          "email": "Email",
+          "emailPlaceholder": "Digite o email do membro da equipe",
+          "role": "Função"
+        },
+        "buttons": {
+          "cancel": "Cancelar",
+          "add": "Adicionar Equipe"
+        }
+      },
+      "editDialog": {
+        "title": "Editar Membro da Equipe",
+        "description": "Atualizar função do membro da equipe",
+        "buttons": {
+          "cancel": "Cancelar",
+          "save": "Salvar Alterações"
+        }
+      },
+      "removeDialog": {
+        "title": "Remover Membro da Equipe",
+        "description": "Tem certeza de que deseja remover este membro da equipe? Esta ação não pode ser desfeita.",
+        "buttons": {
+          "cancel": "Cancelar",
+          "remove": "Remover"
+        }
+      },
+      "noStaffFound": "Nenhum membro da equipe encontrado"
+    },
+    "sendTickets": {
+      "title": "Enviar Ingresso Cortesia",
+      "fields": {
+        "fullName": "Nome Completo",
+        "fullNamePlaceholder": "Digite o nome completo",
+        "email": "Email",
+        "emailPlaceholder": "Digite o endereço de email",
+        "phone": "Telefone",
+        "phonePlaceholder": "+55 (11) 99999-9999",
+        "ticketType": "Tipo de Ingresso",
+        "ticketTypePlaceholder": "Selecione o tipo de ingresso"
+      },
+      "buttons": {
+        "send": "Enviar Ingresso"
+      }
+    },
+    "joinRequests": {
+      "title": "Solicitações de Participação",
+      "subtitle": "Gerencie solicitações pendentes para seu evento",
+      "search": {
+        "placeholder": "Buscar solicitações..."
+      },
+      "status": {
+        "pending": "Pendente"
+      },
+      "fields": {
+        "ticketType": "Tipo de Ingresso",
+        "paidValue": "Valor Pago",
+        "coupon": "Cupom"
+      },
+      "actions": {
+        "accept": "Aceitar",
+        "reject": "Rejeitar"
+      },
+      "acceptDialog": {
+        "title": "Aceitar Solicitação",
+        "description": "Tem certeza de que deseja aceitar esta solicitação?",
+        "buttons": {
+          "cancel": "Cancelar",
+          "accept": "Aceitar"
+        }
+      },
+      "rejectDialog": {
+        "title": "Rejeitar Solicitação",
+        "description": "Tem certeza de que deseja rejeitar esta solicitação?",
+        "buttons": {
+          "cancel": "Cancelar",
+          "reject": "Rejeitar"
+        }
+      },
+      "noRequestsFound": "Nenhuma solicitação encontrada"
+    }
+  }
+}

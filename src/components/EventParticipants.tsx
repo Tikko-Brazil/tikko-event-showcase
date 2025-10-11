@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
 import { Card, CardContent } from "@/components/ui/card";
@@ -29,6 +30,7 @@ interface EventParticipantsProps {
 }
 
 export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
+  const { t, i18n } = useTranslation();
   const [participantSearch, setParticipantSearch] = useState("");
   const [participantFilter, setParticipantFilter] = useState("approved");
   const [participantPage, setParticipantPage] = useState(1);
@@ -43,6 +45,22 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
   const inviteGateway = new InviteGateway(import.meta.env.VITE_BACKEND_BASE_URL);
   const paymentGateway = new PaymentGateway(import.meta.env.VITE_BACKEND_BASE_URL);
   const queryClient = useQueryClient();
+
+  // Helper function to format numbers according to current locale
+  const formatNumber = (value: number, options?: Intl.NumberFormatOptions) => {
+    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
+    return value.toLocaleString(locale, options);
+  };
+
+  // Helper function to format currency
+  const formatCurrency = (value: number) => {
+    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
+    const currency = i18n.language === 'pt' ? 'BRL' : 'USD';
+    return value.toLocaleString(locale, {
+      style: 'currency',
+      currency: currency,
+    });
+  };
 
   // Debounced search function
   const debouncedSetSearch = useCallback(
@@ -122,8 +140,8 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
   const paginatedInvites = invites.slice(from, to);
 
   const filterOptions = [
-    { value: "approved", label: "Approved" },
-    { value: "rejected", label: "Rejected" },
+    { value: "approved", label: t("eventManagement.participants.search.filters.approved") },
+    { value: "rejected", label: t("eventManagement.participants.search.filters.rejected") },
   ];
 
   if (isLoading) {
@@ -147,7 +165,7 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
       <SearchAndFilter
         searchValue={participantSearch}
         onSearchChange={setParticipantSearch}
-        searchPlaceholder="Buscar participantes..."
+        searchPlaceholder={t("eventManagement.participants.search.placeholder")}
         filterValue={participantFilter}
         onFilterChange={setParticipantFilter}
         filterOptions={filterOptions}
@@ -199,7 +217,9 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                         : "destructive"
                     }
                   >
-                    {participantFilter === "approved" ? "approved" : "rejected"}
+                    {participantFilter === "approved" 
+                      ? t("eventManagement.participants.status.approved") 
+                      : t("eventManagement.participants.status.rejected")}
                   </Badge>
                 </div>
 
@@ -212,36 +232,35 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Ticket Type:</span>
+                    <span className="text-muted-foreground">{t("eventManagement.participants.labels.ticketType")}:</span>
                     <Badge variant="outline">
                       {invite.ticket_pricing.ticket_type}
                     </Badge>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Paid Value:</span>
+                    <span className="text-muted-foreground">{t("eventManagement.participants.labels.paidValue")}:</span>
                     <span className="font-medium">
-                      R$
-                      {invite.payment_details.authorized_amount ||
-                        invite.ticket_pricing.price}
+                      {formatCurrency(invite.payment_details.authorized_amount ||
+                        invite.ticket_pricing.price)}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Coupon:</span>
+                    <span className="text-muted-foreground">{t("eventManagement.participants.labels.coupon")}:</span>
                     <span className="font-medium">
                       {invite.payment_details.coupon ? (
                         <Badge variant="secondary">
                           {invite.payment_details.coupon}
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground">None</span>
+                        <span className="text-muted-foreground">{t("eventManagement.participants.labels.no")}</span>
                       )}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Validated:</span>
+                    <span className="text-muted-foreground">{t("eventManagement.participants.labels.validated")}:</span>
                     <div className="flex items-center gap-1">
                       {invite.is_validated ? (
                         <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -249,7 +268,9 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                         <div className="h-4 w-4 rounded-full border-2 border-muted-foreground" />
                       )}
                       <span className="text-xs">
-                        {invite.is_validated ? "Yes" : "No"}
+                        {invite.is_validated 
+                          ? t("eventManagement.participants.labels.yes") 
+                          : t("eventManagement.participants.labels.no")}
                       </span>
                     </div>
                   </div>
@@ -264,25 +285,24 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                         className="w-full"
                       >
                         <DollarSign className="h-4 w-4 mr-2" />
-                        Refund Ticket
+                        {t("eventManagement.participants.actions.refundTicket")}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Confirm Refund</AlertDialogTitle>
+                        <AlertDialogTitle>{t("eventManagement.participants.refundDialog.title")}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to refund the ticket for{" "}
-                          {invite.user.username}? This action cannot be undone.
+                          {t("eventManagement.participants.refundDialog.description")}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{t("eventManagement.participants.refundDialog.cancel")}</AlertDialogCancel>
                         <AlertDialogAction
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           onClick={() => refundMutation.mutate(invite)}
                           disabled={refundMutation.isPending}
                         >
-                          {refundMutation.isPending ? "Processando..." : "Refund"}
+                          {refundMutation.isPending ? "..." : t("eventManagement.participants.refundDialog.confirm")}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -303,7 +323,7 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
           startIndex={from + 1}
           endIndex={to}
           totalItems={invites.length}
-          itemName="participants"
+          itemName={t("eventManagement.participants.pagination.participants")}
         />
       )}
 
