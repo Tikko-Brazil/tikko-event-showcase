@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { useTranslation } from "react-i18next";
 import { CardPayment } from "@mercadopago/sdk-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import {
   ICardPaymentBrickPayer,
   ICardPaymentFormData,
 } from "@mercadopago/sdk-react/esm/bricks/cardPayment/type";
+import { createCommonValidations } from "@/lib/validationSchemas";
 
 interface PaymentInfoStepProps {
   paymentMethod: "credit" | "pix" | "";
@@ -20,19 +22,19 @@ interface PaymentInfoStepProps {
   onPaymentDataChange?: (data: any) => void;
 }
 
-const pixPaymentSchema = Yup.object({
-  payerEmail: Yup.string()
-    .email("E-mail inválido")
-    .required("E-mail é obrigatório"),
-});
-
 export const PaymentInfoStep: React.FC<PaymentInfoStepProps> = ({
   paymentMethod,
   ticketPrice,
   onNext,
   onPaymentDataChange,
 }) => {
+  const { t } = useTranslation();
   const [isProcessingCard, setIsProcessingCard] = useState(false);
+
+  const commonValidations = createCommonValidations(t);
+  const pixPaymentSchema = Yup.object({
+    payerEmail: commonValidations.email,
+  });
 
   const createPayment = () => {
     setIsProcessingCard(true);

@@ -511,5 +511,50 @@
       },
       "noRequestsFound": "No join requests found"
     }
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": {
+      "invalid": "Invalid email",
+      "noMatch": "Emails do not match"
+    },
+    "name": {
+      "invalid": "Please enter a valid name",
+      "twoWords": "Enter first and last name"
+    },
+    "phone": {
+      "required": "Phone is required",
+      "countryCodeRequired": "Country code is required (e.g., +55)",
+      "invalidBrazilian": "Invalid Brazilian phone number",
+      "invalidLength": "Phone number must be between 8 and 15 digits",
+      "noMatch": "Phone numbers do not match"
+    },
+    "password": {
+      "minLength": "Password must be at least 8 characters",
+      "uppercase": "Password must contain at least one uppercase letter",
+      "lowercase": "Password must contain at least one lowercase letter", 
+      "number": "Password must contain at least one number",
+      "specialChar": "Password must contain at least one special character (e.g., !@#$%^&*()_+)",
+      "noMatch": "Passwords do not match"
+    },
+    "birthdate": {
+      "required": "Birthdate is required",
+      "minAge": "You must be at least 18 years old"
+    },
+    "document": {
+      "invalidCPF": "Invalid CPF",
+      "invalid": "Invalid document"
+    },
+    "instagram": {
+      "noAt": "No need to include '@'",
+      "invalid": "Invalid account: must have between 3 and 30 characters, and only contain letters, numbers, '.' or '_'"
+    },
+    "bio": {
+      "maxLength": "Bio must be less than 500 characters"
+    },
+    "ticketType": {
+      "required": "Ticket type is required",
+      "invalid": "Please select a valid ticket type"
+    }
   }
 }

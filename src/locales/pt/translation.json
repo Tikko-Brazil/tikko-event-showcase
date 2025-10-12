@@ -511,5 +511,50 @@
       },
       "noRequestsFound": "Nenhuma solicitação encontrada"
     }
+  },
+  "validation": {
+    "required": "Este campo é obrigatório",
+    "email": {
+      "invalid": "E-mail inválido",
+      "noMatch": "E-mails não conferem"
+    },
+    "name": {
+      "invalid": "Por favor, insira um nome válido",
+      "twoWords": "Digite seu nome e sobrenome"
+    },
+    "phone": {
+      "required": "Telefone é obrigatório",
+      "countryCodeRequired": "Código do país é obrigatório (ex: +55)",
+      "invalidBrazilian": "Número de telefone brasileiro inválido",
+      "invalidLength": "Número de telefone deve ter entre 8 e 15 dígitos",
+      "noMatch": "Telefones não conferem"
+    },
+    "password": {
+      "minLength": "A senha deve ter pelo menos 8 caracteres",
+      "uppercase": "A senha deve conter pelo menos uma letra maiúscula",
+      "lowercase": "A senha deve conter pelo menos uma letra minúscula",
+      "number": "A senha deve conter pelo menos um número",
+      "specialChar": "A senha deve conter pelo menos um caractere especial (Ex: !@#$%^&*()_+)",
+      "noMatch": "As senhas não conferem"
+    },
+    "birthdate": {
+      "required": "Data de nascimento é obrigatória",
+      "minAge": "Você deve ter pelo menos 18 anos"
+    },
+    "document": {
+      "invalidCPF": "CPF inválido",
+      "invalid": "Documento inválido"
+    },
+    "instagram": {
+      "noAt": "Não é necessário incluir o '@'",
+      "invalid": "Conta inválida: deve possuir entre 3 e 30 caracteres, e só deve possuir letras, números, '.' ou '_'"
+    },
+    "bio": {
+      "maxLength": "Bio deve ter menos de 500 caracteres"
+    },
+    "ticketType": {
+      "required": "Tipo de ingresso é obrigatório",
+      "invalid": "Por favor, selecione um tipo de ingresso válido"
+    }
   }
 }

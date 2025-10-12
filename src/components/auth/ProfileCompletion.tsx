@@ -1,6 +1,7 @@
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { useTranslation } from "react-i18next";
 import InputMask from "react-input-mask";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,84 +19,28 @@ import { AuthGateway } from "@/lib/AuthGateway";
 import { UserGateway } from "@/lib/UserGateway";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
 import SuccessSnackbar from "@/components/SuccessSnackbar";
+import { createCommonValidations, PHONE_MASK } from "@/lib/validationSchemas";
 import logoLight from "@/assets/logoLight.png";
 
-const PHONE_MASK = "+99 (99) 99999-9999";
-
-const validateMobileNumber = (mobileNumber: string) => {
-  if (!mobileNumber) {
-    return { isValid: false, errorMessage: "Telefone é obrigatório" };
-  }
-
-  const cleanValue = mobileNumber.replace(/[()\s-]/g, "");
-
-  if (!cleanValue.startsWith("+")) {
-    return {
-      isValid: false,
-      errorMessage: "Telefone deve começar com código do país (+)",
-    };
-  }
-
-  if (cleanValue.startsWith("+55")) {
-    const numberWithoutCountryCode = cleanValue.slice(3);
-    if (numberWithoutCountryCode.length !== 11) {
-      return {
-        isValid: false,
-        errorMessage: "Telefone brasileiro deve ter 11 dígitos",
-      };
-    }
-  } else {
-    if (cleanValue.length < 8) {
-      return { isValid: false, errorMessage: "Telefone inválido" };
-    }
-  }
-
-  return { isValid: true, errorMessage: "" };
-};
-
-const profileCompletionSchema = Yup.object().shape({
-  username: Yup.string()
-    .required("Este campo é obrigatório")
-    .matches(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, "Por favor, insira um nome válido")
-    .test("at-least-two-words", "Digite seu nome e sobrenome", (value) => {
-      if (!value) return false;
-      const words = value.trim().split(/\s+/);
-      return words.length >= 2;
-    }),
-  gender: Yup.string().required("Este campo é obrigatório"),
-  birthday: Yup.date()
-    .max(
-      new Date(Date.now() - 568025136000),
-      "Você deve ter pelo menos 18 anos"
-    )
-    .required("Data de nascimento é obrigatória"),
-  phone_number: Yup.string()
-    .test("phone-validation", (value, context) => {
-      const result = validateMobileNumber(value || "");
-      return result.isValid
-        ? true
-        : context.createError({ message: result.errorMessage });
-    })
-    .required("Telefone é obrigatório"),
-  instagram_profile: Yup.string()
-    .matches(/^[^@]+$/, "Não é necessário incluir o '@'")
-    .matches(
-      /^[\w](?!.*?\.{2})[\w.]{1,28}[\w]$/,
-      "Conta inválida: deve possuir entre 3 e 30 caracteres, e só deve possuir letras, números, '.' ou '_'"
-    )
-    .required("Este campo é obrigatório"),
-  bio: Yup.string()
-    .max(500, "Bio deve ter menos de 500 caracteres")
-    .required("Bio é obrigatória"),
-});
-
 const ProfileCompletion: React.FC = () => {
+  const { t } = useTranslation();
   const [errorMessage, setErrorMessage] = React.useState("");
   const [showError, setShowError] = React.useState(false);
   const [successMessage, setSuccessMessage] = React.useState("");
   const [showSuccess, setShowSuccess] = React.useState(false);
 
   const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+
+  const commonValidations = createCommonValidations(t);
+
+  const profileCompletionSchema = Yup.object().shape({
+    username: commonValidations.fullName,
+    gender: commonValidations.gender,
+    birthday: commonValidations.birthdate,
+    phone_number: commonValidations.phone,
+    instagram_profile: commonValidations.instagram,
+    bio: commonValidations.bio,
+  });
   const userGateway = new UserGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
   const initialValues = {

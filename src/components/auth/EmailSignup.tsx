@@ -1,6 +1,7 @@
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { useTranslation } from "react-i18next";
 import InputMask from "react-input-mask";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,94 +20,14 @@ import { Link } from "react-router-dom";
 import { AuthGateway } from "@/lib/AuthGateway";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
 import SuccessSnackbar from "@/components/SuccessSnackbar";
+import { createCommonValidations, PHONE_MASK } from "@/lib/validationSchemas";
 
-// Phone mask for any country code
-const PHONE_MASK = "+99 (99) 99999-9999";
-
-const validateMobileNumber = (mobileNumber: string) => {
-  if (!mobileNumber) {
-    return { isValid: false, errorMessage: "Telefone é obrigatório" };
-  }
-
-  const cleanValue = mobileNumber.replace(/[()\s-]/g, "");
-
-  if (!cleanValue.startsWith("+")) {
-    return {
-      isValid: false,
-      errorMessage: "Telefone deve começar com código do país (+)",
-    };
-  }
-
-  if (cleanValue.startsWith("+55")) {
-    // Brazilian validation
-    const numberWithoutCountryCode = cleanValue.slice(3);
-    if (numberWithoutCountryCode.length !== 11) {
-      return {
-        isValid: false,
-        errorMessage: "Telefone brasileiro deve ter 11 dígitos",
-      };
-    }
-  } else {
-    // International validation
-    if (cleanValue.length < 8) {
-      return { isValid: false, errorMessage: "Telefone inválido" };
-    }
-  }
-
-  return { isValid: true, errorMessage: "" };
-};
-
-const signupSchema = Yup.object().shape({
-  email: Yup.string()
-    .email("E-mail inválido")
-    .required("Este campo é obrigatório"),
-  fullName: Yup.string()
-    .required("Este campo é obrigatório")
-    .matches(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, "Por favor, insira um nome válido")
-    .test("at-least-two-words", "Digite seu nome e sobrenome", (value) => {
-      if (!value) return false;
-      const words = value.trim().split(/\s+/);
-      return words.length >= 2;
-    }),
-  password: Yup.string()
-    .required("Este campo é obrigatório")
-    .min(8, "A senha deve ter pelo menos 8 caracteres")
-    .matches(/[A-Z]/, "A senha deve conter pelo menos uma letra maiúscula")
-    .matches(/[a-z]/, "A senha deve conter pelo menos uma letra minúscula")
-    .matches(/[0-9]/, "A senha deve conter pelo menos um número")
-    .matches(
-      /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
-      "A senha deve conter pelo menos um caractere especial (Ex: !@#$%^&*()_+)"
-    ),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password")], "As senhas não conferem")
-    .required("Este campo é obrigatório"),
-  gender: Yup.string().required("Este campo é obrigatório"),
-  birthdate: Yup.date()
-    .max(
-      new Date(Date.now() - 568025136000),
-      "Você deve ter pelo menos 18 anos"
-    )
-    .required("Data de nascimento é obrigatória"),
-  phone: Yup.string()
-    .test("phone-validation", (value, context) => {
-      const result = validateMobileNumber(value || "");
-      return result.isValid
-        ? true
-        : context.createError({ message: result.errorMessage });
-    })
-    .required("Telefone é obrigatório"),
-  instagram: Yup.string()
-    .matches(/^[^@]+$/, "Não é necessário incluir o '@'")
-    .matches(
-      /^[\w](?!.*?\.{2})[\w.]{1,28}[\w]$/,
-      "Conta inválida: deve possuir entre 3 e 30 caracteres, e só deve possuir letras, números, '.' ou '_'"
-    )
-    .required("Este campo é obrigatório"),
-  bio: Yup.string()
-    .max(500, "Bio deve ter menos de 500 caracteres")
-    .required("Bio é obrigatória"),
-});
+interface EmailSignupProps {
+  onNext: (email?: string) => void;
+  onBack: () => void;
+  isPasswordReset?: boolean;
+  resetToken?: string;
+}
 
 const passwordResetSchema = Yup.object().shape({
   password: Yup.string()
@@ -130,6 +51,7 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
   isPasswordReset = false,
   resetToken,
 }) => {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState("");
@@ -138,6 +60,27 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
   const [showSuccess, setShowSuccess] = React.useState(false);
 
   const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+
+  const commonValidations = createCommonValidations(t);
+
+  const signupSchema = Yup.object().shape({
+    email: commonValidations.email,
+    fullName: commonValidations.fullName,
+    password: commonValidations.password,
+    confirmPassword: commonValidations.confirmPassword(),
+    gender: commonValidations.gender,
+    birthdate: commonValidations.birthdate,
+    phone: commonValidations.phone,
+    instagram: commonValidations.instagram,
+    bio: commonValidations.bio,
+  });
+
+  const passwordResetSchema = Yup.object().shape({
+    password: commonValidations.password,
+    confirmPassword: commonValidations.confirmPassword(),
+  });
+
+  const validationSchema = isPasswordReset ? passwordResetSchema : signupSchema;
 
   const initialValues = isPasswordReset
     ? { password: "", confirmPassword: "" }
@@ -152,8 +95,6 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
         instagram: "",
         bio: "",
       };
-
-  const validationSchema = isPasswordReset ? passwordResetSchema : signupSchema;
 
   return (
     <Card className="w-full max-w-md mx-auto">

@@ -1,13 +1,25 @@
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { useTranslation } from "react-i18next";
 import InputMask from "react-input-mask";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { UserData } from "../CheckoutOverlay";
+import {
+  createCommonValidations,
+  validateCPF,
+  PHONE_MASK,
+} from "@/lib/validationSchemas";
 
 interface UserInfoStepProps {
   userData: UserData;
@@ -18,93 +30,6 @@ interface UserInfoStepProps {
   onValidationChange?: (isValid: boolean) => void;
 }
 
-// Phone mask for any country code
-const PHONE_MASK = "+99 (99) 99999-9999";
-
-const validateMobileNumber = (mobileNumber: string) => {
-  if (!mobileNumber) {
-    return { isValid: false, errorMessage: "Telefone é obrigatório" };
-  }
-
-  const cleanValue = mobileNumber.replace(/[()\s-]/g, "");
-
-  if (!cleanValue.startsWith("+")) {
-    return {
-      isValid: false,
-      errorMessage: "Telefone deve começar com código do país (+)",
-    };
-  }
-
-  if (cleanValue.startsWith("+55")) {
-    // Brazilian validation
-    const numberWithoutCountryCode = cleanValue.slice(3);
-    if (numberWithoutCountryCode.length !== 11) {
-      return {
-        isValid: false,
-        errorMessage: "Telefone brasileiro deve ter 11 dígitos",
-      };
-    }
-  } else {
-    // International validation
-    if (cleanValue.length < 8) {
-      return { isValid: false, errorMessage: "Telefone inválido" };
-    }
-  }
-
-  return { isValid: true, errorMessage: "" };
-};
-
-const validationSchema = Yup.object({
-  fullName: Yup.string()
-    .required("Este campo é obrigatório")
-    .matches(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, "Por favor, insira um nome válido")
-    .test("at-least-two-words", "Digite seu nome e sobrenome", (value) => {
-      if (!value) return false;
-      const words = value.trim().split(/\s+/);
-      return words.length >= 2;
-    }),
-  email: Yup.string()
-    .email("E-mail inválido")
-    .required("Este campo é obrigatório"),
-  confirmEmail: Yup.string()
-    .oneOf([Yup.ref("email")], "E-mails não conferem")
-    .required("Este campo é obrigatório"),
-  phone: Yup.string()
-    .test("phone-validation", (value, context) => {
-      const result = validateMobileNumber(value || "");
-      return result.isValid
-        ? true
-        : context.createError({ message: result.errorMessage });
-    })
-    .required("Este campo é obrigatório"),
-  confirmPhone: Yup.string()
-    .oneOf([Yup.ref("phone")], "Telefones não conferem")
-    .required("Este campo é obrigatório"),
-  identification: Yup.string()
-    .test("identification-validation", "Documento inválido", function (value) {
-      const { identificationType } = this.parent;
-      if (!value) return false;
-      if (identificationType === "cpf") {
-        return value.replace(/\D/g, "").length === 11;
-      }
-      return value.length >= 5;
-    })
-    .required("Este campo é obrigatório"),
-  birthdate: Yup.date()
-    .max(
-      new Date(Date.now() - 568025136000),
-      "Você deve ter pelo menos 18 anos"
-    )
-    .required("Data de nascimento é obrigatória"),
-  instagram: Yup.string()
-    .matches(/^[^@]+$/, "Não é necessário incluir o '@'")
-    .matches(
-      /^[\w](?!.*?\.{2})[\w.]{1,28}[\w]$/,
-      "Conta inválida: deve possuir entre 3 e 30 caracteres, e só deve possuir letras, números, '.' ou '_'"
-    )
-    .required("Este campo é obrigatório"),
-});
-
 export const UserInfoStep: React.FC<UserInfoStepProps> = ({
   userData,
   onUserDataChange,
@@ -113,6 +38,37 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
   onNext,
   onValidationChange,
 }) => {
+  const { t } = useTranslation();
+
+  const commonValidations = createCommonValidations(t);
+
+  const validationSchema = Yup.object({
+    fullName: commonValidations.fullName,
+    email: commonValidations.email,
+    confirmEmail: Yup.string()
+      .oneOf([Yup.ref("email")], t("validation.email.noMatch"))
+      .required(t("validation.required")),
+    phone: commonValidations.phone,
+    confirmPhone: Yup.string()
+      .oneOf([Yup.ref("phone")], t("validation.phone.noMatch"))
+      .required(t("validation.required")),
+    identification:
+      identificationType === "cpf"
+        ? commonValidations.cpf
+        : Yup.string()
+            .test(
+              "identification-validation",
+              t("validation.document.invalid"),
+              (value) => {
+                if (!value) return false;
+                return value.length >= 5;
+              }
+            )
+            .required(t("validation.required")),
+    birthdate: commonValidations.birthdate,
+    instagram: commonValidations.instagram,
+  });
+
   return (
     <div className="space-y-6 pb-60">
       <Card>

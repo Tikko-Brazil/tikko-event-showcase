@@ -1,6 +1,7 @@
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,11 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { AuthGateway } from "@/lib/AuthGateway";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
-
-const loginSchema = Yup.object().shape({
-  email: Yup.string().email("Email inválido").required("Email é obrigatório"),
-  password: Yup.string().required("Senha é obrigatória"),
-});
+import { createCommonValidations } from "@/lib/validationSchemas";
 
 interface EmailLoginProps {
   onForgotPassword: () => void;
@@ -29,11 +26,18 @@ const EmailLogin: React.FC<EmailLoginProps> = ({
   onForgotPassword,
   onBack,
 }) => {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState("");
   const [showError, setShowError] = React.useState(false);
 
   const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+
+  const commonValidations = createCommonValidations(t);
+  const loginSchema = Yup.object().shape({
+    email: commonValidations.email,
+    password: Yup.string().required(t("validation.required")),
+  });
 
   return (
     <Card className="w-full max-w-md mx-auto">

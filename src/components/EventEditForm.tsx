@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { createCommonValidations } from "@/lib/validationSchemas";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -84,6 +85,8 @@ interface EventEditFormProps {
 export const EventEditForm = ({ event }: EventEditFormProps) => {
   const { t } = useTranslation();
   
+  const commonValidations = createCommonValidations(t);
+  
   const EventEditSchema = Yup.object().shape({
     name: Yup.string()
       .required(t("eventManagement.editEvent.validation.nameRequired"))
@@ -113,7 +116,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
       .max(100, t("eventManagement.editEvent.validation.nameMaxLength")),
     addressName: Yup.string()
       .required(t("eventManagement.editEvent.validation.locationRequired"))
-      .min(5, "Endereço deve ter pelo menos 5 caracteres")
+      .min(5, t("validation.required"))
       .max(400, "Endereço deve ter no máximo 400 caracteres"),
     latitude: Yup.number()
       .nullable()

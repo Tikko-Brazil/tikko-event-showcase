@@ -20,54 +20,13 @@ import { InviteGateway } from "@/lib/InviteGateway";
 import { TicketPricingGateway } from "@/lib/TicketPricingGateway";
 import SuccessSnackbar from "./SuccessSnackbar";
 import ErrorSnackbar from "./ErrorSnackbar";
+import { createCommonValidations, PHONE_MASK } from "@/lib/validationSchemas";
 
 interface SendTicketsProps {
   eventId: number;
 }
 
 // Phone mask for any country code (same as signup form)
-const PHONE_MASK = "+99 (99) 99999-9999";
-
-const validateMobileNumber = (mobileNumber: string) => {
-  if (!mobileNumber) {
-    return { isValid: false, errorMessage: "Phone is required" };
-  }
-
-  const cleanValue = mobileNumber.replace(/[()\s-]/g, "");
-
-  if (!cleanValue.startsWith("+")) {
-    return {
-      isValid: false,
-      errorMessage: "Phone must start with country code (+)",
-    };
-  }
-
-  if (cleanValue.startsWith("+55")) {
-    // Brazilian validation
-    const numberWithoutCountryCode = cleanValue.slice(3);
-    if (numberWithoutCountryCode.length !== 11) {
-      return {
-        isValid: false,
-        errorMessage: "Brazilian phone must have 11 digits",
-      };
-    }
-  } else {
-    // International validation
-    const numberWithoutCountryCode = cleanValue.slice(1);
-    if (
-      numberWithoutCountryCode.length < 7 ||
-      numberWithoutCountryCode.length > 15
-    ) {
-      return {
-        isValid: false,
-        errorMessage: "Phone must have between 7 and 15 digits",
-      };
-    }
-  }
-
-  return { isValid: true, errorMessage: "" };
-};
-
 const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
   const { t } = useTranslation();
   const [showSuccessSnackbar, setShowSuccessSnackbar] = React.useState(false);
@@ -117,30 +76,13 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
     },
   });
 
-  // Form validation schema (same as signup form)
+  // Form validation schema using standardized validations
+  const commonValidations = createCommonValidations(t);
   const validationSchema = Yup.object().shape({
-    name: Yup.string()
-      .required("This field is required")
-      .matches(/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/, "Please enter a valid name")
-      .test("at-least-two-words", "Enter first and last name", (value) => {
-        if (!value) return false;
-        const words = value.trim().split(/\s+/);
-        return words.length >= 2;
-      }),
-    email: Yup.string()
-      .email("Invalid email")
-      .required("This field is required"),
-    phone: Yup.string()
-      .test("phone-validation", (value, context) => {
-        const result = validateMobileNumber(value || "");
-        return result.isValid
-          ? true
-          : context.createError({ message: result.errorMessage });
-      })
-      .required("Phone is required"),
-    ticket_pricing_id: Yup.number()
-      .required("Ticket type is required")
-      .positive("Please select a valid ticket type"),
+    name: commonValidations.fullName,
+    email: commonValidations.email,
+    phone: commonValidations.phone,
+    ticket_pricing_id: commonValidations.ticketType,
   });
 
   // Formik form
@@ -177,11 +119,15 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
           <form onSubmit={formik.handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">{t("eventManagement.sendTickets.fields.fullName")}</Label>
+                <Label htmlFor="name">
+                  {t("eventManagement.sendTickets.fields.fullName")}
+                </Label>
                 <Input
                   id="name"
                   type="text"
-                  placeholder={t("eventManagement.sendTickets.fields.fullNamePlaceholder")}
+                  placeholder={t(
+                    "eventManagement.sendTickets.fields.fullNamePlaceholder"
+                  )}
                   value={formik.values.name}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
@@ -197,11 +143,15 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">{t("eventManagement.sendTickets.fields.email")}</Label>
+                <Label htmlFor="email">
+                  {t("eventManagement.sendTickets.fields.email")}
+                </Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder={t("eventManagement.sendTickets.fields.emailPlaceholder")}
+                  placeholder={t(
+                    "eventManagement.sendTickets.fields.emailPlaceholder"
+                  )}
                   value={formik.values.email}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
@@ -217,7 +167,9 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">{t("eventManagement.sendTickets.fields.phone")}</Label>
+                <Label htmlFor="phone">
+                  {t("eventManagement.sendTickets.fields.phone")}
+                </Label>
                 <InputMask
                   mask={PHONE_MASK}
                   value={formik.values.phone}
@@ -229,7 +181,9 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
                       {...inputProps}
                       id="phone"
                       type="tel"
-                      placeholder={t("eventManagement.sendTickets.fields.phonePlaceholder")}
+                      placeholder={t(
+                        "eventManagement.sendTickets.fields.phonePlaceholder"
+                      )}
                       className={
                         formik.touched.phone && formik.errors.phone
                           ? "border-red-500"
@@ -262,7 +216,11 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
                         : ""
                     }
                   >
-                    <SelectValue placeholder={t("eventManagement.sendTickets.fields.ticketTypePlaceholder")} />
+                    <SelectValue
+                      placeholder={t(
+                        "eventManagement.sendTickets.fields.ticketTypePlaceholder"
+                      )}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {activePricings.map((pricing) => (
