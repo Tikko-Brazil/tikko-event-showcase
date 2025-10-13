@@ -143,6 +143,18 @@ interface ValidatedTickets {
   count: number;
 }
 
+interface EventStatsOverview {
+  total_sold_tickets: number;
+  liquid_revenue: number;
+  conversion_rate: number;
+  average_age: number;
+  recent_activity: {
+    action: number;
+    user_name: string;
+    time_ago: number;
+  }[];
+}
+
 interface EventStaffMember {
   id: number;
   username: string;
@@ -364,5 +376,12 @@ export class EventGateway {
       `${this.baseUrl}/private/event/upload-url?${params}`
     );
     return this.handleResponse<UploadUrlResponse>(response);
+  }
+
+  async getEventStatsOverview(eventId: number): Promise<EventStatsOverview> {
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/event/${eventId}/stats/overview`
+    );
+    return this.handleResponse<EventStatsOverview>(response);
   }
 }

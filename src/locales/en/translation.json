@@ -69,10 +69,29 @@
         "soldTickets": "Sold Tickets",
         "revenue": "Revenue",
         "attendees": "Attendees",
-        "conversionRate": "Conversion Rate"
+        "conversionRate": "Conversion Rate",
+        "averageAge": "Average Age"
+      },
+      "stats": {
+        "conversionRate": "conversion rate",
+        "liquidRevenue": "liquid revenue",
+        "yearsOld": "years old"
       },
       "recentActivity": {
         "title": "Recent Activity",
+        "actions": {
+          "was accepted": "Accepted",
+          "requested to join": "Requested to Join"
+        },
+        "time": {
+          "justNow": "just now",
+          "minutesAgo_one": "{{count}} minute ago",
+          "minutesAgo_other": "{{count}} minutes ago",
+          "hoursAgo_one": "{{count}} hour ago",
+          "hoursAgo_other": "{{count}} hours ago",
+          "daysAgo_one": "{{count}} day ago",
+          "daysAgo_other": "{{count}} days ago"
+        },
         "ticketPurchased": "Ticket purchased",
         "newRegistration": "New registration",
         "paymentReceived": "Payment received",
@@ -81,12 +100,6 @@
         "minutes": "minutes",
         "hours": "hours",
         "days": "days"
-      },
-      "stats": {
-        "spotsRemaining": "spots remaining",
-        "fromLastWeek": "from last week",
-        "available": "available",
-        "increase": "increase"
       },
       "quickActions": {
         "title": "Quick Actions",
@@ -419,7 +432,7 @@
       },
       "roles": {
         "host": "Host",
-        "manager": "Manager", 
+        "manager": "Manager",
         "coordinator": "Coordinator",
         "validator": "Validator"
       },
@@ -502,7 +515,7 @@
         }
       },
       "rejectDialog": {
-        "title": "Reject Join Request", 
+        "title": "Reject Join Request",
         "description": "Are you sure you want to reject this join request?",
         "buttons": {
           "cancel": "Cancel",
@@ -532,7 +545,7 @@
     "password": {
       "minLength": "Password must be at least 8 characters",
       "uppercase": "Password must contain at least one uppercase letter",
-      "lowercase": "Password must contain at least one lowercase letter", 
+      "lowercase": "Password must contain at least one lowercase letter",
       "number": "Password must contain at least one number",
       "specialChar": "Password must contain at least one special character (e.g., !@#$%^&*()_+)",
       "noMatch": "Passwords do not match"
@@ -555,6 +568,18 @@
     "ticketType": {
       "required": "Ticket type is required",
       "invalid": "Please select a valid ticket type"
+    }
+  },
+  "myTickets": {
+    "title": "My Tickets",
+    "status": {
+      "active": "Active",
+      "used": "Used",
+      "expired": "Expired"
+    },
+    "actions": {
+      "viewDetails": "View Details",
+      "showQR": "Show QR"
     }
   }
 }

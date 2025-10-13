@@ -391,7 +391,7 @@ const EventManagement = () => {
     { id: "requests", label: t("eventManagement.tabs.requests"), icon: UserPlus },
   ];
 
-  const renderOverview = () => <EventOverview eventData={mockEventData} />;
+  const renderOverview = () => <EventOverview eventId={parseInt(eventId!)} />;
 
   const renderAnalytics = () => (
     <EventAnalytics eventId={parseInt(eventId!)} />

@@ -69,7 +69,37 @@
         "soldTickets": "Ingressos Vendidos",
         "revenue": "Receita",
         "attendees": "Participantes",
-        "conversionRate": "Taxa de Conversão"
+        "conversionRate": "Taxa de Conversão",
+        "averageAge": "Idade Média"
+      },
+      "stats": {
+        "conversionRate": "taxa de conversão",
+        "liquidRevenue": "receita líquida",
+        "yearsOld": "anos"
+      },
+      "recentActivity": {
+        "title": "Atividade Recente",
+        "actions": {
+          "was accepted": "Aceito",
+          "requested to join": "Solicitou Participar"
+        },
+        "time": {
+          "justNow": "agora mesmo",
+          "minutesAgo": "{{count}} minuto atrás",
+          "minutesAgo_plural": "{{count}} minutos atrás",
+          "hoursAgo": "{{count}} hora atrás",
+          "hoursAgo_plural": "{{count}} horas atrás", 
+          "daysAgo": "{{count}} dia atrás",
+          "daysAgo_plural": "{{count}} dias atrás"
+        },
+        "ticketPurchased": "Ingresso comprado",
+        "newRegistration": "Nova inscrição",
+        "paymentReceived": "Pagamento recebido",
+        "ticketValidated": "Ingresso validado",
+        "ago": "atrás",
+        "minutes": "minutos",
+        "hours": "horas",
+        "days": "dias"
       },
       "recentActivity": {
         "title": "Atividade Recente",
@@ -555,6 +585,18 @@
     "ticketType": {
       "required": "Tipo de ingresso é obrigatório",
       "invalid": "Por favor, selecione um tipo de ingresso válido"
+    }
+  },
+  "myTickets": {
+    "title": "Meus Ingressos",
+    "status": {
+      "active": "Ativo",
+      "used": "Usado",
+      "expired": "Expirado"
+    },
+    "actions": {
+      "viewDetails": "Ver Detalhes",
+      "showQR": "Mostrar QR"
     }
   }
 }

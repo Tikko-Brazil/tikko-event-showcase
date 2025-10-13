@@ -591,7 +591,7 @@ const Dashboard = () => {
       case "my-tickets":
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold">My Tickets</h2>
+            <h2 className="text-2xl font-bold">{t("myTickets.title")}</h2>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {mockMyTickets.map((ticket) => (
                 <Card
@@ -613,7 +613,7 @@ const Dashboard = () => {
                               : "outline"
                           }
                         >
-                          {ticket.status}
+                          {t(`myTickets.status.${ticket.status}`)}
                         </Badge>
                       </div>
                       <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
@@ -640,11 +640,11 @@ const Dashboard = () => {
 
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" className="flex-1">
-                        View Details
+                        {t("myTickets.actions.viewDetails")}
                       </Button>
                       {ticket.status === "active" && (
                         <Button size="sm" className="flex-1">
-                          Show QR
+                          {t("myTickets.actions.showQR")}
                         </Button>
                       )}
                     </div>
