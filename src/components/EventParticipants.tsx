@@ -29,6 +29,17 @@ interface EventParticipantsProps {
   eventId: number;
 }
 
+const formatTicketName = (ticket: any) => {
+  const genderText =
+    ticket?.gender === "male"
+      ? "Masculino"
+      : ticket?.gender === "female"
+      ? "Feminino"
+      : "Unissex";
+  const lotText = ticket?.lot === 0 ? "Pré-venda" : `Lote ${ticket?.lot}`;
+  return `${ticket?.ticket_type} - ${genderText} - ${lotText}`;
+};
+
 export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
   const { t, i18n } = useTranslation();
   const [participantSearch, setParticipantSearch] = useState("");
@@ -42,22 +53,26 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
 
   const participantsPerPage = 6;
 
-  const inviteGateway = new InviteGateway(import.meta.env.VITE_BACKEND_BASE_URL);
-  const paymentGateway = new PaymentGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const inviteGateway = new InviteGateway(
+    import.meta.env.VITE_BACKEND_BASE_URL
+  );
+  const paymentGateway = new PaymentGateway(
+    import.meta.env.VITE_BACKEND_BASE_URL
+  );
   const queryClient = useQueryClient();
 
   // Helper function to format numbers according to current locale
   const formatNumber = (value: number, options?: Intl.NumberFormatOptions) => {
-    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
+    const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
     return value.toLocaleString(locale, options);
   };
 
   // Helper function to format currency
   const formatCurrency = (value: number) => {
-    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
-    const currency = i18n.language === 'pt' ? 'BRL' : 'USD';
+    const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
+    const currency = i18n.language === "pt" ? "BRL" : "USD";
     return value.toLocaleString(locale, {
-      style: 'currency',
+      style: "currency",
       currency: currency,
     });
   };
@@ -119,10 +134,11 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
 
   // Refund mutation
   const refundMutation = useMutation({
-    mutationFn: (invite: any) => paymentGateway.processRefund({
-      user_id: invite.user.id,
-      event_id: eventId,
-    }),
+    mutationFn: (invite: any) =>
+      paymentGateway.processRefund({
+        user_id: invite.user.id,
+        event_id: eventId,
+      }),
     onSuccess: () => {
       setShowSuccessSnackbar(true);
       queryClient.invalidateQueries({ queryKey: ["event-invites", eventId] });
@@ -140,8 +156,14 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
   const paginatedInvites = invites.slice(from, to);
 
   const filterOptions = [
-    { value: "approved", label: t("eventManagement.participants.search.filters.approved") },
-    { value: "rejected", label: t("eventManagement.participants.search.filters.rejected") },
+    {
+      value: "approved",
+      label: t("eventManagement.participants.search.filters.approved"),
+    },
+    {
+      value: "rejected",
+      label: t("eventManagement.participants.search.filters.rejected"),
+    },
   ];
 
   if (isLoading) {
@@ -217,8 +239,8 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                         : "destructive"
                     }
                   >
-                    {participantFilter === "approved" 
-                      ? t("eventManagement.participants.status.approved") 
+                    {participantFilter === "approved"
+                      ? t("eventManagement.participants.status.approved")
                       : t("eventManagement.participants.status.rejected")}
                   </Badge>
                 </div>
@@ -232,35 +254,47 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">{t("eventManagement.participants.labels.ticketType")}:</span>
+                    <span className="text-muted-foreground">
+                      {t("eventManagement.participants.labels.ticketType")}:
+                    </span>
                     <Badge variant="outline">
-                      {invite.ticket_pricing.ticket_type}
+                      {formatTicketName(invite.ticket_pricing)}
                     </Badge>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">{t("eventManagement.participants.labels.paidValue")}:</span>
+                    <span className="text-muted-foreground">
+                      {t("eventManagement.participants.labels.paidValue")}:
+                    </span>
                     <span className="font-medium">
-                      {formatCurrency(invite.payment_details.authorized_amount ||
-                        invite.ticket_pricing.price)}
+                      {formatCurrency(
+                        invite.payment_details.authorized_amount ||
+                          invite.ticket_pricing.price
+                      )}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">{t("eventManagement.participants.labels.coupon")}:</span>
+                    <span className="text-muted-foreground">
+                      {t("eventManagement.participants.labels.coupon")}:
+                    </span>
                     <span className="font-medium">
                       {invite.payment_details.coupon ? (
                         <Badge variant="secondary">
                           {invite.payment_details.coupon}
                         </Badge>
                       ) : (
-                        <span className="text-muted-foreground">{t("eventManagement.participants.labels.no")}</span>
+                        <span className="text-muted-foreground">
+                          {t("eventManagement.participants.labels.no")}
+                        </span>
                       )}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">{t("eventManagement.participants.labels.validated")}:</span>
+                    <span className="text-muted-foreground">
+                      {t("eventManagement.participants.labels.validated")}:
+                    </span>
                     <div className="flex items-center gap-1">
                       {invite.is_validated ? (
                         <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -268,8 +302,8 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                         <div className="h-4 w-4 rounded-full border-2 border-muted-foreground" />
                       )}
                       <span className="text-xs">
-                        {invite.is_validated 
-                          ? t("eventManagement.participants.labels.yes") 
+                        {invite.is_validated
+                          ? t("eventManagement.participants.labels.yes")
                           : t("eventManagement.participants.labels.no")}
                       </span>
                     </div>
@@ -290,19 +324,31 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>{t("eventManagement.participants.refundDialog.title")}</AlertDialogTitle>
+                        <AlertDialogTitle>
+                          {t("eventManagement.participants.refundDialog.title")}
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                          {t("eventManagement.participants.refundDialog.description")}
+                          {t(
+                            "eventManagement.participants.refundDialog.description"
+                          )}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>{t("eventManagement.participants.refundDialog.cancel")}</AlertDialogCancel>
+                        <AlertDialogCancel>
+                          {t(
+                            "eventManagement.participants.refundDialog.cancel"
+                          )}
+                        </AlertDialogCancel>
                         <AlertDialogAction
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           onClick={() => refundMutation.mutate(invite)}
                           disabled={refundMutation.isPending}
                         >
-                          {refundMutation.isPending ? "..." : t("eventManagement.participants.refundDialog.confirm")}
+                          {refundMutation.isPending
+                            ? "..."
+                            : t(
+                                "eventManagement.participants.refundDialog.confirm"
+                              )}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>

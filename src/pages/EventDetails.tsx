@@ -429,6 +429,7 @@ export default function EventDetails() {
         ticketType={formatTicketName(selectedTicketData) || ""}
         eventId={event.id}
         ticketPricingId={selectedTicketData?.id || 0}
+        autoAccept={event.auto_accept}
       />
     </div>
   );

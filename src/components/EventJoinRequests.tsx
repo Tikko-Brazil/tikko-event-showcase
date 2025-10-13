@@ -28,6 +28,17 @@ interface EventJoinRequestsProps {
   eventId: number;
 }
 
+const formatTicketName = (ticket: any) => {
+  const genderText =
+    ticket?.gender === "male"
+      ? "Masculino"
+      : ticket?.gender === "female"
+      ? "Feminino"
+      : "Unissex";
+  const lotText = ticket?.lot === 0 ? "Pré-venda" : `Lote ${ticket?.lot}`;
+  return `${ticket?.ticket_type} - ${genderText} - ${lotText}`;
+};
+
 export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
   const { t } = useTranslation();
   const [requestSearch, setRequestSearch] = useState("");
@@ -231,7 +242,7 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
                     {t("eventManagement.joinRequests.fields.ticketType")}:
                   </span>
                   <Badge variant="outline">
-                    {request.ticket_pricing.ticket_type}
+                    {formatTicketName(request.ticket_pricing)}
                   </Badge>
                 </div>
 

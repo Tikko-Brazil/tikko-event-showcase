@@ -25,7 +25,7 @@ const ErrorSnackbar = ({
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50 flex justify-center">
+    <div className="fixed bottom-4 left-4 right-4 z-[9999] flex justify-center">
       <div className="bg-destructive text-destructive-foreground px-4 py-3 rounded-md shadow-lg flex items-center gap-3 max-w-md w-full">
         <span className="flex-1">{message}</span>
         <Button

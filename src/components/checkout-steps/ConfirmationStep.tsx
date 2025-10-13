@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { UserData, DiscountData } from "../CheckoutOverlay";
+import ErrorSnackbar from "@/components/ErrorSnackbar";
 import {
   CreditCard,
   Smartphone,
@@ -32,6 +33,7 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   onNext,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const discountAmount = discount?.amount || 0;
   const ticketPriceAfterDiscount = Math.max(0, ticketPrice - discountAmount);
   const serviceFee = ticketPriceAfterDiscount * 0.1;
@@ -47,12 +49,27 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    setError(null);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      // Simulate API call
+      await new Promise((resolve, reject) => {
+        setTimeout(() => {
+          // Simulate random error for demonstration
+          if (Math.random() > 0.7) {
+            reject(new Error("Erro ao processar pagamento"));
+          } else {
+            resolve(true);
+          }
+        }, 2000);
+      });
 
-    setIsSubmitting(false);
-    onNext();
+      onNext();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro inesperado");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -69,7 +86,7 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
             </h3>
             <div className="bg-muted/50 p-3 rounded-lg space-y-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Tipo:</span>
+                <span className="text-muted-foreground">Tipo: </span>
                 <span className="font-medium">{ticketType}</span>
               </div>
               <div className="flex justify-between">
@@ -144,32 +161,43 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
           </div>
 
           {/* Payment Information */}
-          <div>
-            <h3 className="font-semibold text-foreground mb-3">
-              Método de Pagamento
-            </h3>
-            <div className="bg-muted/50 p-3 rounded-lg">
-              <div className="flex items-center gap-3">
-                {paymentMethod === "credit" ? (
-                  <>
-                    <CreditCard className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      Cartão de Crédito:
-                    </span>
-                    <span className="font-medium">**** **** **** 1234</span>
-                  </>
-                ) : (
-                  <>
-                    <Smartphone className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">PIX:</span>
-                    <span className="font-medium">fake.payer@example.com</span>
-                  </>
-                )}
+          {total > 0 && (
+            <div>
+              <h3 className="font-semibold text-foreground mb-3">
+                Método de Pagamento
+              </h3>
+              <div className="bg-muted/50 p-3 rounded-lg">
+                <div className="flex items-center gap-3">
+                  {paymentMethod === "credit" ? (
+                    <>
+                      <CreditCard className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Cartão de Crédito:
+                      </span>
+                      <span className="font-medium">**** **** **** 1234</span>
+                    </>
+                  ) : (
+                    <>
+                      <Smartphone className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        PIX:
+                      </span>
+                      <span className="font-medium">
+                        fake.payer@example.com
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
+      <ErrorSnackbar
+        message={error || ""}
+        visible={!!error}
+        onDismiss={() => setError(null)}
+      />
     </div>
   );
 };
