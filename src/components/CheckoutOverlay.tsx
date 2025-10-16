@@ -76,6 +76,8 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   const [paymentData, setPaymentData] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [showError, setShowError] = useState(false);
+  const creditPaymentRef = React.useRef<(() => void) | null>(null);
+  const pixPaymentRef = React.useRef<(() => void) | null>(null);
 
   const totalSteps = 7;
 
@@ -188,6 +190,8 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             ticketPrice={ticketPrice}
             onNext={handleNext}
             onPaymentDataChange={setPaymentData}
+            creditPaymentRef={creditPaymentRef}
+            pixPaymentRef={pixPaymentRef}
           />
         );
       case 6:
@@ -249,7 +253,10 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         };
       case 5:
         return {
-          // No continue button for payment step - handled by the payment forms themselves
+          onContinue: paymentMethod === "credit" 
+            ? () => creditPaymentRef.current?.()
+            : () => pixPaymentRef.current?.(),
+          continueButtonText: "Continuar para Confirmação",
         };
       case 6:
         return {
@@ -395,7 +402,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         open={isOpen}
         onOpenChange={(open) => !open && handleDialogClose()}
       >
-        <DialogContent className="max-w-4xl lg:max-h-[90vh] max-h-screen w-screen h-screen lg:w-[900px] lg:h-[700px] overflow-hidden p-0">
+        <DialogContent className="lg:max-w-none lg:max-h-[90vh] max-h-screen w-screen h-screen lg:w-[1050px] lg:h-[805px] overflow-hidden p-0">
           <div className="flex flex-col lg:flex-row h-full">
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-h-0 lg:h-auto">
@@ -421,7 +428,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
               )}
 
               {/* Step Content - Scrollable on mobile with bottom padding for fixed price summary */}
-              <div className="flex-1 overflow-y-auto p-4 lg:p-6 pt-0 lg:pb-6 max-h-[calc(100vh-200px)] lg:max-h-[calc(700px-200px)]">
+              <div className="flex-1 overflow-y-auto p-4 lg:p-6 pt-0 lg:pb-6 max-h-[calc(100vh-200px)] lg:max-h-[calc(805px-200px)]">
                 {renderStepContent()}
               </div>
             </div>

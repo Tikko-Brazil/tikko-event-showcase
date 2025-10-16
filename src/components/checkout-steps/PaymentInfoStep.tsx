@@ -15,6 +15,8 @@ interface PaymentInfoStepProps {
   ticketPrice: number;
   onNext: () => void;
   onPaymentDataChange?: (data: any) => void;
+  creditPaymentRef?: React.MutableRefObject<(() => void) | null>;
+  pixPaymentRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 export const PaymentInfoStep: React.FC<PaymentInfoStepProps> = ({
@@ -22,9 +24,12 @@ export const PaymentInfoStep: React.FC<PaymentInfoStepProps> = ({
   ticketPrice,
   onNext,
   onPaymentDataChange,
+  creditPaymentRef,
+  pixPaymentRef,
 }) => {
   const { t } = useTranslation();
   const [isProcessingCard, setIsProcessingCard] = useState(false);
+  const pixFormRef = React.useRef<any>(null);
 
   const commonValidations = createCommonValidations(t);
   const pixPaymentSchema = Yup.object({
@@ -53,6 +58,16 @@ export const PaymentInfoStep: React.FC<PaymentInfoStepProps> = ({
         setIsProcessingCard(false);
       });
   };
+
+  // Expose createPayment to parent component
+  React.useEffect(() => {
+    if (creditPaymentRef && paymentMethod === "credit") {
+      creditPaymentRef.current = createPayment;
+    }
+    if (pixPaymentRef && paymentMethod === "pix") {
+      pixPaymentRef.current = () => pixFormRef.current?.submitForm();
+    }
+  }, [creditPaymentRef, pixPaymentRef, paymentMethod]);
 
   const handlePixPaymentSubmit = (values: any) => {
     const paymentData = {
@@ -88,23 +103,15 @@ export const PaymentInfoStep: React.FC<PaymentInfoStepProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {paymentMethod === "credit" ? (
-            <div className="space-y-4 pb-32 lg:pb-4">
+            <div className="space-y-4 pb-32 lg:pb-1">
               <MemoizedCardPayment amount={ticketPrice} />
-              <Button
-                onClick={createPayment}
-                className="w-full"
-                disabled={isProcessingCard}
-              >
-                {isProcessingCard
-                  ? "Processando..."
-                  : "Continuar para Confirmação"}
-              </Button>
             </div>
           ) : (
             <Formik
               initialValues={{ payerEmail: "" }}
               validationSchema={pixPaymentSchema}
               onSubmit={handlePixPaymentSubmit}
+              innerRef={pixFormRef}
             >
               {({ errors, touched, isValid }) => (
                 <Form className="space-y-4">
@@ -128,10 +135,6 @@ export const PaymentInfoStep: React.FC<PaymentInfoStepProps> = ({
                       className="text-destructive text-sm mt-1"
                     />
                   </div>
-
-                  <Button type="submit" className="w-full" disabled={!isValid}>
-                    Continuar para Confirmação
-                  </Button>
                 </Form>
               )}
             </Formik>
