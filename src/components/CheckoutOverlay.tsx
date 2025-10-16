@@ -428,7 +428,11 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
               )}
 
               {/* Step Content - Scrollable on mobile with bottom padding for fixed price summary */}
-              <div className="flex-1 overflow-y-auto p-4 lg:p-6 pt-0 lg:pb-6 max-h-[calc(100vh-200px)] lg:max-h-[calc(805px-200px)]">
+              <div className={`flex-1 p-4 lg:p-6 pt-0 lg:pb-6 ${
+                currentStep === 6 || currentStep === 7 
+                  ? "overflow-y-auto max-h-[calc(100vh-200px)] lg:max-h-[calc(805px-200px)]"
+                  : "overflow-y-auto lg:overflow-visible max-h-[calc(100vh-200px)] lg:max-h-none"
+              }`}>
                 {renderStepContent()}
               </div>
             </div>
