@@ -2,17 +2,12 @@ import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useTranslation } from "react-i18next";
-import { CardPayment } from "@mercadopago/sdk-react";
+import { MemoizedCardPayment } from "@/components/MemoizedCardComponent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard, Smartphone } from "lucide-react";
-import {
-  IAdditionalData,
-  ICardPaymentBrickPayer,
-  ICardPaymentFormData,
-} from "@mercadopago/sdk-react/esm/bricks/cardPayment/type";
 import { createCommonValidations } from "@/lib/validationSchemas";
 
 interface PaymentInfoStepProps {
@@ -94,40 +89,7 @@ export const PaymentInfoStep: React.FC<PaymentInfoStepProps> = ({
         <CardContent className="space-y-4">
           {paymentMethod === "credit" ? (
             <div className="space-y-4 pb-32 lg:pb-4">
-              <CardPayment
-                initialization={{ amount: ticketPrice }}
-                customization={{
-                  visual: {
-                    style: {
-                      theme: "dark",
-                      customVariables: {
-                        formBackgroundColor: "hsl(224, 71%, 4%)", // --card
-                        errorColor: "hsl(0, 62.8%, 30.6%)", // --destructive
-                        baseColor: "hsl(263, 70%, 50%)", // --primary
-                        baseColorFirstVariant: "hsl(215, 28%, 17%)", // --secondary
-                        baseColorSecondVariant: "hsl(217, 33%, 17%)", // --accent
-                        inputBackgroundColor: "hsl(215, 28%, 17%)", // --input
-                        successColor: "hsl(263, 70%, 50%)", // --primary
-                        textPrimaryColor: "hsl(210, 40%, 98%)", // --foreground
-                        textSecondaryColor: "hsl(217.9, 10.6%, 64.9%)", // --muted-foreground
-                        inputFocusedBorderColor: "hsl(263, 70%, 50%)", // --ring
-                        placeholderColor: "hsl(217.9, 10.6%, 64.9%)", // --muted-foreground
-                      },
-                    },
-                    hideFormTitle: true,
-                    hidePaymentButton: true,
-                  },
-                  paymentMethods: {
-                    maxInstallments: 1,
-                  },
-                }}
-                onSubmit={async (
-                  param: ICardPaymentFormData<ICardPaymentBrickPayer>,
-                  param2?: IAdditionalData
-                ) => {
-                  // This won't be called since we're using our own submit button
-                }}
-              />
+              <MemoizedCardPayment amount={ticketPrice} />
               <Button
                 onClick={createPayment}
                 className="w-full"
