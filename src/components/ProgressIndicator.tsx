@@ -11,11 +11,9 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   totalSteps
 }) => {
   const steps = [
-    'Termos',
     'Dados',
-    'Cupom',
+    'Cupom', 
     'Pagamento',
-    'Cartão',
     'Confirmação'
   ];
 

@@ -39,6 +39,7 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
   onValidationChange,
 }) => {
   const { t } = useTranslation();
+  const [permanentTouched, setPermanentTouched] = React.useState<Record<string, boolean>>({});
 
   const commonValidations = createCommonValidations(t);
 
@@ -100,12 +101,6 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
               React.useEffect(() => {
                 onValidationChange?.(isValid);
               }, [isValid]);
-
-              // Update form data separately
-              React.useEffect(() => {
-                const { identificationType, ...userDataValues } = values;
-                onUserDataChange(userDataValues);
-              }, [values]);
 
               return (
                 <Form className="space-y-4">

@@ -421,15 +421,18 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
               </div>
 
               {/* Progress Indicator */}
-              {currentStep < 7 && (
+              {currentStep > 1 && currentStep < 7 && (
                 <div className="px-4 lg:px-6 pt-2 pb-0 lg:py-0 shrink-0">
-                  <ProgressIndicator currentStep={currentStep} totalSteps={6} />
+                  <ProgressIndicator 
+                    currentStep={currentStep <= 3 ? currentStep - 1 : currentStep <= 5 ? 3 : 4} 
+                    totalSteps={4} 
+                  />
                 </div>
               )}
 
               {/* Step Content - Scrollable on mobile with bottom padding for fixed price summary */}
-              <div className={`flex-1 p-4 lg:p-6 pt-0 lg:pb-6 ${
-                currentStep === 6 || currentStep === 7 
+<div className={`flex-1 p-4 lg:p-6 pt-0 lg:pb-6 ${
+                currentStep === 6 
                   ? "overflow-y-auto max-h-[calc(100vh-200px)] lg:max-h-[calc(805px-200px)]"
                   : "overflow-y-auto lg:overflow-visible max-h-[calc(100vh-200px)] lg:max-h-none"
               }`}>
