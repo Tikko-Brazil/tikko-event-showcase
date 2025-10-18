@@ -295,7 +295,11 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
 
               // Prepare payment data (PIX is handled separately above)
               let paymentInfo = undefined;
-              if (!isFreeTicket && paymentMethod === "credit" && paymentData?.cardInfo?.formData) {
+              if (
+                !isFreeTicket &&
+                paymentMethod === "credit" &&
+                paymentData?.cardInfo?.formData
+              ) {
                 paymentInfo = {
                   token: paymentData.cardInfo.formData.token,
                   description: "",
@@ -439,9 +443,15 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
 
               {/* Step Content - Scrollable on mobile with bottom padding for fixed price summary */}
               <div
-                className={`flex-1 p-4 lg:p-6 pt-0 lg:pb-6 ${
+                className={`flex-1 ${
+                  currentStep === 8
+                    ? "p-4 lg:p-6 pt-0 pb-0 lg:pb-0"
+                    : "p-4 lg:p-6 pt-0 lg:pb-6"
+                } ${
                   currentStep === 6
                     ? "overflow-y-auto max-h-[calc(100vh-200px)] lg:max-h-[calc(805px-200px)]"
+                    : currentStep === 8
+                    ? "overflow-y-auto max-h-[100vh] lg:max-h-none"
                     : "overflow-y-auto lg:overflow-visible max-h-[calc(100vh-200px)] lg:max-h-none"
                 }`}
               >

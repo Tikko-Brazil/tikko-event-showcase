@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Copy, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import QRCodeCanvas from "react-qrcode-logo";
+import markLogo from "@/assets/mark.png";
 
 interface PixQRCodeStepProps {
   ticketType: string;
@@ -19,7 +21,8 @@ export const PixQRCodeStep: React.FC<PixQRCodeStepProps> = ({
   const [copied, setCopied] = useState(false);
 
   // Fake PIX code for demonstration
-  const pixCode = "00020126580014br.gov.bcb.pix0136a123b456-c789-d012-e345-f678901234560204000053039865802BR5925EVENTO TICKET PAGAMENTO6009SAO PAULO62070503***63041234";
+  const pixCode =
+    "00020126580014br.gov.bcb.pix0136a123b456-c789-d012-e345-f678901234560204000053039865802BR5925EVENTO TICKET PAGAMENTO6009SAO PAULO62070503***63041234";
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -38,7 +41,9 @@ export const PixQRCodeStep: React.FC<PixQRCodeStepProps> = ({
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const handleCopyCode = () => {
@@ -58,25 +63,35 @@ export const PixQRCodeStep: React.FC<PixQRCodeStepProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Timer */}
-          <div className="bg-muted/50 rounded-lg p-3 flex items-center justify-center gap-2">
+          <div className="bg-muted/50 rounded-lg p-2 flex items-center justify-center gap-2">
             <Clock className="w-4 h-4 text-primary" />
             <div className="text-center">
               <p className="text-xs text-muted-foreground">
                 Código válido por:
               </p>
-              <p className="text-xl font-bold text-foreground">
+              <p className="text-lg font-bold text-foreground">
                 {formatTime(timeLeft)}
               </p>
             </div>
           </div>
 
-          {/* QR Code Placeholder */}
+          {/* QR Code */}
           <div className="flex justify-center">
-            <div className="bg-white p-4 rounded-lg shadow-md">
-              <div
-                className="w-48 h-48 md:w-56 md:h-56 bg-cover bg-center rounded"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23000' width='200' height='200'/%3E%3Crect fill='%23fff' x='10' y='10' width='30' height='30'/%3E%3Crect fill='%23fff' x='50' y='10' width='10' height='10'/%3E%3Crect fill='%23fff' x='70' y='10' width='20' height='10'/%3E%3Crect fill='%23fff' x='100' y='10' width='10' height='20'/%3E%3Crect fill='%23fff' x='120' y='10' width='20' height='10'/%3E%3Crect fill='%23fff' x='150' y='10' width='10' height='10'/%3E%3Crect fill='%23fff' x='160' y='10' width='30' height='30'/%3E%3Crect fill='%23fff' x='10' y='50' width='10' height='10'/%3E%3Crect fill='%23fff' x='30' y='50' width='10' height='10'/%3E%3Crect fill='%23fff' x='50' y='50' width='20' height='10'/%3E%3Crect fill='%23fff' x='80' y='50' width='10' height='10'/%3E%3Crect fill='%23fff' x='100' y='50' width='20' height='10'/%3E%3Crect fill='%23fff' x='130' y='50' width='20' height='10'/%3E%3Crect fill='%23fff' x='160' y='50' width='10' height='10'/%3E%3Crect fill='%23fff' x='180' y='50' width='10' height='10'/%3E%3Crect fill='%23fff' x='10' y='70' width='10' height='20'/%3E%3Crect fill='%23fff' x='30' y='70' width='10' height='10'/%3E%3Crect fill='%23fff' x='50' y='70' width='10' height='10'/%3E%3Crect fill='%23fff' x='70' y='70' width='20' height='20'/%3E%3Crect fill='%23fff' x='100' y='70' width='10' height='10'/%3E%3Crect fill='%23fff' x='120' y='70' width='10' height='20'/%3E%3Crect fill='%23fff' x='140' y='70' width='10' height='10'/%3E%3Crect fill='%23fff' x='160' y='70' width='10' height='20'/%3E%3Crect fill='%23fff' x='180' y='70' width='10' height='10'/%3E%3Crect fill='%23fff' x='10' y='100' width='10' height='10'/%3E%3Crect fill='%23fff' x='30' y='100' width='10' height='10'/%3E%3Crect fill='%23fff' x='50' y='100' width='40' height='10'/%3E%3Crect fill='%23fff' x='100' y='100' width='30' height='10'/%3E%3Crect fill='%23fff' x='140' y='100' width='10' height='10'/%3E%3Crect fill='%23fff' x='160' y='100' width='10' height='10'/%3E%3Crect fill='%23fff' x='180' y='100' width='10' height='10'/%3E%3Crect fill='%23fff' x='10' y='120' width='30' height='10'/%3E%3Crect fill='%23fff' x='50' y='120' width='10' height='10'/%3E%3Crect fill='%23fff' x='70' y='120' width='20' height='10'/%3E%3Crect fill='%23fff' x='100' y='120' width='10' height='10'/%3E%3Crect fill='%23fff' x='120' y='120' width='20' height='10'/%3E%3Crect fill='%23fff' x='150' y='120' width='10' height='10'/%3E%3Crect fill='%23fff' x='160' y='120' width='30' height='10'/%3E%3Crect fill='%23fff' x='10' y='140' width='10' height='10'/%3E%3Crect fill='%23fff' x='30' y='140' width='10' height='10'/%3E%3Crect fill='%23fff' x='50' y='140' width='20' height='10'/%3E%3Crect fill='%23fff' x='80' y='140' width='30' height='10'/%3E%3Crect fill='%23fff' x='120' y='140' width='10' height='10'/%3E%3Crect fill='%23fff' x='140' y='140' width='20' height='10'/%3E%3Crect fill='%23fff' x='170' y='140' width='10' height='10'/%3E%3Crect fill='%23fff' x='10' y='160' width='30' height='30'/%3E%3Crect fill='%23fff' x='50' y='160' width='10' height='10'/%3E%3Crect fill='%23fff' x='70' y='160' width='10' height='20'/%3E%3Crect fill='%23fff' x='90' y='160' width='20' height='10'/%3E%3Crect fill='%23fff' x='120' y='160' width='10' height='20'/%3E%3Crect fill='%23fff' x='140' y='160' width='20' height='10'/%3E%3Crect fill='%23fff' x='160' y='160' width='30' height='30'/%3E%3C/svg%3E")`,
+            <div className="bg-white p-3 rounded-lg shadow-md">
+              <QRCodeCanvas
+                value={pixCode}
+                size={176}
+                logoImage={markLogo}
+                logoWidth={40}
+                logoHeight={40}
+                logoOpacity={1}
+                quietZone={0}
+                removeQrCodeBehindLogo={true}
+                qrStyle="squares"
+                eyeRadius={{ outer: 4, inner: 4 }}
+                eyeColor={{
+                  outer: "hsl(215 28% 17%)",
+                  inner: "hsl(263 70% 50%)",
                 }}
               />
             </div>
@@ -87,7 +102,7 @@ export const PixQRCodeStep: React.FC<PixQRCodeStepProps> = ({
             <p className="text-xs text-muted-foreground text-center">
               Ou copie o código PIX:
             </p>
-            <div className="bg-muted rounded-lg p-2 break-all text-xs font-mono text-foreground max-h-20 overflow-y-auto">
+            <div className="bg-muted rounded-lg p-2 break-all text-xs font-mono text-foreground max-h-16 overflow-y-auto">
               {pixCode}
             </div>
             <Button
@@ -111,21 +126,9 @@ export const PixQRCodeStep: React.FC<PixQRCodeStepProps> = ({
             </Button>
           </div>
 
-          {/* Order Details */}
-          <div className="bg-muted/50 rounded-lg p-3 space-y-1.5">
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Ingresso:</span>
-              <span className="font-medium text-foreground">{ticketType}</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">E-mail do Pagador:</span>
-              <span className="font-medium text-foreground truncate ml-2">{payerEmail}</span>
-            </div>
-          </div>
-
           {/* Instructions */}
-          <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
-            <h4 className="font-semibold text-xs mb-1.5 text-foreground">
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-2">
+            <h4 className="font-semibold text-xs mb-1 text-foreground">
               Como pagar:
             </h4>
             <ol className="text-xs space-y-0.5 text-muted-foreground list-decimal list-inside">
@@ -137,7 +140,7 @@ export const PixQRCodeStep: React.FC<PixQRCodeStepProps> = ({
           </div>
 
           {/* Action Button */}
-          <Button onClick={onClose} className="w-full">
+          <Button onClick={onClose} className="w-full mb-8">
             Fechar
           </Button>
         </CardContent>
