@@ -202,6 +202,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             ticketPrice={ticketPrice}
             ticketType={ticketType}
             discount={discount}
+            paymentData={paymentData}
             onNext={handleNext}
           />
         );
@@ -253,9 +254,10 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         };
       case 5:
         return {
-          onContinue: paymentMethod === "credit" 
-            ? () => creditPaymentRef.current?.()
-            : () => pixPaymentRef.current?.(),
+          onContinue:
+            paymentMethod === "credit"
+              ? () => creditPaymentRef.current?.()
+              : () => pixPaymentRef.current?.(),
           continueButtonText: "Continuar para Confirmação",
         };
       case 6:
@@ -423,19 +425,27 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
               {/* Progress Indicator */}
               {currentStep > 1 && currentStep < 7 && (
                 <div className="px-4 lg:px-6 pt-2 pb-0 lg:py-0 shrink-0">
-                  <ProgressIndicator 
-                    currentStep={currentStep <= 3 ? currentStep - 1 : currentStep <= 5 ? 3 : 4} 
-                    totalSteps={4} 
+                  <ProgressIndicator
+                    currentStep={
+                      currentStep <= 3
+                        ? currentStep - 1
+                        : currentStep <= 5
+                        ? 3
+                        : 4
+                    }
+                    totalSteps={4}
                   />
                 </div>
               )}
 
               {/* Step Content - Scrollable on mobile with bottom padding for fixed price summary */}
-<div className={`flex-1 p-4 lg:p-6 pt-0 lg:pb-6 ${
-                currentStep === 6 
-                  ? "overflow-y-auto max-h-[calc(100vh-200px)] lg:max-h-[calc(805px-200px)]"
-                  : "overflow-y-auto lg:overflow-visible max-h-[calc(100vh-200px)] lg:max-h-none"
-              }`}>
+              <div
+                className={`flex-1 p-4 lg:p-6 pt-0 lg:pb-6 ${
+                  currentStep === 6
+                    ? "overflow-y-auto max-h-[calc(100vh-200px)] lg:max-h-[calc(805px-200px)]"
+                    : "overflow-y-auto lg:overflow-visible max-h-[calc(100vh-200px)] lg:max-h-none"
+                }`}
+              >
                 {renderStepContent()}
               </div>
             </div>

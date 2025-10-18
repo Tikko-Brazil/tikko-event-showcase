@@ -17,7 +17,7 @@ export const PaymentMethodStep: React.FC<PaymentMethodStepProps> = ({
   onNext
 }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-60">
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Método de Pagamento</CardTitle>

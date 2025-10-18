@@ -21,6 +21,7 @@ interface ConfirmationStepProps {
   ticketPrice: number;
   ticketType: string;
   discount?: DiscountData;
+  paymentData?: any;
   onNext: () => void;
 }
 
@@ -30,6 +31,7 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   ticketPrice,
   ticketType,
   discount,
+  paymentData,
   onNext,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -172,9 +174,13 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                     <>
                       <CreditCard className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">
-                        Cartão de Crédito:
+                        Cartão:
                       </span>
-                      <span className="font-medium">**** **** **** 1234</span>
+                      <span className="font-medium">
+                        {paymentData?.cardInfo?.formData?.payment_method_id 
+                          ? paymentData.cardInfo.formData.payment_method_id.charAt(0).toUpperCase() + paymentData.cardInfo.formData.payment_method_id.slice(1)
+                          : "Cartão de Crédito"}
+                      </span>
                     </>
                   ) : (
                     <>
@@ -183,11 +189,22 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                         PIX:
                       </span>
                       <span className="font-medium">
-                        fake.payer@example.com
+                        {paymentData?.pixInfo?.payerEmail || userData.email}
                       </span>
                     </>
                   )}
                 </div>
+                {paymentData?.cardInfo?.formData?.payer && (
+                  <div className="flex items-center gap-3 mt-2">
+                    <Hash className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {paymentData.cardInfo.formData.payer.identification?.type || "CPF"}:
+                    </span>
+                    <span className="font-medium">
+                      {paymentData.cardInfo.formData.payer.identification?.number || userData.identification}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}

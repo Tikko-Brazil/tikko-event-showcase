@@ -15,7 +15,7 @@ export const TermsStep: React.FC<TermsStepProps> = ({
   onNext,
 }) => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-60">
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Termos e Condições</CardTitle>

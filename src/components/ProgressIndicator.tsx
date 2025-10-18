@@ -46,7 +46,7 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
                 )}
               </div>
               <span className={`
-                text-xs mt-1 hidden sm:block
+                text-xs mt-1
                 ${isCurrent ? 'text-foreground font-medium' : 'text-muted-foreground'}
               `}>
                 {step}
