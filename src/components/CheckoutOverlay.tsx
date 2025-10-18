@@ -13,6 +13,7 @@ import { PaymentMethodStep } from "./checkout-steps/PaymentMethodStep";
 import { PaymentInfoStep } from "./checkout-steps/PaymentInfoStep";
 import { ConfirmationStep } from "./checkout-steps/ConfirmationStep";
 import { SuccessStep } from "./checkout-steps/SuccessStep";
+import { PixQRCodeStep } from "./checkout-steps/PixQRCodeStep";
 import { UserGateway } from "@/lib/UserGateway";
 
 const userGateway = new UserGateway(import.meta.env.VITE_BACKEND_BASE_URL);
@@ -79,7 +80,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   const creditPaymentRef = React.useRef<(() => void) | null>(null);
   const pixPaymentRef = React.useRef<(() => void) | null>(null);
 
-  const totalSteps = 7;
+  const totalSteps = 8;
 
   // Calculate if ticket is free after discount
   const finalPrice = discount ? ticketPrice - discount.amount : ticketPrice;
@@ -208,6 +209,14 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         );
       case 7:
         return <SuccessStep onClose={handleClose} autoAccept={autoAccept} />;
+      case 8:
+        return (
+          <PixQRCodeStep
+            ticketType={ticketType}
+            payerEmail={userData.email}
+            onClose={handleClose}
+          />
+        );
       default:
         return null;
     }
@@ -263,6 +272,12 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
       case 6:
         return {
           onContinue: async () => {
+            // For PIX, skip backend call and go directly to QR code screen
+            if (paymentMethod === "pix") {
+              setCurrentStep(8);
+              return;
+            }
+
             setIsProcessing(true);
             try {
               // Prepare user data
@@ -278,51 +293,31 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
                 identificationNumber: userData.identification,
               };
 
-              // Prepare payment data
+              // Prepare payment data (PIX is handled separately above)
               let paymentInfo = undefined;
-              if (!isFreeTicket) {
-                if (
-                  paymentMethod === "credit" &&
-                  paymentData?.cardInfo?.formData
-                ) {
-                  paymentInfo = {
-                    token: paymentData.cardInfo.formData.token,
-                    description: "",
-                    installments:
-                      paymentData.cardInfo.formData.installments?.toString() ||
-                      "1",
-                    paymentMethodId:
-                      paymentData.cardInfo.formData.payment_method_id ||
-                      "credit_card",
-                    issuerId:
-                      Number(paymentData.cardInfo.formData.issuer_id) || 0,
-                    payer: {
-                      email:
-                        paymentData.cardInfo.formData.payer?.email ||
-                        userData.email,
-                      identification: paymentData.cardInfo.formData.payer
-                        ?.identification || {
-                        type: "CPF",
-                        number: userData.identification,
-                      },
+              if (!isFreeTicket && paymentMethod === "credit" && paymentData?.cardInfo?.formData) {
+                paymentInfo = {
+                  token: paymentData.cardInfo.formData.token,
+                  description: "",
+                  installments:
+                    paymentData.cardInfo.formData.installments?.toString() ||
+                    "1",
+                  paymentMethodId:
+                    paymentData.cardInfo.formData.payment_method_id ||
+                    "credit_card",
+                  issuerId:
+                    Number(paymentData.cardInfo.formData.issuer_id) || 0,
+                  payer: {
+                    email:
+                      paymentData.cardInfo.formData.payer?.email ||
+                      userData.email,
+                    identification: paymentData.cardInfo.formData.payer
+                      ?.identification || {
+                      type: "CPF",
+                      number: userData.identification,
                     },
-                  };
-                } else if (paymentMethod === "pix") {
-                  paymentInfo = {
-                    token: "",
-                    description: "",
-                    installments: "1",
-                    paymentMethodId: "pix",
-                    issuerId: 0,
-                    payer: {
-                      email: paymentData?.pixInfo?.payerEmail || userData.email,
-                      identification: {
-                        type: "CPF",
-                        number: userData.identification,
-                      },
-                    },
-                  };
-                }
+                  },
+                };
               }
 
               // Call registerAndJoinEvent
@@ -417,7 +412,11 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
                     </Button>
                   )}
                   <h2 className="text-xl font-semibold text-foreground">
-                    {currentStep === 7 ? "Compra Realizada!" : "Checkout"}
+                    {currentStep === 7
+                      ? "Compra Realizada!"
+                      : currentStep === 8
+                      ? "Pagamento PIX"
+                      : "Checkout"}
                   </h2>
                 </div>
               </div>
@@ -451,7 +450,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             </div>
 
             {/* Price Summary Sidebar - Desktop */}
-            {currentStep < 7 && (
+            {currentStep < 7 && currentStep !== 8 && (
               <div className="hidden lg:block lg:w-80 bg-muted/30 p-6 border-l border-border">
                 <h3 className="text-lg font-semibold text-foreground mb-4">
                   Resumo do Pedido
@@ -466,7 +465,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             )}
 
             {/* Price Summary Bottom - Mobile - Fixed Position */}
-            {currentStep < 7 && (
+            {currentStep < 7 && currentStep !== 8 && (
               <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 z-50 min-h-[200px]">
                 <div className="mb-3">
                   <h3 className="text-sm font-semibold text-foreground mb-2">
