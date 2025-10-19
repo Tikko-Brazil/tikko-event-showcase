@@ -303,7 +303,17 @@ const EventCreation = () => {
 
   // Handle location selection
   const handleLocationSelect = (location: any, setFieldValue: any) => {
-    setFieldValue("addressName", location.displayName);
+    // Create simplified address format: name, city/town/municipality, state, country
+    const address = location.address || {};
+    const name = location.name || '';
+    const city = address.municipality || address.town || address.city || address.city_district || address.village || '';
+    const state = address.state || '';
+    const country = address.country || '';
+    
+    const addressParts = [name, city, state, country].filter(part => part && part.trim());
+    const simplifiedAddress = addressParts.join(', ');
+    
+    setFieldValue("addressName", simplifiedAddress);
     setFieldValue("latitude", parseFloat(location.latitude));
     setFieldValue("longitude", parseFloat(location.longitude));
     setShowLocationSuggestions(false);
