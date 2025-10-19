@@ -581,5 +581,119 @@
       "viewDetails": "View Details",
       "showQR": "Show QR"
     }
+  },
+  "auth": {
+    "errors": {
+      "exchange": {
+        "400": "Missing authorization code or code verifier",
+        "401": "Google authentication failed",
+        "500": "Server error during authentication"
+      },
+      "refresh": {
+        "400": "Missing refresh token",
+        "401": "Invalid or expired refresh token"
+      },
+      "signup": {
+        "400": "Invalid request or missing required fields",
+        "403": "Authentication method conflict (user already has account with different login type)",
+        "409": "User already exists with this email",
+        "422": "Password is too weak",
+        "500": "Server error during registration"
+      },
+      "verify": {
+        "400": "Invalid request or missing required fields",
+        "401": "Invalid verification code",
+        "404": "No verification record found",
+        "410": "Verification code expired or already used",
+        "429": "Too many verification attempts"
+      },
+      "regenerateCode": {
+        "400": "Missing email address",
+        "404": "User not found",
+        "409": "Email already verified",
+        "429": "Too many regeneration attempts or wait required"
+      },
+      "login": {
+        "400": "Invalid request or missing required fields",
+        "401": "Invalid credentials or email not verified",
+        "403": "Authentication method error"
+      },
+      "forgotPassword": {
+        "400": "Missing email address",
+        "409": "Cannot reset password for OAuth users",
+        "429": "Too many reset attempts or wait required",
+        "500": "Server error during password reset"
+      },
+      "resetPassword": {
+        "400": "Invalid request or missing required fields",
+        "404": "Invalid reset token or user not found",
+        "410": "Reset token expired or already used",
+        "422": "Password is too weak",
+        "500": "Server error during password reset"
+      },
+      "unknown": "Unknown error"
+    }
+  },
+  "signup": {
+    "title": "Create Account",
+    "subtitle": "Fill in your details to get started",
+    "fields": {
+      "fullName": {
+        "label": "Full Name *",
+        "placeholder": "Your full name"
+      },
+      "email": {
+        "label": "Email *",
+        "placeholder": "your@email.com"
+      },
+      "confirmEmail": {
+        "label": "Confirm Email *",
+        "placeholder": "Confirm your email"
+      },
+      "password": {
+        "label": "Password *",
+        "placeholder": "Your password"
+      },
+      "confirmPassword": {
+        "label": "Confirm Password *",
+        "placeholder": "Confirm your password"
+      },
+      "gender": {
+        "label": "Gender *",
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+      },
+      "birthdate": {
+        "label": "Date of Birth *",
+        "placeholder": "dd/mm/yyyy"
+      },
+      "phone": {
+        "label": "Phone *",
+        "placeholder": "+55 (11) 99999-9999"
+      },
+      "confirmPhone": {
+        "label": "Confirm Phone *",
+        "placeholder": "Confirm your phone"
+      },
+      "instagram": {
+        "label": "Instagram *",
+        "placeholder": "your_username"
+      },
+      "bio": {
+        "label": "Bio (optional)",
+        "placeholder": "Tell us about yourself..."
+      }
+    },
+    "buttons": {
+      "submit": "Create Account",
+      "submitting": "Creating...",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
+    },
+    "links": {
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign In"
+    }
   }
 }

@@ -9,6 +9,7 @@ import {
   TooManyRequestsException,
   InternalServerErrorException,
 } from './exceptions';
+import i18n from '../i18n';
 import {
   ExchangeRequest,
   ExchangeResponse,
@@ -30,67 +31,20 @@ import {
   CompleteProfileResponse,
 } from './types';
 
-const ERROR_MESSAGES = {
-  exchange: {
-    400: 'Missing authorization code or code verifier',
-    401: 'Google authentication failed',
-    500: 'Server error during authentication'
-  },
-  refresh: {
-    400: 'Missing refresh token',
-    401: 'Invalid or expired refresh token'
-  },
-  signup: {
-    400: 'Invalid request or missing required fields',
-    409: 'User already exists with this email',
-    422: 'Password is too weak or authentication method error',
-    500: 'Server error during registration'
-  },
-  verify: {
-    400: 'Invalid request or missing required fields',
-    401: 'Invalid verification code',
-    404: 'No verification record found',
-    410: 'Verification code expired or already used',
-    429: 'Too many verification attempts'
-  },
-  regenerateCode: {
-    400: 'Missing email address',
-    404: 'User not found',
-    409: 'Email already verified',
-    429: 'Too many regeneration attempts or wait required'
-  },
-  login: {
-    400: 'Invalid request or missing required fields',
-    401: 'Invalid credentials or email not verified',
-    403: 'Authentication method error'
-  },
-  forgotPassword: {
-    400: 'Missing email address',
-    409: 'Cannot reset password for OAuth users',
-    429: 'Too many reset attempts or wait required',
-    500: 'Server error during password reset'
-  },
-  resetPassword: {
-    400: 'Invalid request or missing required fields',
-    404: 'Invalid reset token or user not found',
-    410: 'Reset token expired or already used',
-    422: 'Password is too weak',
-    500: 'Server error during password reset'
-  }
-};
-
 export class AuthGateway {
   constructor(private baseUrl: string) {}
 
-  private async handleResponse<T>(response: Response, endpoint: keyof typeof ERROR_MESSAGES): Promise<T> {
+  private async handleResponse<T>(response: Response, endpoint: string): Promise<T> {
     const data = await response.json();
     
     if (response.status === 200 || response.status === 201) {
       return data;
     }
 
-    const messages = ERROR_MESSAGES[endpoint] as Record<number, string>;
-    const message = messages[response.status] || data.message || 'Unknown error';
+    const errorKey = `auth.errors.${endpoint}.${response.status}`;
+    const message = i18n.isInitialized && i18n.exists && i18n.exists(errorKey) 
+      ? i18n.t(errorKey) 
+      : data.message || (i18n.isInitialized ? i18n.t('auth.errors.unknown') : 'Unknown error');
     
     switch (response.status) {
       case 400:

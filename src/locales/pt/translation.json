@@ -598,5 +598,119 @@
       "viewDetails": "Ver Detalhes",
       "showQR": "Mostrar QR"
     }
+  },
+  "auth": {
+    "errors": {
+      "exchange": {
+        "400": "Código de autorização ou verificador ausente",
+        "401": "Falha na autenticação do Google",
+        "500": "Erro do servidor durante a autenticação"
+      },
+      "refresh": {
+        "400": "Token de atualização ausente",
+        "401": "Token de atualização inválido ou expirado"
+      },
+      "signup": {
+        "400": "Solicitação inválida ou campos obrigatórios ausentes",
+        "403": "Conflito no método de autenticação (usuário já possui conta com outro tipo de login)",
+        "409": "Usuário já existe com este email",
+        "422": "Senha muito fraca",
+        "500": "Erro do servidor durante o registro"
+      },
+      "verify": {
+        "400": "Solicitação inválida ou campos obrigatórios ausentes",
+        "401": "Código de verificação inválido",
+        "404": "Nenhum registro de verificação encontrado",
+        "410": "Código de verificação expirado ou já usado",
+        "429": "Muitas tentativas de verificação"
+      },
+      "regenerateCode": {
+        "400": "Endereço de email ausente",
+        "404": "Usuário não encontrado",
+        "409": "Email já verificado",
+        "429": "Muitas tentativas de regeneração ou aguarde"
+      },
+      "login": {
+        "400": "Solicitação inválida ou campos obrigatórios ausentes",
+        "401": "Credenciais inválidas ou email não verificado",
+        "403": "Erro no método de autenticação"
+      },
+      "forgotPassword": {
+        "400": "Endereço de email ausente",
+        "409": "Não é possível redefinir senha para usuários OAuth",
+        "429": "Muitas tentativas de redefinição ou aguarde",
+        "500": "Erro do servidor durante a redefinição de senha"
+      },
+      "resetPassword": {
+        "400": "Solicitação inválida ou campos obrigatórios ausentes",
+        "404": "Token de redefinição inválido ou usuário não encontrado",
+        "410": "Token de redefinição expirado ou já usado",
+        "422": "Senha muito fraca",
+        "500": "Erro do servidor durante a redefinição de senha"
+      },
+      "unknown": "Erro desconhecido"
+    }
+  },
+  "signup": {
+    "title": "Criar Conta",
+    "subtitle": "Preencha seus dados para começar",
+    "fields": {
+      "fullName": {
+        "label": "Nome Completo *",
+        "placeholder": "Seu nome completo"
+      },
+      "email": {
+        "label": "Email *",
+        "placeholder": "seu@email.com"
+      },
+      "confirmEmail": {
+        "label": "Confirmar Email *",
+        "placeholder": "Confirme seu email"
+      },
+      "password": {
+        "label": "Senha *",
+        "placeholder": "Sua senha"
+      },
+      "confirmPassword": {
+        "label": "Confirmar Senha *",
+        "placeholder": "Confirme sua senha"
+      },
+      "gender": {
+        "label": "Gênero *",
+        "male": "Masculino",
+        "female": "Feminino",
+        "other": "Outro"
+      },
+      "birthdate": {
+        "label": "Data de Nascimento *",
+        "placeholder": "dd/mm/aaaa"
+      },
+      "phone": {
+        "label": "Telefone *",
+        "placeholder": "+55 (11) 99999-9999"
+      },
+      "confirmPhone": {
+        "label": "Confirmar Telefone *",
+        "placeholder": "Confirme seu telefone"
+      },
+      "instagram": {
+        "label": "Instagram *",
+        "placeholder": "seu_usuario"
+      },
+      "bio": {
+        "label": "Bio (opcional)",
+        "placeholder": "Conte-nos sobre você..."
+      }
+    },
+    "buttons": {
+      "submit": "Criar Conta",
+      "submitting": "Criando...",
+      "showPassword": "Mostrar senha",
+      "hidePassword": "Ocultar senha"
+    },
+    "links": {
+      "hasAccount": "Já tem uma conta?",
+      "signIn": "Entrar"
+    }
   }
 }

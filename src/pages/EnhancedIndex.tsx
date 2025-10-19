@@ -28,6 +28,7 @@ import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
 import logoLight from "@/assets/logoLight.png";
 import mark from "@/assets/mark.png";
+import LanguageSelector from "@/components/LanguageSelector";
 import heroEventImage from "@/assets/hero-event-image.jpg";
 
 const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
@@ -130,6 +131,7 @@ const EnhancedIndex = () => {
               </Link>
             </nav>
             <div className="flex items-center space-x-3">
+              <LanguageSelector />
               <Link to="/login">
                 <Button
                   variant="ghost"

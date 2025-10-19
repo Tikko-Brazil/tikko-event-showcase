@@ -102,11 +102,24 @@ export const createCommonValidations = (t: TFunction) => ({
       .oneOf([Yup.ref(fieldName)], t("validation.password.noMatch"))
       .required(t("validation.required")),
 
-  birthdate: Yup.date()
-    .max(
-      new Date(Date.now() - 568025136000), // 18 years ago
-      t("validation.birthdate.minAge")
+  birthdate: Yup.string()
+    .matches(
+      /^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/,
+      "Formato deve ser dd/mm/aaaa"
     )
+    .test("valid-date", "Data inválida", function(value) {
+      if (!value) return false;
+      const [day, month, year] = value.split("/").map(Number);
+      const date = new Date(year, month - 1, day);
+      return date.getDate() === day && date.getMonth() === month - 1 && date.getFullYear() === year;
+    })
+    .test("min-age", t("validation.birthdate.minAge"), function(value) {
+      if (!value) return false;
+      const [day, month, year] = value.split("/").map(Number);
+      const birthDate = new Date(year, month - 1, day);
+      const eighteenYearsAgo = new Date(Date.now() - 568025136000);
+      return birthDate <= eighteenYearsAgo;
+    })
     .required(t("validation.birthdate.required")),
 
   cpf: Yup.string()
@@ -125,8 +138,7 @@ export const createCommonValidations = (t: TFunction) => ({
     .required(t("validation.required")),
 
   bio: Yup.string()
-    .max(500, t("validation.bio.maxLength"))
-    .required(t("validation.required")),
+    .max(500, t("validation.bio.maxLength")),
 
   gender: Yup.string().required(t("validation.required")),
 

@@ -100,12 +100,12 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">
-          {isPasswordReset ? "Definir Nova Senha" : "Criar Conta"}
+          {isPasswordReset ? "Definir Nova Senha" : t('signup.title')}
         </CardTitle>
         <CardDescription>
           {isPasswordReset
             ? "Digite sua nova senha abaixo"
-            : "Preencha seus dados para começar"}
+            : t('signup.subtitle')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -173,13 +173,15 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="md:col-span-2">
-                      <Label htmlFor="email">Email *</Label>
+                      <Label htmlFor="email">
+                        {t("signup.fields.email.label")}
+                      </Label>
                       <Field
                         as={Input}
                         id="email"
                         name="email"
                         type="email"
-                        placeholder="seu@email.com"
+                        placeholder={t("signup.fields.email.placeholder")}
                         onBlur={handleBlur}
                         className={
                           errors.email && touched.email
@@ -195,12 +197,14 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                     </div>
 
                     <div className="md:col-span-2">
-                      <Label htmlFor="fullName">Nome Completo *</Label>
+                      <Label htmlFor="fullName">
+                        {t("signup.fields.fullName.label")}
+                      </Label>
                       <Field
                         as={Input}
                         id="fullName"
                         name="fullName"
-                        placeholder="Seu nome completo"
+                        placeholder={t("signup.fields.fullName.placeholder")}
                         onBlur={handleBlur}
                         className={
                           errors.fullName && touched.fullName
@@ -216,7 +220,7 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                     </div>
 
                     <div>
-                      <Label>Gênero *</Label>
+                      <Label>{t("signup.fields.gender.label")}</Label>
                       <RadioGroup
                         value={values.gender}
                         onValueChange={(value) =>
@@ -226,15 +230,21 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                       >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="male" id="male" />
-                          <Label htmlFor="male">Masculino</Label>
+                          <Label htmlFor="male">
+                            {t("signup.fields.gender.male")}
+                          </Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="female" id="female" />
-                          <Label htmlFor="female">Feminino</Label>
+                          <Label htmlFor="female">
+                            {t("signup.fields.gender.female")}
+                          </Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value="other" id="gender-other" />
-                          <Label htmlFor="gender-other">Outro</Label>
+                          <Label htmlFor="gender-other">
+                            {t("signup.fields.gender.other")}
+                          </Label>
                         </div>
                       </RadioGroup>
                       <ErrorMessage
@@ -245,7 +255,9 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                     </div>
 
                     <div>
-                      <Label htmlFor="birthdate">Data de Nascimento *</Label>
+                      <Label htmlFor="birthdate">
+                        {t("signup.fields.birthdate.label")}
+                      </Label>
                       <InputMask
                         mask="99/99/9999"
                         value={values.birthdate}
@@ -256,7 +268,9 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                           <Input
                             {...inputProps}
                             id="birthdate"
-                            placeholder="dd/mm/aaaa"
+                            placeholder={t(
+                              "signup.fields.birthdate.placeholder"
+                            )}
                             className={
                               errors.birthdate && touched.birthdate
                                 ? "border-destructive"
@@ -273,7 +287,9 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                     </div>
 
                     <div>
-                      <Label htmlFor="phone">Telefone *</Label>
+                      <Label htmlFor="phone">
+                        {t("signup.fields.phone.label")}
+                      </Label>
                       <InputMask
                         mask={PHONE_MASK}
                         value={values.phone}
@@ -291,7 +307,7 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                           <Input
                             {...inputProps}
                             id="phone"
-                            placeholder="+55 (11) 99999-9999"
+                            placeholder={t("signup.fields.phone.placeholder")}
                             className={
                               errors.phone && touched.phone
                                 ? "border-destructive"
@@ -308,12 +324,14 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                     </div>
 
                     <div>
-                      <Label htmlFor="instagram">Instagram *</Label>
+                      <Label htmlFor="instagram">
+                        {t("signup.fields.instagram.label")}
+                      </Label>
                       <Field
                         as={Input}
                         id="instagram"
                         name="instagram"
-                        placeholder="seu_usuario"
+                        placeholder={t("signup.fields.instagram.placeholder")}
                         onBlur={handleBlur}
                         className={
                           errors.instagram && touched.instagram
@@ -329,12 +347,12 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                     </div>
 
                     <div className="md:col-span-2">
-                      <Label htmlFor="bio">Bio *</Label>
+                      <Label htmlFor="bio">{t('signup.fields.bio.label')}</Label>
                       <Field
                         as={Textarea}
                         id="bio"
                         name="bio"
-                        placeholder="Conte-nos sobre você..."
+                        placeholder={t('signup.fields.bio.placeholder')}
                         rows={3}
                         onBlur={handleBlur}
                         className={
@@ -352,14 +370,16 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="password">Senha *</Label>
+                <Label htmlFor="password">
+                  {t("signup.fields.password.label")}
+                </Label>
                 <div className="relative">
                   <Field
                     as={Input}
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Digite sua senha"
+                    placeholder={t("signup.fields.password.placeholder")}
                     onBlur={handleBlur}
                     className={`pr-10 ${
                       errors.password && touched.password
@@ -387,14 +407,16 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmar Senha *</Label>
+                <Label htmlFor="confirmPassword">
+                  {t("signup.fields.confirmPassword.label")}
+                </Label>
                 <div className="relative">
                   <Field
                     as={Input}
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirme sua senha"
+                    placeholder={t("signup.fields.confirmPassword.placeholder")}
                     onBlur={handleBlur}
                     className={`pr-10 ${
                       errors.confirmPassword && touched.confirmPassword
@@ -428,19 +450,15 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                 size="lg"
               >
                 {isSubmitting
-                  ? isPasswordReset
-                    ? "Atualizando..."
-                    : "Criando Conta..."
-                  : isPasswordReset
-                  ? "Atualizar Senha"
-                  : "Criar Conta"}
+                  ? t("signup.buttons.submitting")
+                  : t("signup.buttons.submit")}
               </Button>
 
               {!isPasswordReset && (
                 <p className="text-center text-sm text-muted-foreground mt-4">
-                  Já tem uma conta?{" "}
+                  {t("signup.links.hasAccount")}{" "}
                   <Link to="/login" className="text-primary hover:underline">
-                    Entrar
+                    {t("signup.links.signIn")}
                   </Link>
                 </p>
               )}
