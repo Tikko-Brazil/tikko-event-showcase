@@ -5,24 +5,49 @@ import { Clock, Copy, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import QRCodeCanvas from "react-qrcode-logo";
 import markLogo from "@/assets/mark.png";
+import { PaymentGateway } from "@/lib/PaymentGateway";
+import { useQuery } from "@tanstack/react-query";
 
 interface PixQRCodeStepProps {
   ticketType: string;
   payerEmail: string;
+  qrCode: string;
+  paymentId?: string;
   onClose: () => void;
+  onPaymentSuccess?: () => void;
 }
 
 export const PixQRCodeStep: React.FC<PixQRCodeStepProps> = ({
   ticketType,
   payerEmail,
+  qrCode,
+  paymentId,
   onClose,
+  onPaymentSuccess,
 }) => {
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
   const [copied, setCopied] = useState(false);
 
-  // Fake PIX code for demonstration
-  const pixCode =
-    "00020126580014br.gov.bcb.pix0136a123b456-c789-d012-e345-f678901234560204000053039865802BR5925EVENTO TICKET PAGAMENTO6009SAO PAULO62070503***63041234";
+  // Use the real PIX code from API
+  const pixCode = qrCode;
+
+  // Payment status polling with React Query
+  const paymentGateway = new PaymentGateway("http://localhost:3000");
+  
+  const { data: paymentStatus } = useQuery({
+    queryKey: ["paymentStatus", paymentId],
+    queryFn: () => paymentGateway.getPaymentStatus(paymentId!),
+    enabled: !!paymentId,
+    refetchInterval: 15000, // Poll every 15 seconds
+    refetchIntervalInBackground: true,
+  });
+
+  // Redirect to success when payment is confirmed
+  useEffect(() => {
+    if (paymentStatus?.paid && onPaymentSuccess) {
+      onPaymentSuccess();
+    }
+  }, [paymentStatus?.paid, onPaymentSuccess]);
 
   useEffect(() => {
     const timer = setInterval(() => {

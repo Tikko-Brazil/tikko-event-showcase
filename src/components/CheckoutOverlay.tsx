@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { X, ArrowLeft, ArrowRight } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -75,6 +75,8 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [isUserInfoValid, setIsUserInfoValid] = useState(false);
   const [paymentData, setPaymentData] = useState<any>(null);
+  const [qrCode, setQrCode] = useState<string>("");
+  const [paymentId, setPaymentId] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState("");
   const [showError, setShowError] = useState(false);
   const creditPaymentRef = React.useRef<(() => void) | null>(null);
@@ -90,16 +92,105 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   const registerMutation = useMutation({
     mutationFn: (data: any) => userGateway.registerAndJoinEvent(data),
     onSuccess: (result) => {
-      if (result.payment_url) {
-        window.open(result.payment_url, "_blank");
+      if (result.qr_code) {
+        // PIX payment - store QR code and payment_id, go to PIX step
+        setQrCode(result.qr_code);
+        setPaymentId(result.payment_id.toString());
+        setCurrentStep(8); // Go to PIX QR code step
+      } else {
+        // Credit card payment or free ticket
+        handleNext(); // Go to success step
       }
-      handleNext(); // Go to success step
     },
     onError: (error: any) => {
       setErrorMessage(error.message || "Erro durante o registro");
       setShowError(true);
     },
   });
+
+  const handleRegisterAndJoin = () => {
+    console.log("userData before API call:", userData);
+
+    // Prepare payment data
+    let paymentInfo = undefined;
+    if (!isFreeTicket) {
+      if (paymentMethod === "credit" && paymentData?.cardInfo?.formData) {
+        paymentInfo = {
+          token: paymentData.cardInfo.formData.token,
+          description: "",
+          installments:
+            paymentData.cardInfo.formData.installments?.toString() || "1",
+          paymentMethodId:
+            paymentData.cardInfo.formData.payment_method_id || "credit_card",
+          issuerId: Number(paymentData.cardInfo.formData.issuer_id) || 0,
+          payer: {
+            email: paymentData.cardInfo.formData.payer?.email || userData.email,
+            identification: paymentData.cardInfo.formData.payer
+              ?.identification || {
+              type: "CPF",
+              number: userData.identification,
+            },
+          },
+        };
+      } else if (paymentMethod === "pix") {
+        paymentInfo = {
+          token: "",
+          description: "",
+          installments: "1",
+          paymentMethodId: "pix",
+          issuerId: 0,
+          payer: {
+            email: paymentData?.pixInfo?.payerEmail || userData.email,
+            identification: {
+              type: "CPF",
+              number: userData.identification,
+            },
+          },
+        };
+      }
+    }
+
+    // Call the API
+    registerMutation.mutate({
+      user: {
+        email: userData.email,
+        username: userData.fullName,
+        gender: identificationType === "cpf" ? "male" : "female",
+        birthday: userData.birthdate
+          ? new Date(
+              userData.birthdate.split("/").reverse().join("-")
+            ).toISOString()
+          : new Date().toISOString(),
+        phone_number: userData.phone.replace(/[()\s-]/g, ""),
+        location: "",
+        bio: "",
+        instagram_profile: userData.instagram,
+      },
+      event_id: eventId,
+      ticket_pricing_id: ticketPricingId,
+      coupon: discount?.code || "",
+      payment: {
+        transaction_amount: isFreeTicket ? 0 : finalPrice,
+        token: paymentInfo?.token || "",
+        description: paymentInfo?.description || "Event ticket",
+        installments: Number(paymentInfo?.installments) || 1,
+        payment_method_id: isFreeTicket
+          ? "free"
+          : paymentInfo?.paymentMethodId || "",
+        issuer_id: paymentInfo?.issuerId || 0,
+        capture: true,
+        external_reference: "",
+        callback_url: "",
+        payer: paymentInfo?.payer || {
+          email: userData.email,
+          identification: {
+            type: "CPF",
+            number: userData.identification,
+          },
+        },
+      },
+    });
+  };
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
@@ -162,7 +253,10 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             identificationType={identificationType}
             onIdentificationTypeChange={setIdentificationType}
             onNext={handleNext}
-            onValidationChange={setIsUserInfoValid}
+            onValidationChange={(isValid) => {
+              console.log("CheckoutOverlay received validation:", isValid);
+              setIsUserInfoValid(isValid);
+            }}
           />
         );
       case 3:
@@ -181,6 +275,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
           <PaymentMethodStep
             paymentMethod={paymentMethod}
             onPaymentMethodChange={setPaymentMethod}
+            autoAccept={autoAccept}
             onNext={handleNext}
           />
         );
@@ -204,6 +299,8 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             ticketType={ticketType}
             discount={discount}
             paymentData={paymentData}
+            onSubmit={handleRegisterAndJoin}
+            isSubmitting={registerMutation.isPending}
             onNext={handleNext}
           />
         );
@@ -214,7 +311,10 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
           <PixQRCodeStep
             ticketType={ticketType}
             payerEmail={userData.email}
+            qrCode={qrCode}
+            paymentId={paymentId}
             onClose={handleClose}
+            onPaymentSuccess={() => setCurrentStep(7)} // Go to success step
           />
         );
       default:
@@ -271,118 +371,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         };
       case 6:
         return {
-          onContinue: async () => {
-            // For PIX, skip backend call and go directly to QR code screen
-            if (paymentMethod === "pix") {
-              setCurrentStep(8);
-              return;
-            }
-
-            setIsProcessing(true);
-            try {
-              // Prepare user data
-              const registerData = {
-                email: userData.email,
-                username: userData.fullName,
-                gender: identificationType === "cpf" ? "male" : "female", // Simplified
-                birthday: new Date(
-                  userData.birthdate.split("/").reverse().join("-")
-                ).toISOString(),
-                mobileNumber: userData.phone.replace(/[()\s-]/g, ""),
-                instagram: userData.instagram,
-                identificationNumber: userData.identification,
-              };
-
-              // Prepare payment data (PIX is handled separately above)
-              let paymentInfo = undefined;
-              if (
-                !isFreeTicket &&
-                paymentMethod === "credit" &&
-                paymentData?.cardInfo?.formData
-              ) {
-                paymentInfo = {
-                  token: paymentData.cardInfo.formData.token,
-                  description: "",
-                  installments:
-                    paymentData.cardInfo.formData.installments?.toString() ||
-                    "1",
-                  paymentMethodId:
-                    paymentData.cardInfo.formData.payment_method_id ||
-                    "credit_card",
-                  issuerId:
-                    Number(paymentData.cardInfo.formData.issuer_id) || 0,
-                  payer: {
-                    email:
-                      paymentData.cardInfo.formData.payer?.email ||
-                      userData.email,
-                    identification: paymentData.cardInfo.formData.payer
-                      ?.identification || {
-                      type: "CPF",
-                      number: userData.identification,
-                    },
-                  },
-                };
-              }
-
-              // Call registerAndJoinEvent
-              const result = await userGateway.registerAndJoinEvent({
-                user: {
-                  email: userData.email,
-                  username: userData.fullName,
-                  gender: identificationType === "cpf" ? "male" : "female",
-                  birthday: new Date(
-                    userData.birthdate.split("/").reverse().join("-")
-                  ).toISOString(),
-                  phone_number: userData.phone.replace(/[()\s-]/g, ""),
-                  location: "",
-                  bio: "",
-                  instagram_profile: userData.instagram,
-                },
-                event_id: eventId,
-                ticket_pricing_id: ticketPricingId,
-                coupon: discount?.code || "",
-                payment: {
-                  transaction_amount: isFreeTicket ? 0 : finalPrice,
-                  token: paymentInfo?.token || "",
-                  description: paymentInfo?.description || "Event ticket",
-                  installments: Number(paymentInfo?.installments) || 1,
-                  payment_method_id: isFreeTicket
-                    ? "free"
-                    : paymentInfo?.paymentMethodId || "",
-                  issuer_id: paymentInfo?.issuerId || 0,
-                  capture: true,
-                  external_reference: "",
-                  callback_url: "",
-                  payer: paymentInfo?.payer || {
-                    email: userData.email,
-                    identification: {
-                      type: "CPF",
-                      number: userData.identification,
-                    },
-                  },
-                },
-              });
-
-              // Handle result
-              if (result.payment_url) {
-                window.open(result.payment_url, "_blank");
-                handleNext();
-              } else if (
-                result.status === "approved" ||
-                result.status === "authorized"
-              ) {
-                handleNext();
-              } else {
-                throw new Error("Payment was not approved");
-              }
-            } catch (error: any) {
-              console.error("Checkout error:", error);
-              setErrorMessage(error.message || "Erro ao processar pagamento");
-              setShowError(true);
-            } finally {
-              setIsProcessing(false);
-            }
-          },
+          onContinue: handleRegisterAndJoin,
           continueButtonText: "Confirmar e Finalizar Compra",
           isContinueDisabled: false,
           isProcessing: registerMutation.isPending,

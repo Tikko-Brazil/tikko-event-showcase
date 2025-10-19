@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useTranslation } from "react-i18next";
@@ -28,6 +28,7 @@ interface UserInfoStepProps {
   onIdentificationTypeChange: (type: "cpf" | "other") => void;
   onNext: () => void;
   onValidationChange?: (isValid: boolean) => void;
+  onContinue?: (userData: UserData) => void;
 }
 
 export const UserInfoStep: React.FC<UserInfoStepProps> = ({
@@ -37,6 +38,7 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
   onIdentificationTypeChange,
   onNext,
   onValidationChange,
+  onContinue,
 }) => {
   const { t } = useTranslation();
   const [permanentTouched, setPermanentTouched] = React.useState<Record<string, boolean>>({});
@@ -81,9 +83,12 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
             initialValues={{ ...userData, identificationType }}
             validationSchema={validationSchema}
             validateOnMount={true}
+            validateOnChange={true}
+            validateOnBlur={true}
             enableReinitialize={true}
             onSubmit={(values) => {
               const { identificationType, ...userDataValues } = values;
+              console.log("UserInfoStep submitting values:", userDataValues);
               onUserDataChange(userDataValues);
               onNext();
             }}
@@ -97,9 +102,19 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
               handleBlur,
               isValid,
             }) => {
-              // Update validation state only when isValid changes
+              // Helper to sync form data with parent
+              const syncFormData = () => {
+                const { identificationType, ...userDataValues } = values;
+                onUserDataChange(userDataValues);
+              };
+
+              // Update validation state and sync data when valid
               React.useEffect(() => {
+                console.log("UserInfoStep validation changed:", isValid);
                 onValidationChange?.(isValid);
+                if (isValid) {
+                  syncFormData();
+                }
               }, [isValid]);
 
               return (

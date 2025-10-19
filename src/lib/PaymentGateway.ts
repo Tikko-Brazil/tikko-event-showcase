@@ -10,6 +10,10 @@ interface ApiResponse {
   message: string;
 }
 
+interface PaymentStatusResponse {
+  paid: boolean;
+}
+
 export class PaymentGateway {
   private baseUrl: string;
   private fetchWithAuth: ReturnType<typeof createFetchWithAuth>;
@@ -27,6 +31,8 @@ export class PaymentGateway {
         throw new Error("Não autorizado. Faça login novamente");
       case 403:
         throw new Error("Permissões insuficientes para processar estorno");
+      case 404:
+        throw new Error("Pagamento não encontrado");
       case 500:
         throw new Error(
           "Falha ao processar estorno. Tente novamente mais tarde"
@@ -45,6 +51,21 @@ export class PaymentGateway {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(request),
+      }
+    );
+
+    if (!response.ok) {
+      this.handleError(response.status);
+    }
+
+    return response.json();
+  }
+
+  async getPaymentStatus(paymentId: string): Promise<PaymentStatusResponse> {
+    const response = await fetch(
+      `${this.baseUrl}/public/payment/${paymentId}/status`,
+      {
+        method: "GET",
       }
     );
 

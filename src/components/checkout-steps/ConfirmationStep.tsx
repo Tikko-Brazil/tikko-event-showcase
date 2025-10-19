@@ -22,6 +22,8 @@ interface ConfirmationStepProps {
   ticketType: string;
   discount?: DiscountData;
   paymentData?: any;
+  onSubmit: () => void;
+  isSubmitting: boolean;
   onNext: () => void;
 }
 
@@ -32,9 +34,10 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   ticketType,
   discount,
   paymentData,
+  onSubmit,
+  isSubmitting,
   onNext,
 }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const discountAmount = discount?.amount || 0;
   const ticketPriceAfterDiscount = Math.max(0, ticketPrice - discountAmount);
@@ -50,28 +53,8 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
     setError(null);
-
-    try {
-      // Simulate API call
-      await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          // Simulate random error for demonstration
-          if (Math.random() > 0.7) {
-            reject(new Error("Erro ao processar pagamento"));
-          } else {
-            resolve(true);
-          }
-        }, 2000);
-      });
-
-      onNext();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro inesperado");
-    } finally {
-      setIsSubmitting(false);
-    }
+    onSubmit();
   };
 
   return (
@@ -177,8 +160,13 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                         Cartão:
                       </span>
                       <span className="font-medium">
-                        {paymentData?.cardInfo?.formData?.payment_method_id 
-                          ? paymentData.cardInfo.formData.payment_method_id.charAt(0).toUpperCase() + paymentData.cardInfo.formData.payment_method_id.slice(1)
+                        {paymentData?.cardInfo?.formData?.payment_method_id
+                          ? paymentData.cardInfo.formData.payment_method_id
+                              .charAt(0)
+                              .toUpperCase() +
+                            paymentData.cardInfo.formData.payment_method_id.slice(
+                              1
+                            )
                           : "Cartão de Crédito"}
                       </span>
                     </>
@@ -198,16 +186,29 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                   <div className="flex items-center gap-3 mt-2">
                     <Hash className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      {paymentData.cardInfo.formData.payer.identification?.type || "CPF"}:
+                      {paymentData.cardInfo.formData.payer.identification
+                        ?.type || "CPF"}
+                      :
                     </span>
                     <span className="font-medium">
-                      {paymentData.cardInfo.formData.payer.identification?.number || userData.identification}
+                      {paymentData.cardInfo.formData.payer.identification
+                        ?.number || userData.identification}
                     </span>
                   </div>
                 )}
               </div>
             </div>
           )}
+
+          {/* Submit Button - Desktop only */}
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="w-full hidden lg:block"
+            size="lg"
+          >
+            {isSubmitting ? "Processando..." : "Confirmar e Finalizar Compra"}
+          </Button>
         </CardContent>
       </Card>
       <ErrorSnackbar

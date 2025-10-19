@@ -101,6 +101,7 @@ interface EventJoinResponse {
   payment_id: number;
   status: string;
   payment_url: string;
+  qr_code?: string;
 }
 
 interface TicketByEmailRequest {
