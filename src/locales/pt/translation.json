@@ -597,6 +597,35 @@
     "actions": {
       "viewDetails": "Ver Detalhes",
       "showQR": "Mostrar QR"
+    },
+    "backToDashboard": "Voltar ao Dashboard",
+    "backToDetails": "Voltar aos Detalhes",
+    "ticketDetails": "Detalhes do Ingresso",
+    "qrCode": "Código QR",
+    "scanQR": "Escaneie este QR code no check-in",
+    "qrInstructions": "Apresente este código QR à equipe do evento para entrada",
+    "qrWarning": "Não compartilhe este código QR com ninguém. É o identificador único do seu ingresso.",
+    "orderNumber": "Número do Pedido",
+    "eventInformation": "Informações do Evento",
+    "ticketInformation": "Informações do Ingresso",
+    "userInformation": "Informações do Usuário",
+    "date": "Data",
+    "time": "Horário",
+    "location": "Local",
+    "ticketType": "Tipo de Ingresso",
+    "price": "Preço",
+    "purchaseDate": "Data de Compra",
+    "ticketCode": "Código do Ingresso",
+    "name": "Nome",
+    "email": "E-mail",
+    "phone": "Telefone",
+    "downloadPDF": "Baixar PDF",
+    "downloadSuccess": "Ingresso baixado com sucesso!",
+    "downloadDialog": {
+      "title": "Baixar Ingresso em PDF",
+      "description": "Tem certeza que deseja baixar este ingresso em PDF? Você pode imprimi-lo ou salvá-lo para acesso offline.",
+      "confirm": "Baixar",
+      "cancel": "Cancelar"
     }
   },
   "auth": {

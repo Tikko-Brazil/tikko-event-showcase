@@ -644,11 +644,20 @@ const Dashboard = () => {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="flex-1"
+                        onClick={() => navigate(`/ticket/${ticket.id}`)}
+                      >
                         {t("myTickets.actions.viewDetails")}
                       </Button>
                       {ticket.status === "active" && (
-                        <Button size="sm" className="flex-1">
+                        <Button 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => navigate(`/ticket/${ticket.id}/qr`)}
+                        >
                           {t("myTickets.actions.showQR")}
                         </Button>
                       )}

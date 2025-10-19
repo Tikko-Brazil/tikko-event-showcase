@@ -580,6 +580,35 @@
     "actions": {
       "viewDetails": "View Details",
       "showQR": "Show QR"
+    },
+    "backToDashboard": "Back to Dashboard",
+    "backToDetails": "Back to Details",
+    "ticketDetails": "Ticket Details",
+    "qrCode": "QR Code",
+    "scanQR": "Scan this QR code at check-in",
+    "qrInstructions": "Present this QR code to event staff for entry",
+    "qrWarning": "Do not share this QR code with anyone. It's your unique ticket identifier.",
+    "orderNumber": "Order Number",
+    "eventInformation": "Event Information",
+    "ticketInformation": "Ticket Information",
+    "userInformation": "User Information",
+    "date": "Date",
+    "time": "Time",
+    "location": "Location",
+    "ticketType": "Ticket Type",
+    "price": "Price",
+    "purchaseDate": "Purchase Date",
+    "ticketCode": "Ticket Code",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "downloadPDF": "Download PDF",
+    "downloadSuccess": "Ticket downloaded successfully!",
+    "downloadDialog": {
+      "title": "Download Ticket PDF",
+      "description": "Are you sure you want to download this ticket as a PDF? You can print it or save it for offline access.",
+      "confirm": "Download",
+      "cancel": "Cancel"
     }
   },
   "auth": {
