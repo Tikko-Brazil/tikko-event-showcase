@@ -60,6 +60,7 @@ const Dashboard = () => {
   );
 
   const userEvents = userEventsResponse?.events || [];
+  const hasAdminPrivileges = userEvents.some(userEvent => userEvent.is_admin === true);
   const navigate = useNavigate();
 
   const tabs = [
@@ -465,9 +466,11 @@ const Dashboard = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">{t("dashboard.myEvents.title")}</h2>
-              <Button onClick={() => navigate("/create-event")}>
-                {t("dashboard.myEvents.createEvent")}
-              </Button>
+              {hasAdminPrivileges && (
+                <Button onClick={() => navigate("/create-event")}>
+                  {t("dashboard.myEvents.createEvent")}
+                </Button>
+              )}
             </div>
 
             {isLoadingUserEvents ? (
@@ -490,9 +493,11 @@ const Dashboard = () => {
                 <p className="text-muted-foreground mb-4">
                   You haven't created or joined any events yet.
                 </p>
-                <Button onClick={() => navigate("/create-event")}>
-                  Create Your First Event
-                </Button>
+                {hasAdminPrivileges && (
+                  <Button onClick={() => navigate("/create-event")}>
+                    Create Your First Event
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

@@ -84,9 +84,9 @@ interface EventEditFormProps {
 
 export const EventEditForm = ({ event }: EventEditFormProps) => {
   const { t } = useTranslation();
-  
+
   const commonValidations = createCommonValidations(t);
-  
+
   const EventEditSchema = Yup.object().shape({
     name: Yup.string()
       .required(t("eventManagement.editEvent.validation.nameRequired"))
@@ -95,15 +95,22 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
     description: Yup.string()
       .required(t("eventManagement.editEvent.validation.descriptionRequired"))
       .min(10, t("eventManagement.editEvent.validation.descriptionMinLength"))
-      .max(1500, t("eventManagement.editEvent.validation.descriptionMaxLength")),
-    startDate: Yup.string().required(t("eventManagement.editEvent.validation.startDateRequired")),
+      .max(
+        1500,
+        t("eventManagement.editEvent.validation.descriptionMaxLength")
+      ),
+    startDate: Yup.string().required(
+      t("eventManagement.editEvent.validation.startDateRequired")
+    ),
     startTime: Yup.string()
       .required(t("eventManagement.editEvent.validation.startTimeRequired"))
       .matches(
         /^([01][0-9]|2[0-3]):([0-5][0-9])$/,
         t("eventManagement.editEvent.validation.startTimeFormat")
       ),
-    endDate: Yup.string().required(t("eventManagement.editEvent.validation.endDateRequired")),
+    endDate: Yup.string().required(
+      t("eventManagement.editEvent.validation.endDateRequired")
+    ),
     endTime: Yup.string()
       .required(t("eventManagement.editEvent.validation.endTimeRequired"))
       .matches(
@@ -128,7 +135,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
     isPrivate: Yup.boolean(),
     isActive: Yup.boolean(),
   });
-  
+
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(event.image || "");
   const [imageKey, setImageKey] = useState<string | undefined>(
@@ -206,13 +213,21 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
   const handleLocationSelect = (location: any, setFieldValue: any) => {
     // Create simplified address format: name, city/town/municipality, state, country
     const address = location.address || {};
-    const name = location.name || '';
-    const city = address.municipality || address.town || address.city || address.city_district || address.village || '';
-    const state = address.state || '';
-    const country = address.country || '';
-    
-    const addressParts = [name, city, state, country].filter(part => part && part.trim());
-    const simplifiedAddress = addressParts.join(', ');
+    const name = location.name || "";
+    const city =
+      address.municipality ||
+      address.town ||
+      address.city ||
+      address.city_district ||
+      address.village ||
+      "";
+    const state = address.state || "";
+    const country = address.country || "";
+
+    const addressParts = [name, city, state, country].filter(
+      (part) => part && part.trim()
+    );
+    const simplifiedAddress = addressParts.join(", ");
 
     setFieldValue("addressName", simplifiedAddress);
     setFieldValue("latitude", parseFloat(location.latitude));
@@ -331,7 +346,9 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     value={values.name}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    placeholder={t("eventManagement.editEvent.fields.eventNamePlaceholder")}
+                    placeholder={t(
+                      "eventManagement.editEvent.fields.eventNamePlaceholder"
+                    )}
                     className={cn(
                       "w-full",
                       errors.name && touched.name && "border-red-500"
@@ -390,7 +407,11 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                         ) : (
                           <>
                             <ImageIcon className="h-4 w-4" />
-                            <span>{t("eventManagement.editEvent.buttons.selectImage")}</span>
+                            <span>
+                              {t(
+                                "eventManagement.editEvent.buttons.selectImage"
+                              )}
+                            </span>
                           </>
                         )}
                       </Label>
@@ -412,7 +433,9 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     value={values.description}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    placeholder={t("eventManagement.editEvent.fields.descriptionPlaceholder")}
+                    placeholder={t(
+                      "eventManagement.editEvent.fields.descriptionPlaceholder"
+                    )}
                     className={cn(
                       "min-h-[100px] resize-y",
                       errors.description &&
@@ -430,7 +453,8 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                   {/* Start Date and Time */}
                   <div className="space-y-4">
                     <Label className="text-sm font-medium text-foreground">
-                      {t("eventManagement.editEvent.fields.startDate")} e {t("eventManagement.editEvent.fields.startTime")} *
+                      {t("eventManagement.editEvent.fields.startDate")} e{" "}
+                      {t("eventManagement.editEvent.fields.startTime")} *
                     </Label>
                     <div className="space-y-3">
                       <Popover
@@ -494,7 +518,9 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                           {(inputProps: any) => (
                             <Input
                               {...inputProps}
-                              placeholder={t("eventManagement.editEvent.fields.startTimePlaceholder")}
+                              placeholder={t(
+                                "eventManagement.editEvent.fields.startTimePlaceholder"
+                              )}
                               className={cn(
                                 "w-full pl-10",
                                 errors.startTime &&
@@ -516,7 +542,8 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                   {/* End Date and Time */}
                   <div className="space-y-4">
                     <Label className="text-sm font-medium text-foreground">
-                      {t("eventManagement.editEvent.fields.endDate")} e {t("eventManagement.editEvent.fields.endTime")} *
+                      {t("eventManagement.editEvent.fields.endDate")} e{" "}
+                      {t("eventManagement.editEvent.fields.endTime")} *
                     </Label>
                     <div className="space-y-3">
                       <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
@@ -575,7 +602,9 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                           {(inputProps: any) => (
                             <Input
                               {...inputProps}
-                              placeholder={t("eventManagement.editEvent.fields.endTimePlaceholder")}
+                              placeholder={t(
+                                "eventManagement.editEvent.fields.endTimePlaceholder"
+                              )}
                               className={cn(
                                 "w-full pl-10",
                                 errors.endTime &&
@@ -609,7 +638,9 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       value={values.locationName}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      placeholder={t("eventManagement.editEvent.fields.locationPlaceholder")}
+                      placeholder={t(
+                        "eventManagement.editEvent.fields.locationPlaceholder"
+                      )}
                       className={cn(
                         "w-full",
                         errors.locationName &&
@@ -646,7 +677,9 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                           debouncedLocationSearch(e.target.value);
                         }}
                         onBlur={handleBlur}
-                        placeholder={t("eventManagement.editEvent.fields.addressPlaceholder")}
+                        placeholder={t(
+                          "eventManagement.editEvent.fields.addressPlaceholder"
+                        )}
                         disabled={addressLoading}
                         className={cn(
                           "w-full pl-10",
@@ -719,7 +752,9 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     value={values.addressComplement}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    placeholder={t("eventManagement.editEvent.fields.addressComplementPlaceholder")}
+                    placeholder={t(
+                      "eventManagement.editEvent.fields.addressComplementPlaceholder"
+                    )}
                     className="w-full"
                   />
                 </div>
@@ -743,7 +778,9 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       htmlFor="autoAccept"
                       className="text-sm text-foreground cursor-pointer"
                     >
-                      {t("eventManagement.editEvent.fields.autoAcceptDescription")}
+                      {t(
+                        "eventManagement.editEvent.fields.autoAcceptDescription"
+                      )}
                     </Label>
                   </div>
 
@@ -760,7 +797,8 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       htmlFor="isPrivate"
                       className="text-sm text-foreground cursor-pointer"
                     >
-                      {t("eventManagement.editEvent.fields.privateEvent")} (apenas por convite)
+                      {t("eventManagement.editEvent.fields.privateEvent")}{" "}
+                      (apenas por convite)
                     </Label>
                   </div>
 
