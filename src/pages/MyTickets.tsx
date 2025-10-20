@@ -12,7 +12,7 @@ import TicketDetails from "./TicketDetails";
 import TicketQRCode from "./TicketQRCode";
 
 const MyTickets = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showQR, setShowQR] = useState(false);
@@ -20,6 +20,20 @@ const MyTickets = () => {
   const ticketGateway = new TicketGateway(
     import.meta.env.VITE_BACKEND_BASE_URL
   );
+
+  const formatTicketName = (ticket: any) => {
+    const genderText =
+      ticket?.gender === "male"
+        ? "Masculino"
+        : ticket?.gender === "female"
+        ? "Feminino"
+        : "";
+
+    const lotText = ticket?.lot ? ` - Lote ${ticket.lot}` : "";
+    const typeText = ticket?.ticket_type || "";
+
+    return `${typeText}${genderText ? ` ${genderText}` : ""}${lotText}`;
+  };
 
   const { data: userTicketsResponse, isLoading: isLoadingUserTickets } =
     useQuery({
@@ -65,7 +79,7 @@ const MyTickets = () => {
                             : "default"
                         }
                       >
-                        {ticketData.ticket.already_validated ? "Used" : "Active"}
+                        {ticketData.ticket.already_validated ? t("myTickets.status.used") : t("myTickets.status.active")}
                       </Badge>
                     </div>
                     <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
@@ -76,12 +90,12 @@ const MyTickets = () => {
                   <div className="space-y-2 text-sm text-muted-foreground mb-4">
                     <div className="flex items-center gap-2">
                       <Ticket className="h-4 w-4" />
-                      <span>{ticketData.ticket.ticket_type}</span>
+                      <span>{formatTicketName(ticketData.ticket)}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
                       <span>
-                        {new Date(ticketData.event.date).toLocaleDateString()}
+                        {new Date(ticketData.event.date).toLocaleDateString(i18n.language === 'pt' ? 'pt-BR' : 'en-US')}
                       </span>
                     </div>
                     {ticketData.ticket.validation_date && (
@@ -91,7 +105,7 @@ const MyTickets = () => {
                           Validated:{" "}
                           {new Date(
                             ticketData.ticket.validation_date
-                          ).toLocaleDateString()}
+                          ).toLocaleDateString(i18n.language === 'pt' ? 'pt-BR' : 'en-US')}
                         </span>
                       </div>
                     )}

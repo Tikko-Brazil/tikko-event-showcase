@@ -596,9 +596,11 @@
     },
     "actions": {
       "viewDetails": "Ver Detalhes",
-      "showQR": "Mostrar QR"
+      "showQR": "Mostrar QR",
+      "downloadPDF": "Baixar PDF"
     },
     "backToDashboard": "Voltar ao Dashboard",
+    "backToTickets": "Voltar aos Ingressos",
     "backToDetails": "Voltar aos Detalhes",
     "ticketDetails": "Detalhes do Ingresso",
     "qrCode": "Código QR",
@@ -608,6 +610,7 @@
     "orderNumber": "Número do Pedido",
     "eventInformation": "Informações do Evento",
     "ticketInformation": "Informações do Ingresso",
+    "holderInformation": "Informações do Portador",
     "userInformation": "Informações do Usuário",
     "date": "Data",
     "time": "Horário",
@@ -616,6 +619,7 @@
     "price": "Preço",
     "purchaseDate": "Data de Compra",
     "ticketCode": "Código do Ingresso",
+    "holderName": "Nome do Portador",
     "name": "Nome",
     "email": "E-mail",
     "phone": "Telefone",

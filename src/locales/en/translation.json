@@ -579,9 +579,11 @@
     },
     "actions": {
       "viewDetails": "View Details",
-      "showQR": "Show QR"
+      "showQR": "Show QR",
+      "downloadPDF": "Download PDF"
     },
     "backToDashboard": "Back to Dashboard",
+    "backToTickets": "Back to Tickets",
     "backToDetails": "Back to Details",
     "ticketDetails": "Ticket Details",
     "qrCode": "QR Code",
@@ -591,6 +593,7 @@
     "orderNumber": "Order Number",
     "eventInformation": "Event Information",
     "ticketInformation": "Ticket Information",
+    "holderInformation": "Holder Information",
     "userInformation": "User Information",
     "date": "Date",
     "time": "Time",
@@ -599,6 +602,7 @@
     "price": "Price",
     "purchaseDate": "Purchase Date",
     "ticketCode": "Ticket Code",
+    "holderName": "Holder Name",
     "name": "Name",
     "email": "Email",
     "phone": "Phone",

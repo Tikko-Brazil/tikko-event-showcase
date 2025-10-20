@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,36 +30,60 @@ import {
   Phone,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TicketGateway } from "@/lib/TicketGateway";
 import { toast } from "sonner";
 
-const TicketDetails = ({ ticketId: propTicketId, onClose, onShowQR }: { ticketId?: string; onClose?: () => void; onShowQR?: () => void }) => {
+const TicketDetails = ({
+  ticketId: propTicketId,
+  onClose,
+  onShowQR,
+}: {
+  ticketId?: string;
+  onClose?: () => void;
+  onShowQR?: () => void;
+}) => {
   const { ticketId: paramTicketId } = useParams();
   const ticketId = propTicketId || paramTicketId;
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isMobile = useIsMobile();
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
 
-  // Mock data - replace with real API call
-  const ticket = {
-    id: ticketId,
-    eventTitle: "Summer Music Festival 2024",
-    eventDescription: "Join us for an unforgettable night of live music featuring top artists from around the world.",
-    ticketType: "VIP Access",
-    date: "Jun 15, 2024",
-    time: "6:00 PM",
-    location: "Central Park, NY",
-    fullAddress: "Central Park, 59th to 110th Street, Manhattan, NY 10022",
-    status: "active",
-    qrCode: "QR_123456789",
-    price: "$125.00",
-    orderNumber: "ORD-2024-001234",
-    purchaseDate: "May 10, 2024",
-    user: {
-      name: "John Doe",
-      email: "john.doe@example.com",
-      phone: "+1 (555) 123-4567",
-    },
+  const ticketGateway = new TicketGateway(
+    import.meta.env.VITE_BACKEND_BASE_URL
+  );
+
+  const { data: userTicketsResponse, isLoading } = useQuery({
+    queryKey: ["userTickets"],
+    queryFn: () => ticketGateway.getUserTickets(),
+  });
+
+  const ticketData = userTicketsResponse?.tickets?.find(
+    (t) => t.ticket.uuid === ticketId
+  );
+
+  const formatTicketName = (ticket: any) => {
+    const genderText =
+      ticket?.gender === "male"
+        ? "Masculino"
+        : ticket?.gender === "female"
+        ? "Feminino"
+        : "";
+
+    const lotText = ticket?.lot ? ` - Lote ${ticket.lot}` : "";
+    const typeText = ticket?.ticket_type || "";
+
+    return `${typeText}${genderText ? ` ${genderText}` : ""}${lotText}`;
+  };
+
+  const formatNumber = (value: number, options?: Intl.NumberFormatOptions) => {
+    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
+    return value.toLocaleString(locale, options);
+  };
+
+  const formatCurrency = (value: number) => {
+    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
+    return formatNumber(value, { style: 'currency', currency: locale === 'pt-BR' ? 'BRL' : 'USD' });
   };
 
   const handleDownloadPDF = () => {
@@ -75,49 +100,54 @@ const TicketDetails = ({ ticketId: propTicketId, onClose, onShowQR }: { ticketId
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!ticketData) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <div className="text-center">Ticket not found</div>
+      </div>
+    );
+  }
+
+  const { ticket, event, user_name, user_email, user_phone } = ticketData;
+  const eventDate = new Date(event.date);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 w-full overflow-x-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex h-16 items-center justify-between px-4 md:px-6">
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="flex items-center justify-between p-4">
           <Button
             variant="ghost"
-            onClick={() => onClose ? onClose() : navigate("/my-tickets")}
+            onClick={() => (onClose ? onClose() : navigate("/my-tickets"))}
             className="gap-2"
           >
-            {onClose ? <X className="h-4 w-4" /> : <ArrowLeft className="h-4 w-4" />}
-            {t("myTickets.backToDashboard")}
+            {onClose ? (
+              <X className="h-4 w-4" />
+            ) : (
+              <ArrowLeft className="h-4 w-4" />
+            )}
+            {t("myTickets.backToTickets")}
           </Button>
-          <h1 className="text-lg font-semibold hidden md:block">
-            {t("myTickets.ticketDetails")}
-          </h1>
-          <div className="w-20" />
+          <Badge variant={ticket.already_validated ? "secondary" : "default"}>
+            {ticket.already_validated
+              ? t("myTickets.status.used")
+              : t("myTickets.status.active")}
+          </Badge>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
-      <main className="container max-w-4xl mx-auto p-4 md:p-6 space-y-6">
-        {/* Status Badge */}
-        <div className="flex justify-between items-center">
-          <Badge
-            variant={
-              ticket.status === "active"
-                ? "default"
-                : ticket.status === "used"
-                ? "secondary"
-                : "outline"
-            }
-            className="text-sm"
-          >
-            {t(`myTickets.status.${ticket.status}`)}
-          </Badge>
-          <span className="text-sm text-muted-foreground">
-            {t("myTickets.orderNumber")}: {ticket.orderNumber}
-          </span>
-        </div>
-
+      <div className="p-4 w-full max-w-2xl mx-auto space-y-6">
         {/* Event Information */}
-        <Card>
+        <Card className="w-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
@@ -126,8 +156,7 @@ const TicketDetails = ({ ticketId: propTicketId, onClose, onShowQR }: { ticketId
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h2 className="text-2xl font-bold mb-2">{ticket.eventTitle}</h2>
-              <p className="text-muted-foreground">{ticket.eventDescription}</p>
+              <h2 className="text-2xl font-bold mb-2">{event.name}</h2>
             </div>
             <Separator />
             <div className="grid gap-4 md:grid-cols-2">
@@ -135,21 +164,32 @@ const TicketDetails = ({ ticketId: propTicketId, onClose, onShowQR }: { ticketId
                 <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">{t("myTickets.date")}</p>
-                  <p className="text-sm text-muted-foreground">{ticket.date}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {eventDate.toLocaleDateString(i18n.language === 'pt' ? 'pt-BR' : 'en-US')}
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">{t("myTickets.time")}</p>
-                  <p className="text-sm text-muted-foreground">{ticket.time}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {eventDate.toLocaleTimeString(i18n.language === 'pt' ? 'pt-BR' : 'en-US', {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 md:col-span-2">
-                <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium">{t("myTickets.location")}</p>
-                  <p className="text-sm text-muted-foreground">{ticket.fullAddress}</p>
+              <div className="flex items-start gap-3">
+                <MapPin className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">
+                    {t("myTickets.location")}
+                  </p>
+                  <p className="text-sm text-muted-foreground break-words">
+                    {event.address_name}
+                  </p>
                 </div>
               </div>
             </div>
@@ -157,7 +197,7 @@ const TicketDetails = ({ ticketId: propTicketId, onClose, onShowQR }: { ticketId
         </Card>
 
         {/* Ticket Information */}
-        <Card>
+        <Card className="w-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Ticket className="h-5 w-5" />
@@ -166,55 +206,82 @@ const TicketDetails = ({ ticketId: propTicketId, onClose, onShowQR }: { ticketId
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <p className="text-sm font-medium">{t("myTickets.ticketType")}</p>
-                <p className="text-sm text-muted-foreground">{ticket.ticketType}</p>
+              <div className="flex items-center gap-3">
+                <Ticket className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">
+                    {t("myTickets.ticketType")}
+                  </p>
+                  <p className="text-sm text-muted-foreground break-words">
+                    {formatTicketName(ticket)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium">{t("myTickets.price")}</p>
-                <p className="text-sm text-muted-foreground">{ticket.price}</p>
+              <div className="flex items-center gap-3">
+                <div className="h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
+                  <span className="text-xs text-white font-bold">$</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">{t("myTickets.price")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatCurrency(ticket.price)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium">{t("myTickets.purchaseDate")}</p>
-                <p className="text-sm text-muted-foreground">{ticket.purchaseDate}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">{t("myTickets.ticketCode")}</p>
-                <p className="text-sm text-muted-foreground font-mono">{ticket.qrCode}</p>
+              <div className="flex items-center gap-3">
+                <Calendar className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">
+                    {t("myTickets.purchaseDate")}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {ticket.purchased_at
+                      ? new Date(ticket.purchased_at).toLocaleDateString(i18n.language === 'pt' ? 'pt-BR' : 'en-US')
+                      : "N/A"}
+                  </p>
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* User Information */}
-        <Card>
+        <Card className="w-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              {t("myTickets.userInformation")}
+              {t("myTickets.holderInformation")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="flex items-start gap-3">
-                <User className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium">{t("myTickets.name")}</p>
-                  <p className="text-sm text-muted-foreground">{ticket.user.name}</p>
+            <div className="grid gap-4">
+              <div className="flex items-center gap-3">
+                <User className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">
+                    {t("myTickets.holderName")}
+                  </p>
+                  <p className="text-sm text-muted-foreground break-words">
+                    {user_name}
+                  </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div>
+              <div className="flex items-center gap-3">
+                <Mail className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">{t("myTickets.email")}</p>
-                  <p className="text-sm text-muted-foreground">{ticket.user.email}</p>
+                  <p className="text-sm text-muted-foreground break-all">
+                    {user_email}
+                  </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 md:col-span-2">
-                <Phone className="h-5 w-5 text-muted-foreground mt-0.5" />
-                <div>
+              <div className="flex items-center gap-3">
+                <Phone className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">{t("myTickets.phone")}</p>
-                  <p className="text-sm text-muted-foreground">{ticket.user.phone}</p>
+                  <p className="text-sm text-muted-foreground break-all">
+                    {user_phone}
+                  </p>
                 </div>
               </div>
             </div>
@@ -222,11 +289,11 @@ const TicketDetails = ({ ticketId: propTicketId, onClose, onShowQR }: { ticketId
         </Card>
 
         {/* Action Buttons */}
-        <div className={`flex gap-3 ${isMobile ? "flex-col" : ""}`}>
+        <div className="flex gap-2">
           <Button
             onClick={handleShowQR}
             className="flex-1"
-            size={isMobile ? "lg" : "default"}
+            size="sm"
           >
             <QrCode className="h-4 w-4 mr-2" />
             {t("myTickets.actions.showQR")}
@@ -235,27 +302,32 @@ const TicketDetails = ({ ticketId: propTicketId, onClose, onShowQR }: { ticketId
             variant="outline"
             onClick={() => setShowDownloadDialog(true)}
             className="flex-1"
-            size={isMobile ? "lg" : "default"}
+            size="sm"
           >
             <Download className="h-4 w-4 mr-2" />
-            {t("myTickets.downloadPDF")}
+            {t("myTickets.actions.downloadPDF")}
           </Button>
         </div>
-      </main>
+      </div>
 
       {/* Download Confirmation Dialog */}
-      <AlertDialog open={showDownloadDialog} onOpenChange={setShowDownloadDialog}>
+      <AlertDialog
+        open={showDownloadDialog}
+        onOpenChange={setShowDownloadDialog}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("myTickets.downloadDialog.title")}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t("myTickets.downloadConfirmation.title")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {t("myTickets.downloadDialog.description")}
+              {t("myTickets.downloadConfirmation.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("myTickets.downloadDialog.cancel")}</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDownloadPDF}>
-              {t("myTickets.downloadDialog.confirm")}
+              {t("myTickets.actions.download")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
