@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,9 +23,21 @@ import markLogo from "@/assets/mark.png";
 const TicketQRCode = () => {
   const { ticketId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
+
+  // Check if user came from dashboard or ticket details
+  const cameFromDashboard = location.state?.from === 'dashboard';
+
+  const handleBackClick = () => {
+    if (cameFromDashboard) {
+      navigate('/dashboard');
+    } else {
+      navigate(`/ticket/${ticketId}`);
+    }
+  };
 
   // Mock data - replace with real API call
   const ticket = {
@@ -57,7 +69,7 @@ const TicketQRCode = () => {
         <div className="flex h-16 items-center justify-between px-4 md:px-6">
           <Button
             variant="ghost"
-            onClick={() => navigate(`/ticket/${ticketId}`)}
+            onClick={handleBackClick}
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />

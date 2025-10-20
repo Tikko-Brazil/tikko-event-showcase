@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { EventGateway } from "@/lib/EventGateway";
+import { TicketGateway } from "@/lib/TicketGateway";
 import {
   Home,
   Search,
@@ -49,6 +50,9 @@ const Dashboard = () => {
 
   // API Gateways
   const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const ticketGateway = new TicketGateway(
+    import.meta.env.VITE_BACKEND_BASE_URL
+  );
 
   // Fetch user events
   const { data: userEventsResponse, isLoading: isLoadingUserEvents } = useQuery(
@@ -59,8 +63,20 @@ const Dashboard = () => {
     }
   );
 
+  // Fetch user tickets
+  const { data: userTicketsResponse, isLoading: isLoadingUserTickets } =
+    useQuery({
+      queryKey: ["userTickets"],
+      queryFn: () => ticketGateway.getUserTickets(),
+      enabled: activeTab === "my-tickets",
+    });
+
+  const userTickets = userTicketsResponse?.tickets || [];
+
   const userEvents = userEventsResponse?.events || [];
-  const hasAdminPrivileges = userEvents.some(userEvent => userEvent.is_admin === true);
+  const hasAdminPrivileges = userEvents.some(
+    (userEvent) => userEvent.is_admin === true
+  );
   const navigate = useNavigate();
 
   const tabs = [
@@ -167,49 +183,6 @@ const Dashboard = () => {
       attendees: 150,
       isOwner: false,
       type: "attended",
-    },
-  ];
-
-  const mockMyTickets = [
-    {
-      id: 1,
-      eventTitle: "Summer Music Festival 2024",
-      ticketType: "VIP Access",
-      date: "Jun 15, 2024",
-      time: "6:00 PM",
-      location: "Central Park, NY",
-      status: "active",
-      qrCode: "QR_123456789",
-    },
-    {
-      id: 2,
-      eventTitle: "Tech Conference 2024",
-      ticketType: "General Admission",
-      date: "Jun 20, 2024",
-      time: "9:00 AM",
-      location: "Convention Center, SF",
-      status: "active",
-      qrCode: "QR_987654321",
-    },
-    {
-      id: 3,
-      eventTitle: "Jazz Night",
-      ticketType: "Premium",
-      date: "Jun 5, 2024",
-      time: "9:00 PM",
-      location: "Blue Note, NYC",
-      status: "used",
-      qrCode: "QR_456123789",
-    },
-    {
-      id: 4,
-      eventTitle: "Food Festival",
-      ticketType: "Early Bird",
-      date: "May 20, 2024",
-      time: "11:00 AM",
-      location: "City Square, Chicago",
-      status: "expired",
-      qrCode: "QR_789456123",
     },
   ];
 
@@ -465,7 +438,9 @@ const Dashboard = () => {
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">{t("dashboard.myEvents.title")}</h2>
+              <h2 className="text-2xl font-bold">
+                {t("dashboard.myEvents.title")}
+              </h2>
               {hasAdminPrivileges && (
                 <Button onClick={() => navigate("/create-event")}>
                   {t("dashboard.myEvents.createEvent")}
@@ -521,7 +496,9 @@ const Dashboard = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                         <div className="absolute top-4 right-4">
                           <Badge variant={isUpcoming ? "default" : "secondary"}>
-                            {isUpcoming ? t("dashboard.myEvents.tags.upcoming") : t("dashboard.myEvents.tags.past")}
+                            {isUpcoming
+                              ? t("dashboard.myEvents.tags.upcoming")
+                              : t("dashboard.myEvents.tags.past")}
                           </Badge>
                         </div>
                         <div className="absolute top-4 left-4">
@@ -540,16 +517,21 @@ const Dashboard = () => {
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4" />
                               <span className="text-sm">
-                                {eventDate.toLocaleDateString(i18n.language === 'pt' ? 'pt-BR' : 'en-US')}
+                                {eventDate.toLocaleDateString(
+                                  i18n.language === "pt" ? "pt-BR" : "en-US"
+                                )}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4" />
                               <span className="text-sm">
-                                {eventDate.toLocaleTimeString(i18n.language === 'pt' ? 'pt-BR' : 'en-US', {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
+                                {eventDate.toLocaleTimeString(
+                                  i18n.language === "pt" ? "pt-BR" : "en-US",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
                               </span>
                             </div>
                           </div>
@@ -597,75 +579,110 @@ const Dashboard = () => {
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">{t("myTickets.title")}</h2>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {mockMyTickets.map((ticket) => (
-                <Card
-                  key={ticket.id}
-                  className="group hover:shadow-lg transition-all duration-300"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="font-semibold text-lg mb-1">
-                          {ticket.eventTitle}
-                        </h3>
-                        <Badge
-                          variant={
-                            ticket.status === "active"
-                              ? "default"
-                              : ticket.status === "used"
-                              ? "secondary"
-                              : "outline"
+            {isLoadingUserTickets ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {[...Array(3)].map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="p-6">
+                      <div className="h-4 bg-muted rounded w-3/4 mb-2" />
+                      <div className="h-3 bg-muted rounded w-1/2 mb-4" />
+                      <div className="h-3 bg-muted rounded w-2/3" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : userTickets && userTickets.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {userTickets.map((ticketData) => (
+                  <Card
+                    key={ticketData.ticket.uuid}
+                    className="group hover:shadow-lg transition-all duration-300"
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="font-semibold text-lg mb-1">
+                            {ticketData.event.name}
+                          </h3>
+                          <Badge
+                            variant={
+                              ticketData.ticket.already_validated
+                                ? "secondary"
+                                : "default"
+                            }
+                          >
+                            {ticketData.ticket.already_validated
+                              ? "Used"
+                              : "Active"}
+                          </Badge>
+                        </div>
+                        <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                          <QrCode className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 text-sm text-muted-foreground mb-4">
+                        <div className="flex items-center gap-2">
+                          <Ticket className="h-4 w-4" />
+                          <span>{ticketData.ticket.ticket_type}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          <span>
+                            {new Date(
+                              ticketData.event.date
+                            ).toLocaleDateString()}
+                          </span>
+                        </div>
+                        {ticketData.ticket.validation_date && (
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            <span>
+                              Validated:{" "}
+                              {new Date(
+                                ticketData.ticket.validation_date
+                              ).toLocaleDateString()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() =>
+                            navigate(`/ticket/${ticketData.ticket.uuid}`)
                           }
                         >
-                          {t(`myTickets.status.${ticket.status}`)}
-                        </Badge>
-                      </div>
-                      <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                        <QrCode className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 text-sm text-muted-foreground mb-4">
-                      <div className="flex items-center gap-2">
-                        <Ticket className="h-4 w-4" />
-                        <span>{ticket.ticketType}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        <span>
-                          {ticket.date} • {ticket.time}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        <span>{ticket.location}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => navigate(`/ticket/${ticket.id}`)}
-                      >
-                        {t("myTickets.actions.viewDetails")}
-                      </Button>
-                      {ticket.status === "active" && (
-                        <Button 
-                          size="sm" 
-                          className="flex-1"
-                          onClick={() => navigate(`/ticket/${ticket.id}/qr`)}
-                        >
-                          {t("myTickets.actions.showQR")}
+                          {t("myTickets.actions.viewDetails")}
                         </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                        {!ticketData.ticket.already_validated && (
+                          <Button
+                            size="sm"
+                            className="flex-1"
+                            onClick={() =>
+                              navigate(`/ticket/${ticketData.ticket.uuid}/qr`, { state: { from: 'dashboard' } })
+                            }
+                          >
+                            {t("myTickets.actions.showQR")}
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Ticket className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No tickets found</h3>
+                <p className="text-muted-foreground">
+                  You haven't purchased any tickets yet.
+                </p>
+              </div>
+            )}
           </div>
         );
       case "profile":
@@ -784,7 +801,10 @@ const Dashboard = () => {
             <img src={logoLight} alt="Tikko" className="h-8" />
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder={t("dashboard.search.placeholder")} className="pl-10 w-80" />
+              <Input
+                placeholder={t("dashboard.search.placeholder")}
+                className="pl-10 w-80"
+              />
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -830,7 +850,9 @@ const Dashboard = () => {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">{t("dashboard.trending.title")}</CardTitle>
+                <CardTitle className="text-lg">
+                  {t("dashboard.trending.title")}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {["Music Festival", "Tech Conference", "Art Exhibition"].map(
@@ -846,7 +868,9 @@ const Dashboard = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">{t("dashboard.suggestions.title")}</CardTitle>
+                <CardTitle className="text-lg">
+                  {t("dashboard.suggestions.title")}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {[
