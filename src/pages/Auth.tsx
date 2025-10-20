@@ -112,7 +112,7 @@ const Auth = () => {
         localStorage.setItem("isFirstAccess", "true");
         window.location.href = "/profile-completion";
       } else {
-        window.location.href = "/dashboard";
+        window.location.href = "/feed";
       }
     } catch (error: any) {
       console.error("OAuth exchange failed:", error);

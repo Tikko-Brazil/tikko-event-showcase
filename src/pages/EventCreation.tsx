@@ -249,7 +249,7 @@ const EventCreation = () => {
     onSuccess: () => {
       setShowSuccess(true);
       setTimeout(() => {
-        navigate("/dashboard");
+        navigate("/my-events");
       }, 2000);
     },
     onError: (error: any) => {
@@ -328,7 +328,7 @@ const EventCreation = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/my-events")}
               className="hover:bg-accent"
             >
               <ArrowLeft className="h-5 w-5" />

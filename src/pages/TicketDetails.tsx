@@ -76,7 +76,7 @@ const TicketDetails = () => {
         <div className="flex h-16 items-center justify-between px-4 md:px-6">
           <Button
             variant="ghost"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/my-tickets")}
             className="gap-2"
           >
             <ArrowLeft className="h-4 w-4" />

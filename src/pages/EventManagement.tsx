@@ -685,7 +685,7 @@ const EventManagement = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/my-events")}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -771,7 +771,7 @@ const EventManagement = () => {
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+            <Button variant="ghost" onClick={() => navigate("/my-events")}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t("eventManagement.header.backToDashboard")}
             </Button>

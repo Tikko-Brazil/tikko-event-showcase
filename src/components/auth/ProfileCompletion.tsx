@@ -87,7 +87,7 @@ const ProfileCompletion: React.FC = () => {
                 setShowSuccess(true);
                 localStorage.removeItem("isFirstAccess");
                 setTimeout(() => {
-                  window.location.href = "/dashboard";
+                  window.location.href = "/feed";
                 }, 2000);
               } catch (error: any) {
                 setErrorMessage(error.message);

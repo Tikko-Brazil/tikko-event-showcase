@@ -33,7 +33,7 @@ const TicketQRCode = () => {
 
   const handleBackClick = () => {
     if (cameFromDashboard) {
-      navigate('/dashboard');
+      navigate('/my-tickets');
     } else {
       navigate(`/ticket/${ticketId}`);
     }
