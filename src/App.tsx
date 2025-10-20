@@ -18,8 +18,6 @@ import EventDetails from "./pages/EventDetails";
 import EventCreation from "./pages/EventCreation";
 import NotFound from "./pages/NotFound";
 import ProfileCompletion from "./components/auth/ProfileCompletion";
-import TicketDetails from "./pages/TicketDetails";
-import TicketQRCode from "./pages/TicketQRCode";
 
 const queryClient = new QueryClient();
 
@@ -109,22 +107,6 @@ const App = () => (
               }
             />
             <Route path="/event/:eventId" element={<EventDetails />} />
-            <Route
-              path="/ticket/:ticketId"
-              element={
-                <PrivateRoute>
-                  <TicketDetails />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/ticket/:ticketId/qr"
-              element={
-                <PrivateRoute>
-                  <TicketQRCode />
-                </PrivateRoute>
-              }
-            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </FirstAccessGuard>

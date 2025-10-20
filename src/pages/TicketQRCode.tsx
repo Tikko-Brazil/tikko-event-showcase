@@ -14,14 +14,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Download, Ticket, Calendar, Clock, MapPin } from "lucide-react";
+import { ArrowLeft, Download, Ticket, Calendar, Clock, MapPin, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import QRCodeCanvas from "react-qrcode-logo";
 import markLogo from "@/assets/mark.png";
 
-const TicketQRCode = () => {
-  const { ticketId } = useParams();
+const TicketQRCode = ({ ticketId: propTicketId, onClose }: { ticketId?: string; onClose?: () => void }) => {
+  const { ticketId: paramTicketId } = useParams();
+  const ticketId = propTicketId || paramTicketId;
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
@@ -32,7 +33,9 @@ const TicketQRCode = () => {
   const cameFromDashboard = location.state?.from === 'dashboard';
 
   const handleBackClick = () => {
-    if (cameFromDashboard) {
+    if (onClose) {
+      onClose();
+    } else if (cameFromDashboard) {
       navigate('/my-tickets');
     } else {
       navigate(`/ticket/${ticketId}`);
@@ -72,8 +75,8 @@ const TicketQRCode = () => {
             onClick={handleBackClick}
             className="gap-2"
           >
-            <ArrowLeft className="h-4 w-4" />
-            {t("myTickets.backToDetails")}
+            {onClose ? <X className="h-4 w-4" /> : <ArrowLeft className="h-4 w-4" />}
+            {onClose ? "Close" : t("myTickets.backToDetails")}
           </Button>
           <h1 className="text-lg font-semibold hidden md:block">
             {t("myTickets.qrCode")}

@@ -18,6 +18,7 @@ import {
 import {
   ArrowLeft,
   Download,
+  X,
   QrCode,
   Calendar,
   Clock,
@@ -30,8 +31,9 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 
-const TicketDetails = () => {
-  const { ticketId } = useParams();
+const TicketDetails = ({ ticketId: propTicketId, onClose, onShowQR }: { ticketId?: string; onClose?: () => void; onShowQR?: () => void }) => {
+  const { ticketId: paramTicketId } = useParams();
+  const ticketId = propTicketId || paramTicketId;
   const navigate = useNavigate();
   const { t } = useTranslation();
   const isMobile = useIsMobile();
@@ -66,7 +68,11 @@ const TicketDetails = () => {
   };
 
   const handleShowQR = () => {
-    navigate(`/ticket/${ticketId}/qr`);
+    if (onShowQR) {
+      onShowQR();
+    } else {
+      navigate(`/ticket/${ticketId}/qr`);
+    }
   };
 
   return (
@@ -76,10 +82,10 @@ const TicketDetails = () => {
         <div className="flex h-16 items-center justify-between px-4 md:px-6">
           <Button
             variant="ghost"
-            onClick={() => navigate("/my-tickets")}
+            onClick={() => onClose ? onClose() : navigate("/my-tickets")}
             className="gap-2"
           >
-            <ArrowLeft className="h-4 w-4" />
+            {onClose ? <X className="h-4 w-4" /> : <ArrowLeft className="h-4 w-4" />}
             {t("myTickets.backToDashboard")}
           </Button>
           <h1 className="text-lg font-semibold hidden md:block">

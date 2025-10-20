@@ -1,17 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Calendar, Ticket, QrCode } from "lucide-react";
 import { TicketGateway } from "@/lib/TicketGateway";
-import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
+import TicketDetails from "./TicketDetails";
+import TicketQRCode from "./TicketQRCode";
 
 const MyTickets = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   const ticketGateway = new TicketGateway(
     import.meta.env.VITE_BACKEND_BASE_URL
@@ -98,9 +102,10 @@ const MyTickets = () => {
                       variant="outline"
                       size="sm"
                       className="flex-1"
-                      onClick={() =>
-                        navigate(`/ticket/${ticketData.ticket.uuid}`)
-                      }
+                      onClick={() => {
+                        setSelectedTicketId(ticketData.ticket.uuid);
+                        setShowDetails(true);
+                      }}
                     >
                       {t("myTickets.actions.viewDetails")}
                     </Button>
@@ -108,11 +113,10 @@ const MyTickets = () => {
                       <Button
                         size="sm"
                         className="flex-1"
-                        onClick={() =>
-                          navigate(`/ticket/${ticketData.ticket.uuid}/qr`, {
-                            state: { from: "dashboard" },
-                          })
-                        }
+                        onClick={() => {
+                          setSelectedTicketId(ticketData.ticket.uuid);
+                          setShowQR(true);
+                        }}
                       >
                         {t("myTickets.actions.showQR")}
                       </Button>
@@ -132,6 +136,34 @@ const MyTickets = () => {
           </div>
         )}
       </div>
+
+      {/* Full-screen Ticket Details Dialog */}
+      <Dialog open={showDetails} onOpenChange={setShowDetails}>
+        <DialogContent className="max-w-none w-screen h-screen m-0 p-0 rounded-none overflow-y-auto">
+          {selectedTicketId && (
+            <TicketDetails 
+              ticketId={selectedTicketId} 
+              onClose={() => setShowDetails(false)}
+              onShowQR={() => {
+                setShowDetails(false);
+                setShowQR(true);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Full-screen QR Code Dialog */}
+      <Dialog open={showQR} onOpenChange={setShowQR}>
+        <DialogContent className="max-w-none w-screen h-screen m-0 p-0 rounded-none overflow-y-auto">
+          {selectedTicketId && (
+            <TicketQRCode 
+              ticketId={selectedTicketId} 
+              onClose={() => setShowQR(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
