@@ -7,6 +7,7 @@ import QRCodeCanvas from "react-qrcode-logo";
 import markLogo from "@/assets/mark.png";
 import { PaymentGateway } from "@/lib/PaymentGateway";
 import { useQuery } from "@tanstack/react-query";
+import { QrcodeSVG } from "react-qrcode-pretty";
 
 interface PixQRCodeStepProps {
   ticketType: string;
@@ -25,7 +26,7 @@ export const PixQRCodeStep: React.FC<PixQRCodeStepProps> = ({
   onClose,
   onPaymentSuccess,
 }) => {
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(1800); // 10 minutes in seconds
   const [copied, setCopied] = useState(false);
 
   // Use the real PIX code from API
@@ -33,7 +34,7 @@ export const PixQRCodeStep: React.FC<PixQRCodeStepProps> = ({
 
   // Payment status polling with React Query
   const paymentGateway = new PaymentGateway("http://localhost:3000");
-  
+
   const { data: paymentStatus } = useQuery({
     queryKey: ["paymentStatus", paymentId],
     queryFn: () => paymentGateway.getPaymentStatus(paymentId!),
@@ -102,24 +103,28 @@ export const PixQRCodeStep: React.FC<PixQRCodeStepProps> = ({
 
           {/* QR Code */}
           <div className="flex justify-center">
-            <div className="bg-white p-3 rounded-lg shadow-md">
-              <QRCodeCanvas
-                value={pixCode}
-                size={176}
-                logoImage={markLogo}
-                logoWidth={40}
-                logoHeight={40}
-                logoOpacity={1}
-                quietZone={0}
-                removeQrCodeBehindLogo={true}
-                qrStyle="squares"
-                eyeRadius={{ outer: 4, inner: 4 }}
-                eyeColor={{
-                  outer: "hsl(215 28% 17%)",
-                  inner: "hsl(263 70% 50%)",
-                }}
-              />
-            </div>
+            <QrcodeSVG
+              value={pixCode}
+              variant={{
+                eyes: "italic",
+                body: "italic",
+              }}
+              color={{
+                eyes: "#6b26d9",
+                body: "#241f31",
+              }}
+              colorEffect={{
+                eyes: "gradient-light-diagonal",
+                body: "none",
+              }}
+              padding={12}
+              margin={0}
+              size={250}
+              bgColor="#f6f5f4"
+              bgRounded
+              divider
+              image={markLogo}
+            />
           </div>
 
           {/* PIX Code */}
