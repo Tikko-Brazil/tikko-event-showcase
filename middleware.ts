@@ -1,5 +1,3 @@
-import { NextRequest, NextResponse } from "next/server";
-
 const BACKEND_BASE_URL = "https://api.tikko-backend.com.br";
 
 interface Event {
@@ -37,13 +35,13 @@ async function getEvent(id: number): Promise<Event | null> {
   }
 }
 
-export async function middleware(request: NextRequest) {
+export default async function middleware(request: Request) {
   const userAgent = request.headers.get("user-agent") || "";
   const isBot =
     userAgent.includes("WhatsApp") || userAgent.includes("facebookexternalhit");
 
   if (!isBot) {
-    return NextResponse.next();
+    return new Response(null, { status: 200 }); // Continue without modification
   }
 
   const url = new URL(request.url);
@@ -52,17 +50,17 @@ export async function middleware(request: NextRequest) {
   // Only handle /event/:eventId routes
   const match = pathname.match(/^\/event\/(\d+)$/);
   if (!match) {
-    return NextResponse.next();
+    return new Response(null, { status: 200 }); // Continue without modification
   }
 
   const eventId = Number(match[1]);
   if (isNaN(eventId)) {
-    return NextResponse.next();
+    return new Response(null, { status: 200 }); // Continue without modification
   }
 
   const event = await getEvent(eventId);
   if (!event) {
-    return NextResponse.next();
+    return new Response(null, { status: 200 }); // Continue without modification
   }
 
   const html = `
@@ -81,7 +79,7 @@ export async function middleware(request: NextRequest) {
     </html>
   `;
 
-  return new NextResponse(html, {
+  return new Response(html, {
     status: 200,
     headers: { "Content-Type": "text/html" },
   });
