@@ -26,3 +26,8 @@ dist-ssr
 .env
 
 examples/
+
+build
+
+.react-router
+.vercel

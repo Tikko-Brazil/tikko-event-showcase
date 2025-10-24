@@ -22,9 +22,10 @@
     "noFallthroughCasesInSwitch": false,
 
     "baseUrl": ".",
+    "rootDirs": [".", ".react-router/types"],
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "app", ".react-router/types"]
 }
