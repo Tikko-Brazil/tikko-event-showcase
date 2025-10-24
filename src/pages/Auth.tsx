@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Mail, ArrowLeft, Home } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router";
 import logoLight from "@/assets/logoLight.png";
 import EmailSignup from "@/components/auth/EmailSignup";
 import EmailLogin from "@/components/auth/EmailLogin";

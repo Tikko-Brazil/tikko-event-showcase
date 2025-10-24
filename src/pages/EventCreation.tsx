@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { Formik, FieldArray, FormikProps } from "formik";
 import * as Yup from "yup";
 import { useMutation } from "@tanstack/react-query";
@@ -305,14 +305,22 @@ const EventCreation = () => {
   const handleLocationSelect = (location: any, setFieldValue: any) => {
     // Create simplified address format: name, city/town/municipality, state, country
     const address = location.address || {};
-    const name = location.name || '';
-    const city = address.municipality || address.town || address.city || address.city_district || address.village || '';
-    const state = address.state || '';
-    const country = address.country || '';
-    
-    const addressParts = [name, city, state, country].filter(part => part && part.trim());
-    const simplifiedAddress = addressParts.join(', ');
-    
+    const name = location.name || "";
+    const city =
+      address.municipality ||
+      address.town ||
+      address.city ||
+      address.city_district ||
+      address.village ||
+      "";
+    const state = address.state || "";
+    const country = address.country || "";
+
+    const addressParts = [name, city, state, country].filter(
+      (part) => part && part.trim()
+    );
+    const simplifiedAddress = addressParts.join(", ");
+
     setFieldValue("addressName", simplifiedAddress);
     setFieldValue("latitude", parseFloat(location.latitude));
     setFieldValue("longitude", parseFloat(location.longitude));

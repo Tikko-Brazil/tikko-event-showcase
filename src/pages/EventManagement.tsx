@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -379,23 +379,45 @@ const EventManagement = () => {
   ];
 
   const managementSections = [
-    { id: "overview", label: t("eventManagement.tabs.overview"), icon: BarChart3 },
+    {
+      id: "overview",
+      label: t("eventManagement.tabs.overview"),
+      icon: BarChart3,
+    },
     { id: "edit", label: t("eventManagement.tabs.edit"), icon: Edit },
-    { id: "analytics", label: t("eventManagement.tabs.analytics"), icon: TrendingUp },
-    { id: "participants", label: t("eventManagement.tabs.participants"), icon: Users },
+    {
+      id: "analytics",
+      label: t("eventManagement.tabs.analytics"),
+      icon: TrendingUp,
+    },
+    {
+      id: "participants",
+      label: t("eventManagement.tabs.participants"),
+      icon: Users,
+    },
     { id: "tickets", label: t("eventManagement.tabs.tickets"), icon: Ticket },
     { id: "coupons", label: t("eventManagement.tabs.coupons"), icon: Gift },
     { id: "staff", label: t("eventManagement.tabs.staff"), icon: UsersRound },
-    { id: "send-tickets", label: t("eventManagement.tabs.sendTickets"), icon: Send },
-    { id: "validate", label: t("eventManagement.tabs.validate"), icon: CheckCircle2 },
-    { id: "requests", label: t("eventManagement.tabs.requests"), icon: UserPlus },
+    {
+      id: "send-tickets",
+      label: t("eventManagement.tabs.sendTickets"),
+      icon: Send,
+    },
+    {
+      id: "validate",
+      label: t("eventManagement.tabs.validate"),
+      icon: CheckCircle2,
+    },
+    {
+      id: "requests",
+      label: t("eventManagement.tabs.requests"),
+      icon: UserPlus,
+    },
   ];
 
   const renderOverview = () => <EventOverview eventId={parseInt(eventId!)} />;
 
-  const renderAnalytics = () => (
-    <EventAnalytics eventId={parseInt(eventId!)} />
-  );
+  const renderAnalytics = () => <EventAnalytics eventId={parseInt(eventId!)} />;
 
   // Mock coupons data
   const allCoupons = [
@@ -740,7 +762,9 @@ const EventManagement = () => {
 
         {/* Management Grid Menu */}
         <div className="p-4">
-          <h2 className="text-lg font-semibold mb-4">{t("eventManagement.header.eventManagement")}</h2>
+          <h2 className="text-lg font-semibold mb-4">
+            {t("eventManagement.header.eventManagement")}
+          </h2>
           <div className="grid grid-cols-3 gap-6 justify-items-center">
             {managementSections.map((section) => {
               const Icon = section.icon;
@@ -819,7 +843,9 @@ const EventManagement = () => {
         {/* Desktop Main Content */}
         <main className="flex-1 overflow-auto p-6">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">{t("eventManagement.header.eventManagement")}</h1>
+            <h1 className="text-3xl font-bold mb-2">
+              {t("eventManagement.header.eventManagement")}
+            </h1>
             <p className="text-muted-foreground">
               {t("eventManagement.header.description")}
             </p>

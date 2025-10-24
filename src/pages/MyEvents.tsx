@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, Edit } from "lucide-react";
 import { EventGateway } from "@/lib/EventGateway";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import DashboardLayout from "@/components/DashboardLayout";
 
 const MyEvents = () => {
@@ -15,10 +15,12 @@ const MyEvents = () => {
 
   const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
-  const { data: userEventsResponse, isLoading: isLoadingUserEvents } = useQuery({
-    queryKey: ["userEvents"],
-    queryFn: () => eventGateway.getUserEvents(),
-  });
+  const { data: userEventsResponse, isLoading: isLoadingUserEvents } = useQuery(
+    {
+      queryKey: ["userEvents"],
+      queryFn: () => eventGateway.getUserEvents(),
+    }
+  );
 
   const userEvents = userEventsResponse?.events || [];
   const hasAdminPrivileges = userEvents.some(

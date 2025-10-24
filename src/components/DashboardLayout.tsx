@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router";
 import logoLight from "@/assets/logoLight.png";
 
 interface DashboardLayoutProps {
@@ -29,11 +29,36 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const location = useLocation();
 
   const tabs = [
-    { id: "feed", label: t("dashboard.tabs.feed"), icon: Activity, path: "/feed" },
-    { id: "explore", label: t("dashboard.tabs.explore"), icon: Home, path: "/explore" },
-    { id: "my-events", label: t("dashboard.tabs.myEvents"), icon: Calendar, path: "/my-events" },
-    { id: "my-tickets", label: t("dashboard.tabs.myTickets"), icon: Ticket, path: "/my-tickets" },
-    { id: "profile", label: t("dashboard.tabs.profile"), icon: User, path: "/profile" },
+    {
+      id: "feed",
+      label: t("dashboard.tabs.feed"),
+      icon: Activity,
+      path: "/feed",
+    },
+    {
+      id: "explore",
+      label: t("dashboard.tabs.explore"),
+      icon: Home,
+      path: "/explore",
+    },
+    {
+      id: "my-events",
+      label: t("dashboard.tabs.myEvents"),
+      icon: Calendar,
+      path: "/my-events",
+    },
+    {
+      id: "my-tickets",
+      label: t("dashboard.tabs.myTickets"),
+      icon: Ticket,
+      path: "/my-tickets",
+    },
+    {
+      id: "profile",
+      label: t("dashboard.tabs.profile"),
+      icon: User,
+      path: "/profile",
+    },
   ];
 
   const currentPath = location.pathname;

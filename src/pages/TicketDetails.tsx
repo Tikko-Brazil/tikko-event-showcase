@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -77,13 +77,16 @@ const TicketDetails = ({
   };
 
   const formatNumber = (value: number, options?: Intl.NumberFormatOptions) => {
-    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
+    const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
     return value.toLocaleString(locale, options);
   };
 
   const formatCurrency = (value: number) => {
-    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
-    return formatNumber(value, { style: 'currency', currency: locale === 'pt-BR' ? 'BRL' : 'USD' });
+    const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
+    return formatNumber(value, {
+      style: "currency",
+      currency: locale === "pt-BR" ? "BRL" : "USD",
+    });
   };
 
   const handleDownloadPDF = () => {
@@ -165,7 +168,9 @@ const TicketDetails = ({
                 <div>
                   <p className="text-sm font-medium">{t("myTickets.date")}</p>
                   <p className="text-sm text-muted-foreground">
-                    {eventDate.toLocaleDateString(i18n.language === 'pt' ? 'pt-BR' : 'en-US')}
+                    {eventDate.toLocaleDateString(
+                      i18n.language === "pt" ? "pt-BR" : "en-US"
+                    )}
                   </p>
                 </div>
               </div>
@@ -174,10 +179,13 @@ const TicketDetails = ({
                 <div>
                   <p className="text-sm font-medium">{t("myTickets.time")}</p>
                   <p className="text-sm text-muted-foreground">
-                    {eventDate.toLocaleTimeString(i18n.language === 'pt' ? 'pt-BR' : 'en-US', {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {eventDate.toLocaleTimeString(
+                      i18n.language === "pt" ? "pt-BR" : "en-US",
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )}
                   </p>
                 </div>
               </div>
@@ -236,7 +244,9 @@ const TicketDetails = ({
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {ticket.purchased_at
-                      ? new Date(ticket.purchased_at).toLocaleDateString(i18n.language === 'pt' ? 'pt-BR' : 'en-US')
+                      ? new Date(ticket.purchased_at).toLocaleDateString(
+                          i18n.language === "pt" ? "pt-BR" : "en-US"
+                        )
                       : "N/A"}
                   </p>
                 </div>
@@ -290,11 +300,7 @@ const TicketDetails = ({
 
         {/* Action Buttons */}
         <div className="flex gap-2">
-          <Button
-            onClick={handleShowQR}
-            className="flex-1"
-            size="sm"
-          >
+          <Button onClick={handleShowQR} className="flex-1" size="sm">
             <QrCode className="h-4 w-4 mr-2" />
             {t("myTickets.actions.showQR")}
           </Button>

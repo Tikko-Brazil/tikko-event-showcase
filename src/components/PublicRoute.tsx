@@ -1,12 +1,12 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate } from "react-router";
 
 interface PublicRouteProps {
   children: React.ReactNode;
 }
 
 const PublicRoute = ({ children }: PublicRouteProps) => {
-  const token = localStorage.getItem('accessToken');
-  
+  const token = localStorage.getItem("accessToken");
+
   return token ? <Navigate to="/feed" replace /> : <>{children}</>;
 };
 

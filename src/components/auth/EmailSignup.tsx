@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { AuthGateway } from "@/lib/AuthGateway";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
 import SuccessSnackbar from "@/components/SuccessSnackbar";
@@ -100,12 +100,12 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">
-          {isPasswordReset ? "Definir Nova Senha" : t('signup.title')}
+          {isPasswordReset ? "Definir Nova Senha" : t("signup.title")}
         </CardTitle>
         <CardDescription>
           {isPasswordReset
             ? "Digite sua nova senha abaixo"
-            : t('signup.subtitle')}
+            : t("signup.subtitle")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -347,12 +347,14 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                     </div>
 
                     <div className="md:col-span-2">
-                      <Label htmlFor="bio">{t('signup.fields.bio.label')}</Label>
+                      <Label htmlFor="bio">
+                        {t("signup.fields.bio.label")}
+                      </Label>
                       <Field
                         as={Textarea}
                         id="bio"
                         name="bio"
-                        placeholder={t('signup.fields.bio.placeholder')}
+                        placeholder={t("signup.fields.bio.placeholder")}
                         rows={3}
                         onBlur={handleBlur}
                         className={
