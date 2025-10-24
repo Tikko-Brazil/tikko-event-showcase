@@ -1,13 +1,17 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import EnhancedIndex from "../../src/pages/EnhancedIndex";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Tikko - Event Showcase" },
+    {
+      name: "description",
+      content:
+        "Discover amazing events and create unforgettable memories with Tikko!",
+    },
   ];
 }
 
 export default function Home() {
-  return <Welcome />;
+  return <EnhancedIndex />;
 }

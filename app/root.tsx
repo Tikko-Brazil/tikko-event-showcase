@@ -6,9 +6,16 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "../src/components/ui/toaster";
+import { Toaster as Sonner } from "../src/components/ui/sonner";
+import { TooltipProvider } from "../src/components/ui/tooltip";
+import "../src/i18n";
 
 import type { Route } from "./+types/root";
 import stylesheet from "./app.css?url";
+
+const queryClient = new QueryClient();
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -34,7 +41,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            {children}
+            <Toaster />
+            <Sonner />
+          </TooltipProvider>
+        </QueryClientProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
