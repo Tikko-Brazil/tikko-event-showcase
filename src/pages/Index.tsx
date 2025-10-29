@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
+import generateSlug from "@/helpers/generateSlug";
 import heroImage from "@/assets/hero-event-image.jpg";
 
 const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
@@ -208,7 +209,7 @@ const Index = () => {
                           Ver detalhes
                         </p>
                       </div>
-                      <Link to={`/event/${event.id}`}>
+                      <Link to={`/event/${generateSlug(event.name, event.id)}`}>
                         <Button className="group">
                           Saiba mais
                           <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />

@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
+import generateSlug from "@/helpers/generateSlug";
 import logoLight from "@/assets/logoLight.png";
 import mark from "@/assets/mark.png";
 import LanguageSelector from "@/components/LanguageSelector";
@@ -291,7 +292,7 @@ const EnhancedIndex = () => {
                       {event.description}
                     </p>
 
-                    <Link to={`/event/${event.id}`}>
+                    <Link to={`/event/${generateSlug(event.name, event.id)}`}>
                       <Button className="w-full group/btn hover:shadow-glow transition-smooth">
                         Ver Detalhes
                         <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-smooth" />

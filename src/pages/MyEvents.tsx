@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, Edit } from "lucide-react";
 import { EventGateway } from "@/lib/EventGateway";
 import { useNavigate } from "react-router-dom";
+import generateSlug from "@/helpers/generateSlug";
 import DashboardLayout from "@/components/DashboardLayout";
 
 const MyEvents = () => {
@@ -76,7 +77,7 @@ const MyEvents = () => {
                 <Card
                   key={event.id}
                   className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-border/50 hover:border-primary/30 cursor-pointer"
-                  onClick={() => navigate(`/event/${event.id}`)}
+                  onClick={() => navigate(`/event/${generateSlug(event.name, event.id)}`)}
                 >
                   <div className="aspect-video relative overflow-hidden">
                     <img

@@ -20,13 +20,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckoutOverlay } from "@/components/CheckoutOverlay";
 import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
+import getEventIdFromSlug from "@/helpers/getEventIdFromSlug";
 import heroImage from "@/assets/hero-event-image.jpg";
 
 const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 const geocodingGateway = new GeocodingGateway();
 
 export default function EventDetails() {
-  const { eventId } = useParams<{ eventId: string }>();
+  const { slug } = useParams<{ slug: string }>();
+  const eventId = slug ? getEventIdFromSlug(slug) : null;
   const [selectedTicket, setSelectedTicket] = useState<string>("");
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
@@ -106,6 +108,27 @@ export default function EventDetails() {
     }
     return eventData?.event.location || "Localização não disponível";
   };
+
+  if (!eventId) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Alert className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              URL do evento inválida.
+            </AlertDescription>
+          </Alert>
+          <Link to="/">
+            <Button variant="outline">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar aos eventos
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (eventLoading) {
     return (

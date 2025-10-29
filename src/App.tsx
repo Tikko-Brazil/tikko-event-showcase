@@ -106,7 +106,7 @@ const App = () => (
                 </PrivateRoute>
               }
             />
-            <Route path="/event/:eventId" element={<EventDetails />} />
+            <Route path="/event/:slug" element={<EventDetails />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </FirstAccessGuard>
