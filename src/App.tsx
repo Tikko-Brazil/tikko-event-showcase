@@ -18,6 +18,11 @@ import EventDetails from "./pages/EventDetails";
 import EventCreation from "./pages/EventCreation";
 import NotFound from "./pages/NotFound";
 import ProfileCompletion from "./components/auth/ProfileCompletion";
+import AboutUs from "./pages/AboutUs";
+import Contact from "./pages/Contact";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
 
 const queryClient = new QueryClient();
 
@@ -107,6 +112,11 @@ const App = () => (
               }
             />
             <Route path="/event/:slug" element={<EventDetails />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/cookies" element={<CookiePolicy />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </FirstAccessGuard>

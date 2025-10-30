@@ -119,13 +119,13 @@ const EnhancedIndex = () => {
                 Events
               </Link>
               <Link
-                to="#about"
+                to="/about"
                 className="text-foreground hover:text-primary transition-smooth"
               >
                 About
               </Link>
               <Link
-                to="#contact"
+                to="/contact"
                 className="text-foreground hover:text-primary transition-smooth"
               >
                 Contact
@@ -374,7 +374,7 @@ const EnhancedIndex = () => {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link
-                    to="#"
+                    to="/about"
                     className="hover:text-foreground transition-smooth"
                   >
                     About Us
@@ -382,7 +382,7 @@ const EnhancedIndex = () => {
                 </li>
                 <li>
                   <Link
-                    to="#"
+                    to="/contact"
                     className="hover:text-foreground transition-smooth"
                   >
                     Contact
@@ -404,7 +404,7 @@ const EnhancedIndex = () => {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link
-                    to="#"
+                    to="/terms"
                     className="hover:text-foreground transition-smooth"
                   >
                     Terms of Service
@@ -412,7 +412,7 @@ const EnhancedIndex = () => {
                 </li>
                 <li>
                   <Link
-                    to="#"
+                    to="/privacy"
                     className="hover:text-foreground transition-smooth"
                   >
                     Privacy Policy
@@ -420,7 +420,7 @@ const EnhancedIndex = () => {
                 </li>
                 <li>
                   <Link
-                    to="#"
+                    to="/cookies"
                     className="hover:text-foreground transition-smooth"
                   >
                     Cookie Policy
