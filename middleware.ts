@@ -1,5 +1,4 @@
 import { next } from "@vercel/functions";
-import getEventIdFromSlug from "./src/helpers/getEventIdFromSlug";
 
 const BACKEND_BASE_URL = "https://api.tikko-backend.com.br";
 
@@ -24,6 +23,16 @@ interface Event {
   created_at: string;
   updated_at: string;
 }
+
+function getEventIdFromSlug(slug: string): string | null {
+  // Match the last part after the final hyphen as the eventId
+  const match = slug.match(/-(\d+)$/);
+  if (match) {
+    return match[1]; // Return the captured eventId
+  }
+  return null; // Return null if no valid eventId is found
+}
+
 
 async function getEvent(id: number): Promise<Event | null> {
   try {
