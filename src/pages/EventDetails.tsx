@@ -283,7 +283,7 @@ export default function EventDetails() {
             <h1 className="text-4xl lg:text-5xl font-bold mb-6">
               {event.name}
             </h1>
-            <div className="flex flex-col gap-4 text-lg">
+            <div className="flex flex-col gap-4 text-lg mb-6">
               <div className="flex items-center gap-3">
                 <Calendar className="w-5 h-5 text-primary" />
                 <span>
@@ -297,13 +297,48 @@ export default function EventDetails() {
                 </span>
               </div>
             </div>
+
+            {/* Location Card - Desktop Only */}
+            <Card className="bg-tikko-card-light text-gray-900 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3 flex-1">
+                    <MapPin className="w-5 h-5 text-tikko-orange mt-1 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-lg text-gray-900">
+                        {event.address_name || event.location}
+                      </p>
+                      <p className="text-gray-600">
+                        {addressLoading ? (
+                          <span className="flex items-center">
+                            <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                            Carregando endereço...
+                          </span>
+                        ) : (
+                          getEventAddress()
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={openGoogleMaps}
+                    className="text-tikko-orange hover:text-tikko-orange hover:bg-tikko-orange/10 flex-shrink-0"
+                    title="Ver no Google Maps"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
       <div className="container mx-auto px-4 py-6 md:py-8">
-        {/* Location Section */}
-        <Card className="bg-tikko-card-light text-gray-900 shadow-lg mb-6 md:mb-8">
+        {/* Location Section - Mobile Only */}
+        <Card className="bg-tikko-card-light text-gray-900 shadow-lg mb-6 md:hidden">
           <CardContent className="p-4 md:p-6">
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3 flex-1">
