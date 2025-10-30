@@ -85,17 +85,19 @@ const Profile = () => {
     <DashboardLayout>
       <div className="max-w-5xl mx-auto pb-6">
         {/* Banner Section */}
-        <div className="relative w-full h-48 md:h-80 rounded-lg overflow-hidden mb-4">
-          <img
-            src={profileBanner}
-            alt="Profile Banner"
-            className="w-full h-full object-cover"
-          />
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/90" />
+        <div className="relative w-full h-48 md:h-80 rounded-lg overflow-visible mb-16 md:mb-20">
+          <div className="relative w-full h-full rounded-lg overflow-hidden">
+            <img
+              src={profileBanner}
+              alt="Profile Banner"
+              className="w-full h-full object-cover"
+            />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/90" />
+          </div>
           
-          {/* Profile Info Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 -translate-y-12 md:-translate-y-16">
+          {/* Profile Info - Positioned outside banner */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 transform translate-y-12 md:translate-y-16">
             <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
               {/* Profile Picture */}
               <Avatar className="h-24 w-24 md:h-32 md:w-32 ring-4 ring-background">
