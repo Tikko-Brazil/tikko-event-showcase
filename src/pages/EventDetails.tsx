@@ -229,9 +229,9 @@ export default function EventDetails() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden">
-        {/* Mobile: Full width image with overlay */}
-        <div className="absolute inset-0 md:hidden">
+      {/* Mobile: Full width image with overlay */}
+      <section className="relative h-[50vh] w-full overflow-hidden md:hidden">
+        <div className="absolute inset-0">
           <img
             src={event.image || heroImage}
             alt={event.name}
@@ -239,43 +239,67 @@ export default function EventDetails() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-background"></div>
         </div>
-        <div className="hidden md:block absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background"></div>
-          <div className="h-full flex items-center justify-center">
-            <div className="relative max-w-4xl w-full mx-8 h-[80%] rounded-2xl overflow-hidden shadow-2xl">
+        <div className="relative z-10 h-full flex items-end">
+          <div className="container mx-auto px-4 pb-1">
+            <div className="max-w-4xl">
+              <h1 className="text-3xl font-bold text-white mb-2">
+                {event.name}
+              </h1>
+              <div className="flex flex-col gap-2 text-white/90">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-sm">
+                    {formatDate(event.start_date)}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  <span className="text-sm">
+                    {formatTime(event.start_date, event.end_date)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Desktop: Image on left, info on right */}
+      <section className="hidden md:block container mx-auto px-4 py-8">
+        <div className="flex gap-8 items-start max-w-6xl mx-auto">
+          {/* Event Image - Left Side */}
+          <div className="w-[400px] flex-shrink-0">
+            <div className="relative aspect-square rounded-2xl overflow-hidden shadow-2xl">
               <img
                 src={event.image || heroImage}
                 alt={event.name}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/60"></div>
             </div>
           </div>
-        </div>
-      </section>
-      <div className="relative z-10 h-full flex items-end">
-        <div className="container mx-auto px-4 pb-1 md:pb-12">
-          <div className="max-w-4xl">
-            <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-white mb-2 md:mb-4">
+
+          {/* Event Info - Right Side */}
+          <div className="flex-1 pt-4">
+            <h1 className="text-4xl lg:text-5xl font-bold mb-6">
               {event.name}
             </h1>
-            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-white/90">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 md:w-5 md:h-5" />
-                <span className="text-sm md:text-lg">
+            <div className="flex flex-col gap-4 text-lg">
+              <div className="flex items-center gap-3">
+                <Calendar className="w-5 h-5 text-primary" />
+                <span>
                   {formatDate(event.start_date)}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 md:w-5 md:h-5" />
-                <span className="text-sm md:text-lg">
+              <div className="flex items-center gap-3">
+                <Clock className="w-5 h-5 text-primary" />
+                <span>
                   {formatTime(event.start_date, event.end_date)}
                 </span>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <div className="container mx-auto px-4 py-6 md:py-8">
         {/* Location Section */}
