@@ -95,7 +95,7 @@ const Profile = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/90" />
           
           {/* Profile Info Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 translate-y-12 md:translate-y-16">
+          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 -translate-y-12 md:-translate-y-16">
             <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
               {/* Profile Picture */}
               <Avatar className="h-24 w-24 md:h-32 md:w-32 ring-4 ring-background">
@@ -124,7 +124,7 @@ const Profile = () => {
         </div>
 
         {/* Bio and Stats */}
-        <Card className="mb-4 mt-12 md:mt-16">
+        <Card className="mb-4">
           <CardContent className="pt-6">
             <p className="text-foreground mb-4">{user.bio}</p>
             
