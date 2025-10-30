@@ -1,4 +1,5 @@
 import { next } from "@vercel/functions";
+import getEventIdFromSlug from "./src/helpers/getEventIdFromSlug";
 
 const BACKEND_BASE_URL = "https://api.tikko-backend.com.br";
 
@@ -60,8 +61,8 @@ export default async function middleware(request: Request) {
   }
   const url = new URL(request.url);
   const pathname = url.pathname;
-  // Only handle /event/:eventId routes
-  const match = pathname.match(/^\/event\/(\d+)$/);
+  // Only handle /event/:slug routes
+  const match = pathname.match(/^\/event\/(.+)$/);
   if (!match) {
     return next({
       request: {
@@ -69,7 +70,16 @@ export default async function middleware(request: Request) {
       },
     });
   }
-  const eventId = Number(match[1]);
+  const slug = match[1];
+  const eventIdStr = getEventIdFromSlug(slug);
+  if (!eventIdStr) {
+    return next({
+      request: {
+        headers: new Headers(request.headers),
+      },
+    });
+  }
+  const eventId = Number(eventIdStr);
   if (isNaN(eventId)) {
     return next({
       request: {
@@ -109,5 +119,5 @@ export default async function middleware(request: Request) {
 
 export const config = {
   runtime: "nodejs",
-  matcher: "/event/:eventId",
+  matcher: "/event/:slug*",
 };
