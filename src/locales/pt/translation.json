@@ -745,5 +745,68 @@
       "hasAccount": "Já tem uma conta?",
       "signIn": "Entrar"
     }
+  },
+  "home": {
+    "nav": {
+      "events": "Eventos",
+      "about": "Sobre", 
+      "contact": "Contato",
+      "signIn": "Entrar",
+      "getStarted": "Começar"
+    },
+    "hero": {
+      "title": "Transforme Seus Eventos Em",
+      "titleHighlight": "Experiências Memoráveis",
+      "subtitle": "Descubra eventos incríveis, conecte-se com comunidades e crie memórias inesquecíveis. Sua próxima aventura está a um clique de distância.",
+      "startExploring": "Começar a Explorar",
+      "createEvent": "Criar Evento"
+    },
+    "events": {
+      "title": "Próximos Eventos",
+      "subtitle": "Descubra os eventos mais quentes acontecendo perto de você. De festivais de música a conferências de tecnologia.",
+      "viewAll": "Ver Todos os Eventos",
+      "loading": "Carregando eventos...",
+      "error": "Erro ao carregar eventos. Tente novamente mais tarde.",
+      "noEvents": "Nenhum evento encontrado.",
+      "loadingLocation": "Carregando...",
+      "locationNotAvailable": "Localização não disponível",
+      "learnMore": "Saiba Mais"
+    },
+    "stats": {
+      "eventsCreated": "Eventos Criados",
+      "happyAttendees": "Participantes Felizes", 
+      "citiesCovered": "Cidades Cobertas",
+      "partnersConnected": "Parceiros Conectados"
+    },
+    "features": {
+      "title": "Por Que Escolher o Tikko?",
+      "subtitle": "Tudo que você precisa para criar e gerenciar eventos de sucesso",
+      "easyManagement": {
+        "title": "Gerenciamento Fácil de Eventos",
+        "description": "Crie e gerencie seus eventos com nosso painel intuitivo"
+      },
+      "securePayments": {
+        "title": "Pagamentos Seguros",
+        "description": "Processamento de pagamento seguro e confiável para todas as transações"
+      },
+      "realTimeAnalytics": {
+        "title": "Análises em Tempo Real",
+        "description": "Acompanhe o desempenho do seu evento com insights detalhados"
+      }
+    },
+    "cta": {
+      "title": "Pronto para Criar Seu Próximo Evento?",
+      "subtitle": "Junte-se a milhares de organizadores de eventos que confiam no Tikko",
+      "getStarted": "Comece Hoje",
+      "learnMore": "Saiba Mais"
+    },
+    "footer": {
+      "description": "Plataforma moderna para gerenciar e vender ingressos para diversos eventos. Descubra, crie e viva experiências inesquecíveis.",
+      "information": "Informações",
+      "contact": "Contato",
+      "phone": "Telefone: +55 (47) 9712-1190",
+      "email": "E-mail: contato@tikko.com",
+      "copyright": "© 2025 Tikko. Todos os direitos reservados."
+    }
   }
 }

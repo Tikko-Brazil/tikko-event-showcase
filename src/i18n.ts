@@ -25,8 +25,15 @@ i18n
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
+      order: ['localStorage', 'navigator'],
+      lookupLocalStorage: 'i18nextLng',
       caches: ['localStorage'],
+      convertDetectedLanguage: (lng) => {
+        // Convert browser language codes to our supported languages
+        if (lng.startsWith('pt')) return 'pt';
+        if (lng.startsWith('en')) return 'en';
+        return lng;
+      },
     },
   });
 

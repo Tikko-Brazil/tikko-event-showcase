@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,6 +37,7 @@ const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 const geocodingGateway = new GeocodingGateway();
 
 const EnhancedIndex = () => {
+  const { t } = useTranslation();
   // Fetch events
   const {
     data: events,
@@ -100,7 +102,7 @@ const EnhancedIndex = () => {
     if (address) {
       return `${address.city}, ${address.state}`;
     }
-    return event.location || "Localização não disponível";
+    return event.location || t("home.events.locationNotAvailable");
   };
   return (
     <div className="min-h-screen bg-background">
@@ -116,19 +118,19 @@ const EnhancedIndex = () => {
                 to="#events"
                 className="text-foreground hover:text-primary transition-smooth"
               >
-                Events
+                {t("home.nav.events")}
               </Link>
               <Link
                 to="/about"
                 className="text-foreground hover:text-primary transition-smooth"
               >
-                About
+                {t("home.nav.about")}
               </Link>
               <Link
                 to="/contact"
                 className="text-foreground hover:text-primary transition-smooth"
               >
-                Contact
+                {t("home.nav.contact")}
               </Link>
             </nav>
             <div className="flex items-center space-x-3">
@@ -138,12 +140,12 @@ const EnhancedIndex = () => {
                   variant="ghost"
                   className="transition-smooth hover:shadow-glow"
                 >
-                  Sign In
+                  {t("home.nav.signIn")}
                 </Button>
               </Link>
               <Link to="/login">
                 <Button className="gradient-button hover:shadow-elegant transition-smooth">
-                  Get Started
+                  {t("home.nav.getStarted")}
                 </Button>
               </Link>
             </div>
@@ -172,12 +174,11 @@ const EnhancedIndex = () => {
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent leading-tight">
-              Turn Your Events Into
-              <span className="block text-primary">Memorable Experiences</span>
+              {t("home.hero.title")}
+              <span className="block text-primary">{t("home.hero.titleHighlight")}</span>
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
-              Discover amazing events, connect with communities, and create
-              unforgettable memories. Your next adventure is just a click away.
+              {t("home.hero.subtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/login">
@@ -186,7 +187,7 @@ const EnhancedIndex = () => {
                   className="h-14 px-8 text-lg gradient-button hover:shadow-elegant transition-bounce"
                 >
                   <Ticket className="mr-2 h-5 w-5" />
-                  Start Exploring
+                  {t("home.hero.startExploring")}
                 </Button>
               </Link>
               <Button
@@ -195,7 +196,7 @@ const EnhancedIndex = () => {
                 className="h-14 px-8 text-lg hover:shadow-card transition-smooth"
               >
                 <Users className="mr-2 h-5 w-5" />
-                Create Event
+                {t("home.hero.createEvent")}
               </Button>
             </div>
           </div>
@@ -207,11 +208,10 @@ const EnhancedIndex = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Upcoming <span className="text-primary">Events</span>
+              {t("home.events.title").split(" ")[0]} <span className="text-primary">{t("home.events.title").split(" ")[1]}</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Discover the hottest events happening near you. From music
-              festivals to tech conferences.
+              {t("home.events.subtitle")}
             </p>
           </div>
 
@@ -221,7 +221,7 @@ const EnhancedIndex = () => {
               <div className="col-span-full flex items-center justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 <span className="ml-2 text-muted-foreground">
-                  Carregando eventos...
+                  {t("home.events.loading")}
                 </span>
               </div>
             )}
@@ -232,7 +232,7 @@ const EnhancedIndex = () => {
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Erro ao carregar eventos. Tente novamente mais tarde.
+                    {t("home.events.error")}
                   </AlertDescription>
                 </Alert>
               </div>
@@ -280,7 +280,7 @@ const EnhancedIndex = () => {
                         {addressesLoading ? (
                           <span className="flex items-center">
                             <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                            Carregando...
+                            {t("home.events.loadingLocation")}
                           </span>
                         ) : (
                           getEventAddress(event)
@@ -294,7 +294,7 @@ const EnhancedIndex = () => {
 
                     <Link to={`/event/${generateSlug(event.name, event.id)}`}>
                       <Button className="w-full group/btn hover:shadow-glow transition-smooth">
-                        Ver Detalhes
+                        {t("home.events.learnMore")}
                         <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-smooth" />
                       </Button>
                     </Link>
@@ -306,7 +306,7 @@ const EnhancedIndex = () => {
             {events && events.length === 0 && (
               <div className="col-span-full text-center py-12">
                 <p className="text-muted-foreground">
-                  Nenhum evento encontrado.
+                  {t("home.events.noEvents")}
                 </p>
               </div>
             )}
@@ -318,7 +318,7 @@ const EnhancedIndex = () => {
               variant="outline"
               className="hover:shadow-card transition-smooth"
             >
-              View All Events
+              {t("home.events.viewAll")}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
@@ -331,11 +331,10 @@ const EnhancedIndex = () => {
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-              Ready to Create Amazing Memories?
+              {t("home.cta.title")}
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Join thousands of event enthusiasts who trust Tikko for their
-              entertainment needs.
+              {t("home.cta.subtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/login">
@@ -343,7 +342,7 @@ const EnhancedIndex = () => {
                   size="lg"
                   className="h-14 px-8 text-lg gradient-button hover:shadow-elegant transition-bounce"
                 >
-                  Join Tikko Today
+                  {t("home.cta.getStarted")}
                 </Button>
               </Link>
             </div>
@@ -360,9 +359,7 @@ const EnhancedIndex = () => {
                 <img src={logoLight} alt="Tikko" className="h-8" />
               </div>
               <p className="text-muted-foreground mb-4 max-w-md">
-                Your premier destination for discovering and booking amazing
-                events. From intimate concerts to large festivals, we've got you
-                covered.
+                {t("home.footer.description")}
               </p>
               <div className="flex items-center space-x-4">
                 <img src={mark} alt="Tikko Mark" className="h-6 opacity-50" />
@@ -370,14 +367,14 @@ const EnhancedIndex = () => {
             </div>
 
             <div>
-              <h3 className="font-semibold mb-4">Company</h3>
+              <h3 className="font-semibold mb-4">{t("home.footer.information")}</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link
                     to="/about"
                     className="hover:text-foreground transition-smooth"
                   >
-                    About Us
+                    {t("home.nav.about")}
                   </Link>
                 </li>
                 <li>
@@ -385,7 +382,7 @@ const EnhancedIndex = () => {
                     to="/contact"
                     className="hover:text-foreground transition-smooth"
                   >
-                    Contact
+                    {t("home.nav.contact")}
                   </Link>
                 </li>
                 <li>
@@ -400,40 +397,17 @@ const EnhancedIndex = () => {
             </div>
 
             <div>
-              <h3 className="font-semibold mb-4">Legal</h3>
+              <h3 className="font-semibold mb-4">{t("home.footer.contact")}</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link
-                    to="/terms"
-                    className="hover:text-foreground transition-smooth"
-                  >
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/privacy"
-                    className="hover:text-foreground transition-smooth"
-                  >
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/cookies"
-                    className="hover:text-foreground transition-smooth"
-                  >
-                    Cookie Policy
-                  </Link>
-                </li>
+                <li>{t("home.footer.phone")}</li>
+                <li>{t("home.footer.email")}</li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
             <p>
-              &copy; 2025 Tikko. All rights reserved. Crafted with ❤️ for event
-              enthusiasts.
+              {t("home.footer.copyright")}
             </p>
           </div>
         </div>

@@ -728,5 +728,68 @@
       "hasAccount": "Already have an account?",
       "signIn": "Sign In"
     }
+  },
+  "home": {
+    "nav": {
+      "events": "Events",
+      "about": "About", 
+      "contact": "Contact",
+      "signIn": "Sign In",
+      "getStarted": "Get Started"
+    },
+    "hero": {
+      "title": "Turn Your Events Into",
+      "titleHighlight": "Memorable Experiences",
+      "subtitle": "Discover amazing events, connect with communities, and create unforgettable memories. Your next adventure is just a click away.",
+      "startExploring": "Start Exploring",
+      "createEvent": "Create Event"
+    },
+    "events": {
+      "title": "Upcoming Events",
+      "subtitle": "Discover the hottest events happening near you. From music festivals to tech conferences.",
+      "viewAll": "View All Events",
+      "loading": "Loading events...",
+      "error": "Error loading events. Please try again later.",
+      "noEvents": "No events found.",
+      "loadingLocation": "Loading...",
+      "locationNotAvailable": "Location not available",
+      "learnMore": "Learn More"
+    },
+    "stats": {
+      "eventsCreated": "Events Created",
+      "happyAttendees": "Happy Attendees", 
+      "citiesCovered": "Cities Covered",
+      "partnersConnected": "Partners Connected"
+    },
+    "features": {
+      "title": "Why Choose Tikko?",
+      "subtitle": "Everything you need to create and manage successful events",
+      "easyManagement": {
+        "title": "Easy Event Management",
+        "description": "Create and manage your events with our intuitive dashboard"
+      },
+      "securePayments": {
+        "title": "Secure Payments",
+        "description": "Safe and reliable payment processing for all transactions"
+      },
+      "realTimeAnalytics": {
+        "title": "Real-time Analytics",
+        "description": "Track your event performance with detailed insights"
+      }
+    },
+    "cta": {
+      "title": "Ready to Create Your Next Event?",
+      "subtitle": "Join thousands of event organizers who trust Tikko",
+      "getStarted": "Get Started Today",
+      "learnMore": "Learn More"
+    },
+    "footer": {
+      "description": "Modern platform for managing and selling tickets for various events. Discover, create and live unforgettable experiences.",
+      "information": "Information",
+      "contact": "Contact",
+      "phone": "Phone: +55 (47) 9712-1190",
+      "email": "Email: contact@tikko.com",
+      "copyright": "© 2025 Tikko. All rights reserved."
+    }
   }
 }
