@@ -35,6 +35,71 @@ import heroImage from "@/assets/hero-event-image.jpg";
 const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 const geocodingGateway = new GeocodingGateway();
 
+// Fake data for debugging
+const FAKE_EVENT_DATA = {
+  event: {
+    id: 1,
+    name: "Summer Music Festival 2025",
+    description: "Join us for an amazing summer music festival featuring top artists from around the world. Experience incredible performances, delicious food, and unforgettable memories in a beautiful outdoor setting.",
+    is_paid: true,
+    start_date: "2025-08-15T18:00:00Z",
+    end_date: "2025-08-15T23:00:00Z",
+    address_name: "Central Park",
+    longitude: -73.968285,
+    latitude: 40.785091,
+    address_complement: "Great Lawn",
+    is_private: false,
+    auto_accept: true,
+    company_id: 1,
+    ticket_pricing_id: 1,
+    is_active: true,
+    image: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800&h=800&fit=crop",
+    location: "New York, NY",
+    created_at: "2025-01-01T00:00:00Z",
+    updated_at: "2025-01-01T00:00:00Z"
+  },
+  ticket_pricing: [
+    {
+      id: 1,
+      ticket_type: "General Admission",
+      price: 75.00,
+      lot: 1,
+      total_tickets: 1000,
+      sold_tickets: 450,
+      is_active: true,
+      gender: null
+    },
+    {
+      id: 2,
+      ticket_type: "VIP Experience",
+      price: 150.00,
+      lot: 1,
+      total_tickets: 200,
+      sold_tickets: 89,
+      is_active: true,
+      gender: null
+    },
+    {
+      id: 3,
+      ticket_type: "Student Discount",
+      price: 45.00,
+      lot: 1,
+      total_tickets: 300,
+      sold_tickets: 156,
+      is_active: true,
+      gender: null
+    }
+  ]
+};
+
+const FAKE_ADDRESS = {
+  city: "New York",
+  state: "NY",
+  country: "United States"
+};
+
+const isDebugMode = import.meta.env.VITE_ENABLE_PRIVATE_ROUTES !== "true";
+
 export default function EventDetails() {
   const { slug } = useParams<{ slug: string }>();
   const eventId = slug ? getEventIdFromSlug(slug) : null;
@@ -50,7 +115,12 @@ export default function EventDetails() {
     error: eventError,
   } = useQuery({
     queryKey: ["event-with-pricing", eventId],
-    queryFn: () => eventGateway.getEventWithTicketPricing(Number(eventId)),
+    queryFn: () => {
+      if (isDebugMode) {
+        return Promise.resolve(FAKE_EVENT_DATA);
+      }
+      return eventGateway.getEventWithTicketPricing(Number(eventId));
+    },
     enabled: !!eventId,
   });
 
@@ -61,11 +131,15 @@ export default function EventDetails() {
       eventData?.event.latitude,
       eventData?.event.longitude,
     ],
-    queryFn: () =>
-      geocodingGateway.reverseGeocode(
+    queryFn: () => {
+      if (isDebugMode) {
+        return Promise.resolve(FAKE_ADDRESS);
+      }
+      return geocodingGateway.reverseGeocode(
         eventData!.event.latitude,
         eventData!.event.longitude
-      ),
+      );
+    },
     enabled: !!(eventData?.event.latitude && eventData?.event.longitude),
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
   });
