@@ -44,7 +44,7 @@ const MyEvents = () => {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="animate-pulse">
-                <div className="aspect-video bg-muted rounded-t-lg" />
+                <div className="aspect-square bg-muted rounded-t-lg" />
                 <CardContent className="p-4 space-y-2">
                   <div className="h-4 bg-muted rounded w-3/4" />
                   <div className="h-3 bg-muted rounded w-1/2" />
@@ -67,7 +67,7 @@ const MyEvents = () => {
             )}
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {userEvents.map((userEvent) => {
               const event = userEvent.event;
               const eventDate = new Date(event.start_date);
@@ -79,7 +79,7 @@ const MyEvents = () => {
                   className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-border/50 hover:border-primary/30 cursor-pointer"
                   onClick={() => navigate(`/event/${generateSlug(event.name, event.id)}`)}
                 >
-                  <div className="aspect-video relative overflow-hidden">
+                  <div className="aspect-square relative overflow-hidden">
                     <img
                       src={event.image || "/placeholder-event.jpg"}
                       alt={event.name}

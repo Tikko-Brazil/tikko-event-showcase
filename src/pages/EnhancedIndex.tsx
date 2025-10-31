@@ -215,7 +215,7 @@ const EnhancedIndex = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Loading State */}
             {eventsLoading && (
               <div className="col-span-full flex items-center justify-center py-12">
@@ -245,7 +245,7 @@ const EnhancedIndex = () => {
                   key={event.id}
                   className="group hover:shadow-elegant transition-smooth hover:-translate-y-2 gradient-card border-border/50 overflow-hidden"
                 >
-                  <div className="relative h-48 overflow-hidden">
+                  <div className="relative aspect-square overflow-hidden">
                     <img
                       src={event.image || heroEventImage}
                       alt={event.name}
