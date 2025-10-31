@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { CheckoutOverlay } from "@/components/CheckoutOverlay";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
 import getEventIdFromSlug from "@/helpers/getEventIdFromSlug";
@@ -237,9 +238,12 @@ export default function EventDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Animated Background - Desktop Only */}
+      <AnimatedBackground imageUrl={event.image || heroImage} />
+      
       {/* App Bar with Back Button and Share */}
-      <nav className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50">
+      <nav className="bg-background/95 backdrop-blur-sm border-b border-border sticky top-0 z-50 relative">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/">
             <Button
@@ -344,7 +348,7 @@ export default function EventDetails() {
       </div>
 
       {/* Desktop: Image on left, info on right */}
-      <section className="hidden md:block container mx-auto px-4 py-8">
+      <section className="hidden md:block container mx-auto px-4 py-8 relative z-10">
         <div className="flex gap-8 items-start max-w-6xl mx-auto">
           {/* Event Image - Left Side */}
           <div className="w-[400px] flex-shrink-0">
@@ -415,7 +419,7 @@ export default function EventDetails() {
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-6 md:py-8">
+      <div className="container mx-auto px-4 py-6 md:py-8 relative z-10">
         {/* Location Section - Mobile Only */}
         <Card className="bg-tikko-card-light text-gray-900 shadow-lg mb-6 md:hidden">
           <CardContent className="p-4 md:p-6">
