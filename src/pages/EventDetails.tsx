@@ -35,71 +35,6 @@ import heroImage from "@/assets/hero-event-image.jpg";
 const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 const geocodingGateway = new GeocodingGateway();
 
-// Fake data for debugging
-const FAKE_EVENT_DATA = {
-  event: {
-    id: 1,
-    name: "Summer Music Festival 2025",
-    description: "Join us for an amazing summer music festival featuring top artists from around the world. Experience incredible performances, delicious food, and unforgettable memories in a beautiful outdoor setting.",
-    is_paid: true,
-    start_date: "2025-08-15T18:00:00Z",
-    end_date: "2025-08-15T23:00:00Z",
-    address_name: "Central Park",
-    longitude: -73.968285,
-    latitude: 40.785091,
-    address_complement: "Great Lawn",
-    is_private: false,
-    auto_accept: true,
-    company_id: 1,
-    ticket_pricing_id: 1,
-    is_active: true,
-    image: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=800&h=800&fit=crop",
-    location: "New York, NY",
-    created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z"
-  },
-  ticket_pricing: [
-    {
-      id: 1,
-      ticket_type: "General Admission",
-      price: 75.00,
-      lot: 1,
-      total_tickets: 1000,
-      sold_tickets: 450,
-      is_active: true,
-      gender: null
-    },
-    {
-      id: 2,
-      ticket_type: "VIP Experience",
-      price: 150.00,
-      lot: 1,
-      total_tickets: 200,
-      sold_tickets: 89,
-      is_active: true,
-      gender: null
-    },
-    {
-      id: 3,
-      ticket_type: "Student Discount",
-      price: 45.00,
-      lot: 1,
-      total_tickets: 300,
-      sold_tickets: 156,
-      is_active: true,
-      gender: null
-    }
-  ]
-};
-
-const FAKE_ADDRESS = {
-  city: "New York",
-  state: "NY",
-  country: "United States"
-};
-
-const isDebugMode = import.meta.env.VITE_ENABLE_PRIVATE_ROUTES !== "true";
-
 export default function EventDetails() {
   const { slug } = useParams<{ slug: string }>();
   const eventId = slug ? getEventIdFromSlug(slug) : null;
@@ -115,12 +50,7 @@ export default function EventDetails() {
     error: eventError,
   } = useQuery({
     queryKey: ["event-with-pricing", eventId],
-    queryFn: () => {
-      if (isDebugMode) {
-        return Promise.resolve(FAKE_EVENT_DATA);
-      }
-      return eventGateway.getEventWithTicketPricing(Number(eventId));
-    },
+    queryFn: () => eventGateway.getEventWithTicketPricing(Number(eventId)),
     enabled: !!eventId,
   });
 
@@ -131,15 +61,11 @@ export default function EventDetails() {
       eventData?.event.latitude,
       eventData?.event.longitude,
     ],
-    queryFn: () => {
-      if (isDebugMode) {
-        return Promise.resolve(FAKE_ADDRESS);
-      }
-      return geocodingGateway.reverseGeocode(
+    queryFn: () =>
+      geocodingGateway.reverseGeocode(
         eventData!.event.latitude,
         eventData!.event.longitude
-      );
-    },
+      ),
     enabled: !!(eventData?.event.latitude && eventData?.event.longitude),
     staleTime: 24 * 60 * 60 * 1000, // 24 hours
   });
@@ -452,16 +378,16 @@ export default function EventDetails() {
             </div>
 
             {/* Location Card - Desktop Only */}
-            <Card className="bg-tikko-card-light text-gray-900 shadow-lg">
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 flex-1">
-                    <MapPin className="w-5 h-5 text-tikko-orange mt-1 flex-shrink-0" />
+                    <MapPin className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                     <div>
-                      <p className="font-semibold text-lg text-gray-900">
+                      <p className="font-semibold text-lg">
                         {event.address_name || event.location}
                       </p>
-                      <p className="text-gray-600">
+                      <p className="text-muted-foreground">
                         {addressLoading ? (
                           <span className="flex items-center">
                             <Loader2 className="w-3 h-3 animate-spin mr-1" />
@@ -477,7 +403,7 @@ export default function EventDetails() {
                     variant="ghost"
                     size="icon"
                     onClick={openGoogleMaps}
-                    className="text-tikko-orange hover:text-tikko-orange hover:bg-tikko-orange/10 flex-shrink-0"
+                    className="text-primary hover:bg-primary/10 flex-shrink-0"
                     title="Ver no Google Maps"
                   >
                     <ExternalLink className="w-4 h-4" />
@@ -491,16 +417,16 @@ export default function EventDetails() {
 
       <div className="container mx-auto px-4 py-6 md:py-8">
         {/* Location Section - Mobile Only */}
-        <Card className="bg-tikko-card-light text-gray-900 shadow-lg mb-6 md:hidden">
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-lg mb-6 md:hidden">
           <CardContent className="p-4 md:p-6">
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3 flex-1">
-                <MapPin className="w-5 h-5 text-tikko-orange mt-1 flex-shrink-0" />
+                <MapPin className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
                 <div>
-                  <p className="font-semibold text-lg text-gray-900">
+                  <p className="font-semibold text-lg">
                     {event.address_name || event.location}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-muted-foreground">
                     {addressLoading ? (
                       <span className="flex items-center">
                         <Loader2 className="w-3 h-3 animate-spin mr-1" />
@@ -516,7 +442,7 @@ export default function EventDetails() {
                 variant="ghost"
                 size="icon"
                 onClick={openGoogleMaps}
-                className="text-tikko-orange hover:text-tikko-orange hover:bg-tikko-orange/10 flex-shrink-0"
+                className="text-primary hover:bg-primary/10 flex-shrink-0"
                 title="Ver no Google Maps"
               >
                 <ExternalLink className="w-4 h-4" />
@@ -605,12 +531,12 @@ export default function EventDetails() {
 
           {/* Event Description Section */}
           <div className="lg:col-span-2 order-2 lg:order-1">
-            <Card className="bg-tikko-card-light text-gray-900 shadow-lg">
+            <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-lg">
               <CardHeader className="p-4 md:p-6">
-                <CardTitle className="text-xl md:text-2xl text-gray-900">
+                <CardTitle className="text-xl md:text-2xl">
                   {event.name}
                 </CardTitle>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="w-4 h-4" />
                   <span>
                     {formatDate(event.start_date)} •{" "}
@@ -620,10 +546,10 @@ export default function EventDetails() {
               </CardHeader>
               <CardContent className="space-y-6 p-4 md:p-6 pt-0">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                  <h3 className="text-lg font-semibold mb-3">
                     Sobre o evento
                   </h3>
-                  <div className="text-gray-700 whitespace-pre-line leading-relaxed text-sm md:text-base">
+                  <div className="text-foreground/90 whitespace-pre-line leading-relaxed text-sm md:text-base">
                     {event.description}
                   </div>
                 </div>
