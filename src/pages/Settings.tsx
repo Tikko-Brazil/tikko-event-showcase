@@ -57,7 +57,7 @@ const Settings = () => {
                   <p className="font-medium text-sm md:text-base truncate">
                     {t("settings.options.editProfile")}
                   </p>
-                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
+                  <p className="text-xs md:text-sm text-muted-foreground break-words">
                     {t("settings.options.editProfileDesc")}
                   </p>
                 </div>
@@ -89,7 +89,7 @@ const Settings = () => {
                   <p className="font-medium text-sm md:text-base truncate">
                     {t("settings.options.language")}
                   </p>
-                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
+                  <p className="text-xs md:text-sm text-muted-foreground break-words">
                     {t("settings.options.languageDesc")}
                   </p>
                 </div>
@@ -119,7 +119,7 @@ const Settings = () => {
                       <p className="font-medium text-sm md:text-base truncate">
                         {t("settings.options.closeAccount")}
                       </p>
-                      <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
+                      <p className="text-xs md:text-sm text-muted-foreground break-words">
                         {t("settings.options.closeAccountDesc")}
                       </p>
                     </div>
