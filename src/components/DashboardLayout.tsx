@@ -104,7 +104,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   
                   <div className="p-2">
                     <DropdownMenuItem
-                      onClick={() => navigate("/profile")}
+                      onClick={() => navigate("/settings")}
                       className="cursor-pointer rounded-md px-3 py-2"
                     >
                       <Settings className="mr-3 h-4 w-4" />
@@ -220,7 +220,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 
                 <div className="p-2">
                   <DropdownMenuItem
-                    onClick={() => navigate("/profile")}
+                    onClick={() => navigate("/settings")}
                     className="cursor-pointer rounded-md px-3 py-2"
                   >
                     <Settings className="mr-3 h-4 w-4" />

@@ -820,6 +820,29 @@
       "copyright": "© 2025 Tikko. Todos os direitos reservados."
     }
   },
+  "settings": {
+    "title": "Configurações e Privacidade",
+    "subtitle": "Gerencie as configurações e preferências da sua conta",
+    "sections": {
+      "profileInformation": "Informações do Perfil",
+      "generalPreferences": "Preferências Gerais",
+      "accountManagement": "Gerenciamento de Conta"
+    },
+    "options": {
+      "editProfile": "Editar Perfil",
+      "editProfileDesc": "Atualize suas informações pessoais e preferências",
+      "language": "Idioma",
+      "languageDesc": "Escolha seu idioma preferido para o aplicativo",
+      "closeAccount": "Encerrar Conta",
+      "closeAccountDesc": "Excluir permanentemente sua conta e todos os dados associados"
+    },
+    "closeAccountDialog": {
+      "title": "Tem certeza de que deseja encerrar sua conta?",
+      "description": "Esta ação não pode ser desfeita. Todos os seus dados serão excluídos permanentemente.",
+      "cancel": "Cancelar",
+      "confirm": "Encerrar Conta"
+    }
+  },
   "common": {
     "cancel": "Cancelar",
     "confirm": "Confirmar",

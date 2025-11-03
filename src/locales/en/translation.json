@@ -803,6 +803,29 @@
       "copyright": "© 2025 Tikko. All rights reserved."
     }
   },
+  "settings": {
+    "title": "Settings & Privacy",
+    "subtitle": "Manage your account settings and preferences",
+    "sections": {
+      "profileInformation": "Profile Information",
+      "generalPreferences": "General Preferences",
+      "accountManagement": "Account Management"
+    },
+    "options": {
+      "editProfile": "Edit Profile",
+      "editProfileDesc": "Update your personal information and preferences",
+      "language": "Language",
+      "languageDesc": "Choose your preferred language for the app",
+      "closeAccount": "Close Account",
+      "closeAccountDesc": "Permanently delete your account and all associated data"
+    },
+    "closeAccountDialog": {
+      "title": "Are you sure you want to close your account?",
+      "description": "This action cannot be undone. All your data will be permanently deleted.",
+      "cancel": "Cancel",
+      "confirm": "Close Account"
+    }
+  },
   "common": {
     "cancel": "Cancel",
     "confirm": "Confirm",

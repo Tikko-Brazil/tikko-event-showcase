@@ -13,6 +13,7 @@ import Explore from "./pages/Explore";
 import MyEvents from "./pages/MyEvents";
 import MyTickets from "./pages/MyTickets";
 import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import EventManagement from "./pages/EventManagement";
 import EventDetails from "./pages/EventDetails";
 import EventCreation from "./pages/EventCreation";
@@ -92,6 +93,14 @@ const App = () => (
               element={
                 <PrivateRoute>
                   <Profile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <PrivateRoute>
+                  <Settings />
                 </PrivateRoute>
               }
             />
