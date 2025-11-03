@@ -68,7 +68,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder.svg" />
                       <AvatarFallback className="bg-primary text-primary-foreground">
                         {"John Doe".split(" ").map((n) => n[0]).join("")}
                       </AvatarFallback>
@@ -78,12 +77,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <DropdownMenuContent align="end" className="w-72 p-0">
                   <div className="p-4 border-b">
                     <div className="flex items-center gap-3 mb-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src="/placeholder.svg" />
-                        <AvatarFallback className="bg-primary text-primary-foreground text-base">
-                          {"John Doe".split(" ").map((n) => n[0]).join("")}
-                        </AvatarFallback>
-                      </Avatar>
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback className="bg-primary text-primary-foreground text-base">
+                        {"John Doe".split(" ").map((n) => n[0]).join("")}
+                      </AvatarFallback>
+                    </Avatar>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold leading-none truncate">John Doe</p>
                         <p className="text-xs text-muted-foreground mt-1 truncate">
@@ -185,7 +183,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="/placeholder.svg" />
                     <AvatarFallback className="bg-primary text-primary-foreground">
                       {"John Doe".split(" ").map((n) => n[0]).join("")}
                     </AvatarFallback>
@@ -195,12 +192,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <DropdownMenuContent align="end" className="w-72 p-0">
                 <div className="p-4 border-b">
                   <div className="flex items-center gap-3 mb-3">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src="/placeholder.svg" />
-                      <AvatarFallback className="bg-primary text-primary-foreground text-base">
-                        {"John Doe".split(" ").map((n) => n[0]).join("")}
-                      </AvatarFallback>
-                    </Avatar>
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-base">
+                      {"John Doe".split(" ").map((n) => n[0]).join("")}
+                    </AvatarFallback>
+                  </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold leading-none truncate">John Doe</p>
                       <p className="text-xs text-muted-foreground mt-1 truncate">
