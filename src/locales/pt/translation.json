@@ -847,6 +847,7 @@
     "cancel": "Cancelar",
     "confirm": "Confirmar",
     "loading": "Carregando...",
-    "error": "Erro"
+    "error": "Erro",
+    "back": "Voltar"
   }
 }

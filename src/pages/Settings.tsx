@@ -1,10 +1,9 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, User, Globe, XCircle } from "lucide-react";
+import { ChevronRight, User, Globe, XCircle, ArrowLeft } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,8 +26,23 @@ const Settings = () => {
   };
 
   return (
-    <DashboardLayout>
-      <div className="max-w-4xl mx-auto space-y-6 px-4 md:px-0">
+    <div className="min-h-screen bg-background">
+      {/* Header with back navigation */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="flex items-center p-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t("common.back")}
+          </Button>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="max-w-4xl mx-auto space-y-6 px-4 py-6">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
             {t("settings.title")}
@@ -53,7 +67,7 @@ const Settings = () => {
             >
               <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
                 <User className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
-                <div className="text-left flex-1 min-w-0">
+                <div className="text-left flex-1 min-w-0" style={{ textWrap: 'wrap' }}>
                   <p className="font-medium text-sm md:text-base">
                     {t("settings.options.editProfile")}
                   </p>
@@ -85,7 +99,7 @@ const Settings = () => {
             >
               <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
                 <Globe className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
-                <div className="text-left flex-1 min-w-0">
+                <div className="text-left flex-1 min-w-0" style={{ textWrap: 'wrap' }}>
                   <p className="font-medium text-sm md:text-base">
                     {t("settings.options.language")}
                   </p>
@@ -115,7 +129,7 @@ const Settings = () => {
                 >
                   <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
                     <XCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
-                    <div className="text-left flex-1 min-w-0">
+                    <div className="text-left flex-1 min-w-0" style={{ textWrap: 'wrap' }}>
                       <p className="font-medium text-sm md:text-base">
                         {t("settings.options.closeAccount")}
                       </p>
@@ -152,7 +166,7 @@ const Settings = () => {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </div>
   );
 };
 
