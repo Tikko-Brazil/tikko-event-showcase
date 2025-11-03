@@ -28,12 +28,12 @@ const Settings = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6 px-4 md:px-0">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
             {t("settings.title")}
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-muted-foreground mt-2 text-sm md:text-base">
             {t("settings.subtitle")}
           </p>
         </div>
@@ -41,28 +41,28 @@ const Settings = () => {
         {/* Profile Information Section */}
         <Card>
           <CardContent className="p-0">
-            <div className="border-b px-6 py-4">
-              <h2 className="text-lg font-semibold">
+            <div className="border-b px-4 md:px-6 py-3 md:py-4">
+              <h2 className="text-base md:text-lg font-semibold">
                 {t("settings.sections.profileInformation")}
               </h2>
             </div>
             <Button
               variant="ghost"
-              className="w-full justify-between px-6 py-4 h-auto rounded-none hover:bg-accent"
+              className="w-full justify-between px-4 md:px-6 py-3 md:py-4 h-auto rounded-none hover:bg-accent"
               onClick={() => navigate("/profile")}
             >
-              <div className="flex items-center gap-3">
-                <User className="h-5 w-5 text-muted-foreground" />
-                <div className="text-left">
-                  <p className="font-medium">
+              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                <User className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
+                <div className="text-left flex-1 min-w-0">
+                  <p className="font-medium text-sm md:text-base">
                     {t("settings.options.editProfile")}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs md:text-sm text-muted-foreground break-words">
                     {t("settings.options.editProfileDesc")}
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
             </Button>
           </CardContent>
         </Card>
@@ -70,31 +70,31 @@ const Settings = () => {
         {/* General Preferences Section */}
         <Card>
           <CardContent className="p-0">
-            <div className="border-b px-6 py-4">
-              <h2 className="text-lg font-semibold">
+            <div className="border-b px-4 md:px-6 py-3 md:py-4">
+              <h2 className="text-base md:text-lg font-semibold">
                 {t("settings.sections.generalPreferences")}
               </h2>
             </div>
             <Button
               variant="ghost"
-              className="w-full justify-between px-6 py-4 h-auto rounded-none hover:bg-accent border-b"
+              className="w-full justify-between px-4 md:px-6 py-3 md:py-4 h-auto rounded-none hover:bg-accent border-b"
               onClick={() => {
                 // Language selector will be implemented here
                 // For now, navigate to a language settings page or open a dialog
               }}
             >
-              <div className="flex items-center gap-3">
-                <Globe className="h-5 w-5 text-muted-foreground" />
-                <div className="text-left">
-                  <p className="font-medium">
+              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                <Globe className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
+                <div className="text-left flex-1 min-w-0">
+                  <p className="font-medium text-sm md:text-base">
                     {t("settings.options.language")}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs md:text-sm text-muted-foreground break-words">
                     {t("settings.options.languageDesc")}
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
             </Button>
           </CardContent>
         </Card>
@@ -102,8 +102,8 @@ const Settings = () => {
         {/* Account Management Section */}
         <Card>
           <CardContent className="p-0">
-            <div className="border-b px-6 py-4">
-              <h2 className="text-lg font-semibold">
+            <div className="border-b px-4 md:px-6 py-3 md:py-4">
+              <h2 className="text-base md:text-lg font-semibold">
                 {t("settings.sections.accountManagement")}
               </h2>
             </div>
@@ -111,20 +111,20 @@ const Settings = () => {
               <AlertDialogTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full justify-between px-6 py-4 h-auto rounded-none hover:bg-destructive/10 text-destructive hover:text-destructive"
+                  className="w-full justify-between px-4 md:px-6 py-3 md:py-4 h-auto rounded-none hover:bg-destructive/10 text-destructive hover:text-destructive"
                 >
-                  <div className="flex items-center gap-3">
-                    <XCircle className="h-5 w-5" />
-                    <div className="text-left">
-                      <p className="font-medium">
+                  <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                    <XCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                    <div className="text-left flex-1 min-w-0">
+                      <p className="font-medium text-sm md:text-base">
                         {t("settings.options.closeAccount")}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs md:text-sm text-muted-foreground break-words">
                         {t("settings.options.closeAccountDesc")}
                       </p>
                     </div>
                   </div>
-                  <ChevronRight className="h-5 w-5" />
+                  <ChevronRight className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
