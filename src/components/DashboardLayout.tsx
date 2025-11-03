@@ -69,41 +69,61 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src="/placeholder.svg" />
-                      <AvatarFallback>JD</AvatarFallback>
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {"John Doe".split(" ").map((n) => n[0]).join("")}
+                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64">
-                  <DropdownMenuLabel>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">John Doe</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        john.doe@example.com
-                      </p>
+                <DropdownMenuContent align="end" className="w-72 p-0">
+                  <div className="p-4 border-b">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src="/placeholder.svg" />
+                        <AvatarFallback className="bg-primary text-primary-foreground text-base">
+                          {"John Doe".split(" ").map((n) => n[0]).join("")}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold leading-none truncate">John Doe</p>
+                        <p className="text-xs text-muted-foreground mt-1 truncate">
+                          john.doe@example.com
+                        </p>
+                      </div>
                     </div>
-                  </DropdownMenuLabel>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => navigate("/profile")}
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      {t("dashboard.menu.viewProfile")}
+                    </Button>
+                  </div>
+                  
+                  <div className="p-2">
+                    <DropdownMenuItem
+                      onClick={() => navigate("/profile")}
+                      className="cursor-pointer rounded-md px-3 py-2"
+                    >
+                      <Settings className="mr-3 h-4 w-4" />
+                      <span>{t("dashboard.menu.settings")}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer rounded-md px-3 py-2">
+                      <HelpCircle className="mr-3 h-4 w-4" />
+                      <span>{t("dashboard.menu.help")}</span>
+                    </DropdownMenuItem>
+                  </div>
+
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => navigate("/profile")}
-                    className="cursor-pointer"
-                  >
-                    <User className="mr-2 h-4 w-4" />
-                    <span>{t("dashboard.menu.viewProfile")}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>{t("dashboard.menu.settings")}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
-                    <HelpCircle className="mr-2 h-4 w-4" />
-                    <span>{t("dashboard.menu.help")}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>{t("dashboard.menu.signOut")}</span>
-                  </DropdownMenuItem>
+                  
+                  <div className="p-2">
+                    <DropdownMenuItem className="cursor-pointer rounded-md px-3 py-2 text-destructive focus:text-destructive focus:bg-destructive/10">
+                      <LogOut className="mr-3 h-4 w-4" />
+                      <span>{t("dashboard.menu.signOut")}</span>
+                    </DropdownMenuItem>
+                  </div>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -166,41 +186,61 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src="/placeholder.svg" />
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {"John Doe".split(" ").map((n) => n[0]).join("")}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-64">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">John Doe</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      john.doe@example.com
-                    </p>
+              <DropdownMenuContent align="end" className="w-72 p-0">
+                <div className="p-4 border-b">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src="/placeholder.svg" />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-base">
+                        {"John Doe".split(" ").map((n) => n[0]).join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold leading-none truncate">John Doe</p>
+                      <p className="text-xs text-muted-foreground mt-1 truncate">
+                        john.doe@example.com
+                      </p>
+                    </div>
                   </div>
-                </DropdownMenuLabel>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => navigate("/profile")}
+                  >
+                    <User className="mr-2 h-4 w-4" />
+                    {t("dashboard.menu.viewProfile")}
+                  </Button>
+                </div>
+                
+                <div className="p-2">
+                  <DropdownMenuItem
+                    onClick={() => navigate("/profile")}
+                    className="cursor-pointer rounded-md px-3 py-2"
+                  >
+                    <Settings className="mr-3 h-4 w-4" />
+                    <span>{t("dashboard.menu.settings")}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer rounded-md px-3 py-2">
+                    <HelpCircle className="mr-3 h-4 w-4" />
+                    <span>{t("dashboard.menu.help")}</span>
+                  </DropdownMenuItem>
+                </div>
+
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => navigate("/profile")}
-                  className="cursor-pointer"
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  <span>{t("dashboard.menu.viewProfile")}</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>{t("dashboard.menu.settings")}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                  <HelpCircle className="mr-2 h-4 w-4" />
-                  <span>{t("dashboard.menu.help")}</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>{t("dashboard.menu.signOut")}</span>
-                </DropdownMenuItem>
+                
+                <div className="p-2">
+                  <DropdownMenuItem className="cursor-pointer rounded-md px-3 py-2 text-destructive focus:text-destructive focus:bg-destructive/10">
+                    <LogOut className="mr-3 h-4 w-4" />
+                    <span>{t("dashboard.menu.signOut")}</span>
+                  </DropdownMenuItem>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
