@@ -77,7 +77,7 @@ const TicketQRCode = ({
     mutationFn: async () => {
       if (!ticketData) throw new Error("Ticket data not found");
       // Try different possible locations for user_id
-      const userId = ticketData.user_id || ticketData.ticket.user_id || ticketData.ticket.userId;
+      const userId = ticketData.user_id || ticketData.ticket.user_id;
       if (!userId) {
         console.error("User ID not found in ticket data:", ticketData);
         throw new Error("User ID not found");

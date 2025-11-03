@@ -5,6 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Home,
   Search,
   Calendar,
@@ -12,6 +20,9 @@ import {
   User,
   Bell,
   Activity,
+  Settings,
+  HelpCircle,
+  LogOut,
 } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -108,10 +119,48 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             <Button variant="ghost" size="sm">
               <Bell className="h-5 w-5" />
             </Button>
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="/placeholder.svg" />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="/placeholder.svg" />
+                    <AvatarFallback>JD</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">John Doe</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      john.doe@example.com
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => navigate("/profile")}
+                  className="cursor-pointer"
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  <span>{t("dashboard.menu.viewProfile")}</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>{t("dashboard.menu.settings")}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
+                  <HelpCircle className="mr-2 h-4 w-4" />
+                  <span>{t("dashboard.menu.help")}</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>{t("dashboard.menu.signOut")}</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>

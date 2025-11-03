@@ -7,6 +7,12 @@
       "myTickets": "My Tickets",
       "profile": "Profile"
     },
+    "menu": {
+      "viewProfile": "View Profile",
+      "settings": "Settings & Privacy",
+      "help": "Help",
+      "signOut": "Sign Out"
+    },
     "myEvents": {
       "title": "My Events",
       "createEvent": "Create Event",

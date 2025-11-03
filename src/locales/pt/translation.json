@@ -7,6 +7,12 @@
       "myTickets": "Meus Ingressos",
       "profile": "Perfil"
     },
+    "menu": {
+      "viewProfile": "Ver Perfil",
+      "settings": "Configurações e Privacidade",
+      "help": "Ajuda",
+      "signOut": "Sair"
+    },
     "myEvents": {
       "title": "Meus Eventos",
       "createEvent": "Criar Evento",
