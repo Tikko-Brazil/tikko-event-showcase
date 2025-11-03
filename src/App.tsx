@@ -15,6 +15,7 @@ import MyTickets from "./pages/MyTickets";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import EditProfile from "./pages/EditProfile";
+import Language from "./pages/Language";
 import EventManagement from "./pages/EventManagement";
 import EventDetails from "./pages/EventDetails";
 import EventCreation from "./pages/EventCreation";
@@ -110,6 +111,14 @@ const App = () => (
                 element={
                   <PrivateRoute>
                     <EditProfile />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/language"
+                element={
+                  <PrivateRoute>
+                    <Language />
                   </PrivateRoute>
                 }
               />

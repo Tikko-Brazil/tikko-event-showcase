@@ -92,10 +92,7 @@ const Settings = () => {
             <Button
               variant="ghost"
               className="w-full justify-between px-4 md:px-6 py-3 md:py-4 h-auto rounded-none hover:bg-accent border-b"
-              onClick={() => {
-                // Language selector will be implemented here
-                // For now, navigate to a language settings page or open a dialog
-              }}
+              onClick={() => navigate("/language")}
             >
               <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
                 <Globe className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
