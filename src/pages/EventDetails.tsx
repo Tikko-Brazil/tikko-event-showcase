@@ -315,7 +315,7 @@ export default function EventDetails() {
               alt={event.name}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-background"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/5 to-background"></div>
           </div>
         </section>
         <div className="relative z-10 h-full flex items-end">
@@ -327,13 +327,13 @@ export default function EventDetails() {
               <div className="flex flex-col gap-2 text-white/90">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span className="text-sm">
+                  <span className="text-md">
                     {formatDate(event.start_date)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  <span className="text-sm">
+                  <span className="text-md">
                     {formatTime(event.start_date, event.end_date)}
                   </span>
                 </div>
