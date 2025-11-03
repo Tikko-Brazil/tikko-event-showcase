@@ -14,6 +14,7 @@ import MyEvents from "./pages/MyEvents";
 import MyTickets from "./pages/MyTickets";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
+import EditProfile from "./pages/EditProfile";
 import EventManagement from "./pages/EventManagement";
 import EventDetails from "./pages/EventDetails";
 import EventCreation from "./pages/EventCreation";
@@ -96,14 +97,22 @@ const App = () => (
                 </PrivateRoute>
               }
             />
-            <Route
-              path="/settings"
-              element={
-                <PrivateRoute>
-                  <Settings />
-                </PrivateRoute>
-              }
-            />
+              <Route
+                path="/settings"
+                element={
+                  <PrivateRoute>
+                    <Settings />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/edit-profile"
+                element={
+                  <PrivateRoute>
+                    <EditProfile />
+                  </PrivateRoute>
+                }
+              />
             <Route
               path="/event-management/:eventId"
               element={
