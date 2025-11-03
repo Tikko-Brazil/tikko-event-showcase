@@ -28,18 +28,18 @@ const Settings = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto space-y-6 px-4 md:px-0">
-        <div>
+      <div className="max-w-4xl mx-auto space-y-6 px-4 md:px-6 w-full overflow-hidden">
+        <div className="space-y-2">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
             {t("settings.title")}
           </h1>
-          <p className="text-muted-foreground mt-2 text-sm md:text-base">
+          <p className="text-muted-foreground text-sm md:text-base">
             {t("settings.subtitle")}
           </p>
         </div>
 
         {/* Profile Information Section */}
-        <Card>
+        <Card className="overflow-hidden">
           <CardContent className="p-0">
             <div className="border-b px-4 md:px-6 py-3 md:py-4">
               <h2 className="text-base md:text-lg font-semibold">
@@ -51,24 +51,24 @@ const Settings = () => {
               className="w-full justify-between px-4 md:px-6 py-3 md:py-4 h-auto rounded-none hover:bg-accent"
               onClick={() => navigate("/profile")}
             >
-              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0 overflow-hidden">
                 <User className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
-                <div className="text-left flex-1 min-w-0">
-                  <p className="font-medium text-sm md:text-base">
+                <div className="text-left flex-1 min-w-0 overflow-hidden">
+                  <p className="font-medium text-sm md:text-base truncate">
                     {t("settings.options.editProfile")}
                   </p>
-                  <p className="text-xs md:text-sm text-muted-foreground break-words">
+                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
                     {t("settings.options.editProfileDesc")}
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
+              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0 ml-2" />
             </Button>
           </CardContent>
         </Card>
 
         {/* General Preferences Section */}
-        <Card>
+        <Card className="overflow-hidden">
           <CardContent className="p-0">
             <div className="border-b px-4 md:px-6 py-3 md:py-4">
               <h2 className="text-base md:text-lg font-semibold">
@@ -83,24 +83,24 @@ const Settings = () => {
                 // For now, navigate to a language settings page or open a dialog
               }}
             >
-              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0 overflow-hidden">
                 <Globe className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
-                <div className="text-left flex-1 min-w-0">
-                  <p className="font-medium text-sm md:text-base">
+                <div className="text-left flex-1 min-w-0 overflow-hidden">
+                  <p className="font-medium text-sm md:text-base truncate">
                     {t("settings.options.language")}
                   </p>
-                  <p className="text-xs md:text-sm text-muted-foreground break-words">
+                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
                     {t("settings.options.languageDesc")}
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
+              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0 ml-2" />
             </Button>
           </CardContent>
         </Card>
 
         {/* Account Management Section */}
-        <Card>
+        <Card className="overflow-hidden">
           <CardContent className="p-0">
             <div className="border-b px-4 md:px-6 py-3 md:py-4">
               <h2 className="text-base md:text-lg font-semibold">
@@ -113,18 +113,18 @@ const Settings = () => {
                   variant="ghost"
                   className="w-full justify-between px-4 md:px-6 py-3 md:py-4 h-auto rounded-none hover:bg-destructive/10 text-destructive hover:text-destructive"
                 >
-                  <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                  <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0 overflow-hidden">
                     <XCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
-                    <div className="text-left flex-1 min-w-0">
-                      <p className="font-medium text-sm md:text-base">
+                    <div className="text-left flex-1 min-w-0 overflow-hidden">
+                      <p className="font-medium text-sm md:text-base truncate">
                         {t("settings.options.closeAccount")}
                       </p>
-                      <p className="text-xs md:text-sm text-muted-foreground break-words">
+                      <p className="text-xs md:text-sm text-muted-foreground line-clamp-2">
                         {t("settings.options.closeAccountDesc")}
                       </p>
                     </div>
                   </div>
-                  <ChevronRight className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
+                  <ChevronRight className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 ml-2" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
