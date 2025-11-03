@@ -23,6 +23,7 @@ import {
   Settings,
   HelpCircle,
   LogOut,
+  ChevronDown,
 } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -66,12 +67,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
+                  <Button variant="ghost" className="rounded-full gap-1 pr-2">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="bg-primary text-primary-foreground">
                         {"John Doe".split(" ").map((n) => n[0]).join("")}
                       </AvatarFallback>
                     </Avatar>
+                    <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-72 p-0">
@@ -181,12 +183,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <Button variant="ghost" className="rounded-full gap-1 pr-2">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary text-primary-foreground">
                       {"John Doe".split(" ").map((n) => n[0]).join("")}
                     </AvatarFallback>
                   </Avatar>
+                  <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-72 p-0">
