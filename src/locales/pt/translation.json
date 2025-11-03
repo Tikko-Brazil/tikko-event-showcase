@@ -597,7 +597,8 @@
     "actions": {
       "viewDetails": "Ver Detalhes",
       "showQR": "Mostrar QR",
-      "downloadPDF": "Baixar PDF"
+      "downloadPDF": "Baixar PDF",
+      "download": "Baixar"
     },
     "backToDashboard": "Voltar ao Dashboard",
     "backToTickets": "Voltar aos Ingressos",
@@ -630,6 +631,10 @@
       "description": "Tem certeza que deseja baixar este ingresso em PDF? Você pode imprimi-lo ou salvá-lo para acesso offline.",
       "confirm": "Baixar",
       "cancel": "Cancelar"
+    },
+    "downloadConfirmation": {
+      "title": "Baixar Ingresso em PDF",
+      "description": "Tem certeza que deseja baixar este ingresso em PDF? Você pode imprimi-lo ou salvá-lo para acesso offline."
     }
   },
   "auth": {
@@ -808,5 +813,11 @@
       "email": "E-mail: contato@tikko.com",
       "copyright": "© 2025 Tikko. Todos os direitos reservados."
     }
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "loading": "Carregando...",
+    "error": "Erro"
   }
 }

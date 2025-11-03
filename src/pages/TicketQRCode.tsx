@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -72,6 +72,32 @@ const TicketQRCode = ({
     (t) => t.ticket.uuid === ticketId
   );
 
+  // PDF Download mutation
+  const downloadMutation = useMutation({
+    mutationFn: async () => {
+      if (!ticketData) throw new Error("Ticket data not found");
+      // Try different possible locations for user_id
+      const userId = ticketData.user_id || ticketData.ticket.user_id || ticketData.ticket.userId;
+      if (!userId) {
+        console.error("User ID not found in ticket data:", ticketData);
+        throw new Error("User ID not found");
+      }
+      return ticketGateway.getTicketDownloadUrl(userId, ticketData.event.id);
+    },
+    onSuccess: (response) => {
+      // Open download URL in new tab
+      window.open(response.download_url, '_blank');
+      
+      toast.success(t("myTickets.downloadSuccess"));
+      setShowDownloadDialog(false);
+    },
+    onError: (error) => {
+      console.error('Download error:', error);
+      toast.error(t("common.error"));
+      setShowDownloadDialog(false);
+    }
+  });
+
   const formatTicketName = (ticket: any) => {
     const genderText =
       ticket?.gender === "male"
@@ -87,9 +113,7 @@ const TicketQRCode = ({
   };
 
   const handleDownloadPDF = () => {
-    setShowDownloadDialog(false);
-    toast.success(t("myTickets.downloadSuccess"));
-    // TODO: Implement actual PDF download
+    downloadMutation.mutate();
   };
 
   if (isLoading) {
@@ -277,8 +301,11 @@ const TicketQRCode = ({
             <AlertDialogCancel>
               {t("myTickets.downloadDialog.cancel")}
             </AlertDialogCancel>
-            <AlertDialogAction onClick={handleDownloadPDF}>
-              {t("myTickets.downloadDialog.confirm")}
+            <AlertDialogAction 
+              onClick={handleDownloadPDF}
+              disabled={downloadMutation.isPending}
+            >
+              {downloadMutation.isPending ? t("common.loading") : t("myTickets.downloadDialog.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

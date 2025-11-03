@@ -580,7 +580,8 @@
     "actions": {
       "viewDetails": "View Details",
       "showQR": "Show QR",
-      "downloadPDF": "Download PDF"
+      "downloadPDF": "Download PDF",
+      "download": "Download"
     },
     "backToDashboard": "Back to Dashboard",
     "backToTickets": "Back to Tickets",
@@ -613,6 +614,10 @@
       "description": "Are you sure you want to download this ticket as a PDF? You can print it or save it for offline access.",
       "confirm": "Download",
       "cancel": "Cancel"
+    },
+    "downloadConfirmation": {
+      "title": "Download Ticket PDF",
+      "description": "Are you sure you want to download this ticket as a PDF? You can print it or save it for offline access."
     }
   },
   "auth": {
@@ -791,5 +796,11 @@
       "email": "Email: contact@tikko.com",
       "copyright": "© 2025 Tikko. All rights reserved."
     }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "Error"
   }
 }
