@@ -3,12 +3,29 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Globe } from "lucide-react";
-import LanguageSelector from "@/components/LanguageSelector";
+import { ArrowLeft, ChevronDown } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Language = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+
+  const languages = [
+    { code: "pt", name: "Português", flag: "🇧🇷" },
+    { code: "en", name: "English", flag: "🇺🇸" },
+  ];
+
+  const currentLanguage = languages.find((lang) => lang.code === i18n.language) || languages[0];
+
+  const handleLanguageChange = (languageCode: string) => {
+    i18n.changeLanguage(languageCode);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -40,19 +57,39 @@ const Language = () => {
         {/* Language Selection Card */}
         <Card>
           <CardContent className="p-6 md:p-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Globe className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="font-medium text-sm md:text-base">
-                    {t("settings.options.language")}
-                  </p>
-                  <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                    {t("settings.options.languageDesc")}
-                  </p>
-                </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-3 block">
+                  {t("settings.options.language")}
+                </label>
+                <Select
+                  value={currentLanguage.code}
+                  onValueChange={handleLanguageChange}
+                >
+                  <SelectTrigger className="w-full h-14 text-base">
+                    <SelectValue>
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{currentLanguage.flag}</span>
+                        <span className="font-medium">{currentLanguage.name}</span>
+                      </div>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languages.map((language) => (
+                      <SelectItem
+                        key={language.code}
+                        value={language.code}
+                        className="h-12 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">{language.flag}</span>
+                          <span className="font-medium">{language.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <LanguageSelector />
             </div>
           </CardContent>
         </Card>
