@@ -48,13 +48,13 @@ const Settings = () => {
             </div>
             <Button
               variant="ghost"
-              className="w-full justify-between px-4 md:px-6 py-3 md:py-4 h-auto rounded-none hover:bg-accent"
+              className="w-full justify-between px-4 md:px-6 py-3 md:py-4 h-auto rounded-none hover:bg-accent items-start"
               onClick={() => navigate("/profile")}
             >
-              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0 overflow-hidden">
-                <User className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
-                <div className="text-left flex-1 min-w-0 overflow-hidden">
-                  <p className="font-medium text-sm md:text-base truncate">
+              <div className="flex items-start gap-2 md:gap-3 flex-1">
+                <User className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <div className="text-left flex-1">
+                  <p className="font-medium text-sm md:text-base break-words">
                     {t("settings.options.editProfile")}
                   </p>
                   <p className="text-xs md:text-sm text-muted-foreground break-words">
@@ -62,7 +62,7 @@ const Settings = () => {
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0 ml-2" />
+              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0 ml-2 mt-0.5" />
             </Button>
           </CardContent>
         </Card>
@@ -77,16 +77,16 @@ const Settings = () => {
             </div>
             <Button
               variant="ghost"
-              className="w-full justify-between px-4 md:px-6 py-3 md:py-4 h-auto rounded-none hover:bg-accent border-b"
+              className="w-full justify-between px-4 md:px-6 py-3 md:py-4 h-auto rounded-none hover:bg-accent border-b items-start"
               onClick={() => {
                 // Language selector will be implemented here
                 // For now, navigate to a language settings page or open a dialog
               }}
             >
-              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0 overflow-hidden">
-                <Globe className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
-                <div className="text-left flex-1 min-w-0 overflow-hidden">
-                  <p className="font-medium text-sm md:text-base truncate">
+              <div className="flex items-start gap-2 md:gap-3 flex-1">
+                <Globe className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                <div className="text-left flex-1">
+                  <p className="font-medium text-sm md:text-base break-words">
                     {t("settings.options.language")}
                   </p>
                   <p className="text-xs md:text-sm text-muted-foreground break-words">
@@ -94,7 +94,7 @@ const Settings = () => {
                   </p>
                 </div>
               </div>
-              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0 ml-2" />
+              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0 ml-2 mt-0.5" />
             </Button>
           </CardContent>
         </Card>
@@ -111,12 +111,12 @@ const Settings = () => {
               <AlertDialogTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full justify-between px-4 md:px-6 py-3 md:py-4 h-auto rounded-none hover:bg-destructive/10 text-destructive hover:text-destructive"
+                  className="w-full justify-between px-4 md:px-6 py-3 md:py-4 h-auto rounded-none hover:bg-destructive/10 text-destructive hover:text-destructive items-start"
                 >
-                  <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0 overflow-hidden">
-                    <XCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0" />
-                    <div className="text-left flex-1 min-w-0 overflow-hidden">
-                      <p className="font-medium text-sm md:text-base truncate">
+                  <div className="flex items-start gap-2 md:gap-3 flex-1">
+                    <XCircle className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 mt-0.5" />
+                    <div className="text-left flex-1">
+                      <p className="font-medium text-sm md:text-base break-words">
                         {t("settings.options.closeAccount")}
                       </p>
                       <p className="text-xs md:text-sm text-muted-foreground break-words">
@@ -124,7 +124,7 @@ const Settings = () => {
                       </p>
                     </div>
                   </div>
-                  <ChevronRight className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 ml-2" />
+                  <ChevronRight className="h-4 w-4 md:h-5 md:w-5 flex-shrink-0 ml-2 mt-0.5" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
