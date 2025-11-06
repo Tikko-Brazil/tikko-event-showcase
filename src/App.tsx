@@ -26,6 +26,7 @@ import Contact from "./pages/Contact";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
+import Events from "./pages/Events";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,14 @@ const App = () => (
               element={
                 <PrivateRoute>
                   <Explore />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/events"
+              element={
+                <PrivateRoute>
+                  <Events />
                 </PrivateRoute>
               }
             />

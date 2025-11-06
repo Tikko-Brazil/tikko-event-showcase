@@ -181,7 +181,7 @@ const EnhancedIndex = () => {
               {t("home.hero.subtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/login">
+              <Link to="/events">
                 <Button
                   size="lg"
                   className="h-14 px-8 text-lg gradient-button hover:shadow-elegant transition-bounce"
@@ -315,14 +315,16 @@ const EnhancedIndex = () => {
           </div>
 
           <div className="text-center mt-12">
-            <Button
-              size="lg"
-              variant="outline"
-              className="hover:shadow-card transition-smooth"
-            >
-              {t("home.events.viewAll")}
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            <Link to="/events">
+              <Button
+                size="lg"
+                variant="outline"
+                className="hover:shadow-card transition-smooth"
+              >
+                {t("home.events.viewAll")}
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
