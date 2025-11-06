@@ -115,7 +115,7 @@ const EnhancedIndex = () => {
             </div>
             <nav className="hidden md:flex items-center space-x-8">
               <Link
-                to="#events"
+                to="/events"
                 className="text-foreground hover:text-primary transition-smooth"
               >
                 {t("home.nav.events")}
