@@ -25,9 +25,11 @@ import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
 import generateSlug from "@/helpers/generateSlug";
 import heroEventImage from "@/assets/hero-event-image.jpg";
-import DashboardLayout from "@/components/DashboardLayout";
 import { Pagination } from "@/components/Pagination";
 import { debounce } from "lodash";
+import logoLight from "@/assets/logoLight.png";
+import mark from "@/assets/mark.png";
+import LanguageSelector from "@/components/LanguageSelector";
 
 const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 const geocodingGateway = new GeocodingGateway();
@@ -130,48 +132,104 @@ const Events = () => {
   const endIndex = Math.min(currentPage * ITEMS_PER_PAGE, events?.total || 0);
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold">{t("home.events.title")}</h1>
-          <p className="text-muted-foreground mt-2">
-            {t("home.events.subtitle")}
-          </p>
-        </div>
-
-        {/* Search Bar */}
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={t("dashboard.search.placeholder")}
-            onChange={handleSearchChange}
-            className="pl-9"
-          />
-        </div>
-
-        {/* Loading State */}
-        {eventsLoading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <span className="ml-2 text-muted-foreground">
-              {t("home.events.loading")}
-            </span>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="bg-background/80 backdrop-blur-md border-b border-border/50 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Link to="/">
+                <img src={logoLight} alt="Tikko" className="h-8" />
+              </Link>
+            </div>
+            <nav className="hidden md:flex items-center space-x-8">
+              <Link
+                to="/events"
+                className="text-primary font-medium transition-smooth"
+              >
+                {t("home.nav.events")}
+              </Link>
+              <Link
+                to="/about"
+                className="text-foreground hover:text-primary transition-smooth"
+              >
+                {t("home.nav.about")}
+              </Link>
+              <Link
+                to="/contact"
+                className="text-foreground hover:text-primary transition-smooth"
+              >
+                {t("home.nav.contact")}
+              </Link>
+            </nav>
+            <div className="flex items-center space-x-3">
+              <LanguageSelector />
+              <Link to="/login">
+                <Button
+                  variant="ghost"
+                  className="transition-smooth hover:shadow-glow"
+                >
+                  {t("home.nav.signIn")}
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button className="gradient-button hover:shadow-elegant transition-smooth">
+                  {t("home.nav.getStarted")}
+                </Button>
+              </Link>
+            </div>
           </div>
-        )}
+        </div>
+      </header>
 
-        {/* Error State */}
-        {eventsError && (
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{t("home.events.error")}</AlertDescription>
-          </Alert>
-        )}
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="space-y-6">
+          {/* Page Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              {t("home.events.title").split(" ")[0]}{" "}
+              <span className="text-primary">
+                {t("home.events.title").split(" ")[1]}
+              </span>
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              {t("home.events.subtitle")}
+            </p>
+          </div>
 
-        {/* Events Grid */}
-        {!eventsLoading && events?.events && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Search Bar */}
+          <div className="relative max-w-md mx-auto">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder={t("dashboard.search.placeholder")}
+              onChange={handleSearchChange}
+              className="pl-9"
+            />
+          </div>
+
+          {/* Loading State */}
+          {eventsLoading && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <span className="ml-2 text-muted-foreground">
+                {t("home.events.loading")}
+              </span>
+            </div>
+          )}
+
+          {/* Error State */}
+          {eventsError && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{t("home.events.error")}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Events Grid */}
+          {!eventsLoading && events?.events && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
               {events.events.map((event) => (
                 <Card
                   key={event.id}
@@ -233,33 +291,97 @@ const Events = () => {
                   </CardContent>
                 </Card>
               ))}
-            </div>
 
-            {/* Empty State */}
-            {events.events.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">
-                  {t("home.events.noEvents")}
-                </p>
-              </div>
-            )}
+              {/* Empty State */}
+              {events.events.length === 0 && (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-muted-foreground">
+                    {t("home.events.noEvents")}
+                  </p>
+                </div>
+              )}
+            </div>
 
             {/* Pagination */}
             {events.total_pages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={events.total_pages}
-                onPageChange={setCurrentPage}
-                startIndex={startIndex}
-                endIndex={endIndex}
-                totalItems={events.total}
-                itemName={t("home.events.title").toLowerCase()}
-              />
+              <div className="max-w-7xl mx-auto">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={events.total_pages}
+                  onPageChange={setCurrentPage}
+                  startIndex={startIndex}
+                  endIndex={endIndex}
+                  totalItems={events.total}
+                  itemName={t("home.events.title").toLowerCase()}
+                />
+              </div>
             )}
           </>
         )}
+        </div>
       </div>
-    </DashboardLayout>
+
+      {/* Footer */}
+      <footer className="bg-card border-t border-border mt-16">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center space-x-3 mb-4">
+                <img src={logoLight} alt="Tikko" className="h-8" />
+              </div>
+              <p className="text-muted-foreground mb-4 max-w-md">
+                {t("home.footer.description")}
+              </p>
+              <div className="flex items-center space-x-4">
+                <img src={mark} alt="Tikko Mark" className="h-6 opacity-50" />
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-4">{t("home.footer.information")}</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <Link
+                    to="/about"
+                    className="hover:text-foreground transition-smooth"
+                  >
+                    {t("home.nav.about")}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/contact"
+                    className="hover:text-foreground transition-smooth"
+                  >
+                    {t("home.nav.contact")}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="#"
+                    className="hover:text-foreground transition-smooth"
+                  >
+                    Careers
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-4">{t("home.footer.contact")}</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>{t("home.footer.phone")}</li>
+                <li>{t("home.footer.email")}</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
+            <p>{t("home.footer.copyright")}</p>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 };
 

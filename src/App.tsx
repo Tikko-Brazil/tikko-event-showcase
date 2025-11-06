@@ -75,14 +75,7 @@ const App = () => (
                 </PrivateRoute>
               }
             />
-            <Route
-              path="/events"
-              element={
-                <PrivateRoute>
-                  <Events />
-                </PrivateRoute>
-              }
-            />
+            <Route path="/events" element={<Events />} />
             <Route
               path="/my-events"
               element={
