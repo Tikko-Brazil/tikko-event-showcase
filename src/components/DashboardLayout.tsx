@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -28,6 +28,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
+import SearchModal from "@/components/SearchModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserGateway } from "@/lib/UserGateway";
@@ -43,6 +44,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const userGateway = new UserGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
@@ -83,7 +85,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           <div className="flex h-14 items-center justify-between px-4">
             <img src={logoLight} alt="Tikko" className="h-8" />
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={() => setIsSearchOpen(true)}>
                 <Search className="h-5 w-5" />
               </Button>
               <Button variant="ghost" size="sm">
@@ -182,6 +184,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             })}
           </div>
         </nav>
+
+        {/* Search Modal */}
+        <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       </div>
     );
   }
@@ -193,14 +198,21 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <div className="flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-6">
             <img src={logoLight} alt="Tikko" className="h-8" />
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t("dashboard.search.placeholder")}
-                className="pl-10 w-80"
-              />
-            </div>
           </div>
+          
+          {/* Centered Search Bar */}
+          <div className="absolute left-1/2 -translate-x-1/2">
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 w-96 rounded-md border border-input bg-background hover:bg-accent transition-colors text-left"
+            >
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                {t("dashboard.search.placeholder") || "Search events..."}
+              </span>
+            </button>
+          </div>
+
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm">
               <Bell className="h-5 w-5" />
@@ -296,6 +308,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
         {/* Desktop Main Content */}
         <main className="flex-1 overflow-auto p-6">{children}</main>
+
+        {/* Search Modal */}
+        <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
         {/* Desktop Right Sidebar */}
         <aside className="w-80 border-l bg-card/50 backdrop-blur-sm p-6">
