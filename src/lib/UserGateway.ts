@@ -112,6 +112,40 @@ interface TicketByEmailResponse {
   ticket_uuid: string;
 }
 
+interface DashboardEvent {
+  id: number;
+  name: string;
+  description: string;
+  is_paid: boolean;
+  start_date: string;
+  end_date: string;
+  address_name: string;
+  longitude: number;
+  latitude: number;
+  address_complement: string;
+  is_private: boolean;
+  auto_accept: boolean;
+  company_id: number;
+  is_active: boolean;
+  image: string;
+}
+
+interface DashboardTopEvent {
+  event: DashboardEvent;
+  participant_count: number;
+}
+
+interface DashboardUser {
+  username: string;
+  email: string;
+  is_admin: boolean;
+}
+
+interface DashboardResponse {
+  top_events: DashboardTopEvent[];
+  user: DashboardUser;
+}
+
 const ERROR_MESSAGES = {
   getUser: {
     200: "Success (but returns null)",
@@ -141,6 +175,11 @@ const ERROR_MESSAGES = {
     400: "Invalid request body or missing email",
     403: "Ticket is not Door",
     404: "User not found or ticket not found",
+    500: "Internal Server Error",
+  },
+  getDashboard: {
+    401: "Unauthorized (invalid token)",
+    404: "Not Found (user not found)",
     500: "Internal Server Error",
   },
 };
@@ -262,5 +301,15 @@ export class UserGateway {
       response,
       "getTicketByEmail"
     );
+  }
+
+  async getDashboard(): Promise<DashboardResponse> {
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/dashboard`,
+      {
+        method: "GET",
+      }
+    );
+    return this.handleResponse<DashboardResponse>(response, "getDashboard");
   }
 }

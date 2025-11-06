@@ -3,8 +3,8 @@
     "tabs": {
       "feed": "Feed",
       "explore": "Explorar",
-      "myEvents": "Meus Eventos",
-      "myTickets": "Meus Ingressos",
+      "myEvents": "Eventos",
+      "myTickets": "Ingressos",
       "profile": "Perfil"
     },
     "menu": {
@@ -94,7 +94,7 @@
           "minutesAgo": "{{count}} minuto atrás",
           "minutesAgo_plural": "{{count}} minutos atrás",
           "hoursAgo": "{{count}} hora atrás",
-          "hoursAgo_plural": "{{count}} horas atrás", 
+          "hoursAgo_plural": "{{count}} horas atrás",
           "daysAgo": "{{count}} dia atrás",
           "daysAgo_plural": "{{count}} dias atrás"
         },
@@ -456,7 +456,7 @@
       "roles": {
         "host": "Anfitrião",
         "manager": "Gerente",
-        "coordinator": "Coordenador", 
+        "coordinator": "Coordenador",
         "validator": "Validador"
       },
       "actions": {
@@ -760,7 +760,7 @@
   "home": {
     "nav": {
       "events": "Eventos",
-      "about": "Sobre", 
+      "about": "Sobre",
       "contact": "Contato",
       "signIn": "Entrar",
       "getStarted": "Começar"
@@ -785,7 +785,7 @@
     },
     "stats": {
       "eventsCreated": "Eventos Criados",
-      "happyAttendees": "Participantes Felizes", 
+      "happyAttendees": "Participantes Felizes",
       "citiesCovered": "Cidades Cobertas",
       "partnersConnected": "Parceiros Conectados"
     },

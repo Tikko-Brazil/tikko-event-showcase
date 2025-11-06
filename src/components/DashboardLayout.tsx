@@ -1,5 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,6 +30,8 @@ import {
 import LanguageSelector from "@/components/LanguageSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate, useLocation } from "react-router-dom";
+import { UserGateway } from "@/lib/UserGateway";
+import generateSlug from "@/helpers/generateSlug";
 import logoLight from "@/assets/logoLight.png";
 
 interface DashboardLayoutProps {
@@ -40,12 +44,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const userGateway = new UserGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+
+  const { data: dashboardData } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: () => userGateway.getDashboard(),
+    staleTime: 24 * 60 * 60 * 1000, // 1 day
+    gcTime: 24 * 60 * 60 * 1000, // 1 day
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   const tabs = [
-    { id: "feed", label: t("dashboard.tabs.feed"), icon: Activity, path: "/feed" },
+    // { id: "feed", label: t("dashboard.tabs.feed"), icon: Activity, path: "/feed" },
     { id: "explore", label: t("dashboard.tabs.explore"), icon: Home, path: "/explore" },
     { id: "my-events", label: t("dashboard.tabs.myEvents"), icon: Calendar, path: "/my-events" },
     { id: "my-tickets", label: t("dashboard.tabs.myTickets"), icon: Ticket, path: "/my-tickets" },
-    { id: "profile", label: t("dashboard.tabs.profile"), icon: User, path: "/profile" },
+    // { id: "profile", label: t("dashboard.tabs.profile"), icon: User, path: "/profile" },
   ];
 
   const currentPath = location.pathname;
@@ -61,7 +86,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <Button variant="ghost" size="sm">
                 <Search className="h-5 w-5" />
               </Button>
-              <LanguageSelector />
               <Button variant="ghost" size="sm">
                 <Bell className="h-5 w-5" />
               </Button>
@@ -70,7 +94,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   <Button variant="ghost" className="rounded-full gap-1 pr-2">
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {"John Doe".split(" ").map((n) => n[0]).join("")}
+                        {dashboardData?.user ? getInitials(dashboardData.user.username) : "U"}
                       </AvatarFallback>
                     </Avatar>
                     <ChevronDown className="h-4 w-4" />
@@ -79,15 +103,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <DropdownMenuContent align="end" className="w-72 p-0">
                   <div className="p-4 border-b">
                     <div className="flex items-center gap-3 mb-3">
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-primary text-primary-foreground text-base">
-                        {"John Doe".split(" ").map((n) => n[0]).join("")}
-                      </AvatarFallback>
-                    </Avatar>
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-primary text-primary-foreground text-base">
+                          {dashboardData?.user ? getInitials(dashboardData.user.username) : "U"}
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold leading-none truncate">John Doe</p>
+                        <p className="text-sm font-semibold leading-none truncate">
+                          {dashboardData?.user?.username || "User"}
+                        </p>
                         <p className="text-xs text-muted-foreground mt-1 truncate">
-                          john.doe@example.com
+                          {dashboardData?.user?.email || "user@example.com"}
                         </p>
                       </div>
                     </div>
@@ -101,7 +127,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                       {t("dashboard.menu.viewProfile")}
                     </Button>
                   </div>
-                  
+
                   <div className="p-2">
                     <DropdownMenuItem
                       onClick={() => navigate("/settings")}
@@ -117,7 +143,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   </div>
 
                   <DropdownMenuSeparator />
-                  
+
                   <div className="p-2">
                     <DropdownMenuItem className="cursor-pointer rounded-md px-3 py-2 text-destructive focus:text-destructive focus:bg-destructive/10">
                       <LogOut className="mr-3 h-4 w-4" />
@@ -143,9 +169,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <Button
                   key={tab.id}
                   variant="ghost"
-                  className={`flex flex-col gap-1 h-auto py-2 px-3 ${
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  }`}
+                  className={`flex flex-col gap-1 h-auto py-2 px-3 ${isActive ? "text-primary" : "text-muted-foreground"
+                    }`}
                   onClick={() => navigate(tab.path)}
                 >
                   <Icon
@@ -177,7 +202,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <LanguageSelector />
             <Button variant="ghost" size="sm">
               <Bell className="h-5 w-5" />
             </Button>
@@ -186,7 +210,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <Button variant="ghost" className="rounded-full gap-1 pr-2">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary text-primary-foreground">
-                      {"John Doe".split(" ").map((n) => n[0]).join("")}
+                      {dashboardData?.user ? getInitials(dashboardData.user.username) : "U"}
                     </AvatarFallback>
                   </Avatar>
                   <ChevronDown className="h-4 w-4" />
@@ -195,15 +219,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <DropdownMenuContent align="end" className="w-72 p-0">
                 <div className="p-4 border-b">
                   <div className="flex items-center gap-3 mb-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-base">
-                      {"John Doe".split(" ").map((n) => n[0]).join("")}
-                    </AvatarFallback>
-                  </Avatar>
+                    <Avatar className="h-12 w-12">
+                      <AvatarFallback className="bg-primary text-primary-foreground text-base">
+                        {dashboardData?.user ? getInitials(dashboardData.user.username) : "U"}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold leading-none truncate">John Doe</p>
+                      <p className="text-sm font-semibold leading-none truncate">
+                        {dashboardData?.user?.username || "User"}
+                      </p>
                       <p className="text-xs text-muted-foreground mt-1 truncate">
-                        john.doe@example.com
+                        {dashboardData?.user?.email || "user@example.com"}
                       </p>
                     </div>
                   </div>
@@ -217,7 +243,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     {t("dashboard.menu.viewProfile")}
                   </Button>
                 </div>
-                
+
                 <div className="p-2">
                   <DropdownMenuItem
                     onClick={() => navigate("/settings")}
@@ -233,7 +259,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 </div>
 
                 <DropdownMenuSeparator />
-                
+
                 <div className="p-2">
                   <DropdownMenuItem className="cursor-pointer rounded-md px-3 py-2 text-destructive focus:text-destructive focus:bg-destructive/10">
                     <LogOut className="mr-3 h-4 w-4" />
@@ -281,7 +307,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {["Music Festival", "Tech Conference", "Art Exhibition"].map(
+                {dashboardData?.top_events?.slice(0, 3).map((topEvent, i) => (
+                  <Link
+                    key={topEvent.event.id}
+                    to={`/event/${generateSlug(topEvent.event.name, topEvent.event.id)}`}
+                    className="flex items-center gap-3 hover:bg-accent/50 rounded-md p-2 -m-2 transition-colors"
+                  >
+                    <div className="w-2 h-2 rounded-full bg-primary" />
+                    <span className="text-sm">{topEvent.event.name}</span>
+                  </Link>
+                )) || ["Music Festival", "Tech Conference", "Art Exhibition"].map(
                   (event, i) => (
                     <div key={i} className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full bg-primary" />
@@ -292,7 +327,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               </CardContent>
             </Card>
 
-            <Card>
+            {false && (<Card>
               <CardHeader>
                 <CardTitle className="text-lg">
                   {t("dashboard.suggestions.title")}
@@ -322,7 +357,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   </div>
                 ))}
               </CardContent>
-            </Card>
+            </Card>)}
           </div>
         </aside>
       </div>
