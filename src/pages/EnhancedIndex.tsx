@@ -45,21 +45,21 @@ const EnhancedIndex = () => {
     error: eventsError,
   } = useQuery({
     queryKey: ["events"],
-    queryFn: () => eventGateway.getAllEvents(),
+    queryFn: () => eventGateway.getEvents({ page: 1, limit: 3, order_by_participants: true }),
   });
 
   // Fetch addresses for events with coordinates (cached by coordinates)
   const { data: addresses, isLoading: addressesLoading } = useQuery({
     queryKey: [
       "addresses",
-      events?.map((e) => `${e.latitude},${e.longitude}`).join("|"),
+      events?.events?.map((e) => `${e.latitude},${e.longitude}`).join("|"),
     ],
     queryFn: async () => {
-      if (!events) return {};
+      if (!events?.events) return {};
 
       const addressMap: Record<string, any> = {};
 
-      for (const event of events) {
+      for (const event of events.events) {
         if (event.latitude && event.longitude) {
           const cacheKey = `${event.latitude},${event.longitude}`;
           if (!addressMap[cacheKey]) {
@@ -79,7 +79,7 @@ const EnhancedIndex = () => {
 
       return addressMap;
     },
-    enabled: !!events && events.length > 0,
+    enabled: !!events?.events && events.events.length > 0,
     staleTime: 24 * 60 * 60 * 1000,
   });
 
@@ -239,71 +239,73 @@ const EnhancedIndex = () => {
             )}
 
             {/* Events */}
-            {events &&
-              events.map((event) => (
-                <Card
-                  key={event.id}
-                  className="group hover:shadow-elegant transition-smooth hover:-translate-y-2 gradient-card border-border/50 overflow-hidden"
-                >
-                  <div className="relative aspect-square overflow-hidden">
-                    <img
-                      src={event.image || heroEventImage}
-                      alt={event.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-smooth"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <Badge
-                        variant="secondary"
-                        className="bg-background/80 backdrop-blur-sm"
-                      >
-                        Evento
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-xl group-hover:text-primary transition-smooth">
-                      {event.name}
-                    </CardTitle>
-                  </CardHeader>
-
-                  <CardContent className="pt-0">
-                    <div className="space-y-3 mb-4">
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {formatDate(event.start_date)}
-                        <Clock className="mr-2 h-4 w-4 ml-4" />
-                        {formatTime(event.start_date)}
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <MapPin className="mr-2 h-4 w-4" />
-                        {addressesLoading ? (
-                          <span className="flex items-center">
-                            <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                            {t("home.events.loadingLocation")}
-                          </span>
-                        ) : (
-                          getEventAddress(event)
-                        )}
+            {events?.events &&
+              events.events.map((event) => {
+                return (
+                  <Card
+                    key={event.id}
+                    className="group hover:shadow-elegant transition-smooth hover:-translate-y-2 gradient-card border-border/50 overflow-hidden"
+                  >
+                    <div className="relative aspect-square overflow-hidden">
+                      <img
+                        src={event.image || heroEventImage}
+                        alt={event.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-smooth"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <Badge
+                          variant="secondary"
+                          className="bg-background/80 backdrop-blur-sm"
+                        >
+                          Evento
+                        </Badge>
                       </div>
                     </div>
 
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {event.description}
-                    </p>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-xl group-hover:text-primary transition-smooth">
+                        {event.name}
+                      </CardTitle>
+                    </CardHeader>
 
-                    <Link to={`/event/${generateSlug(event.name, event.id)}`}>
-                      <Button className="w-full group/btn hover:shadow-glow transition-smooth">
-                        {t("home.events.learnMore")}
-                        <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-smooth" />
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
+                    <CardContent className="pt-0">
+                      <div className="space-y-3 mb-4">
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {formatDate(event.start_date)}
+                          <Clock className="mr-2 h-4 w-4 ml-4" />
+                          {formatTime(event.start_date)}
+                        </div>
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <MapPin className="mr-2 h-4 w-4" />
+                          {addressesLoading ? (
+                            <span className="flex items-center">
+                              <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                              {t("home.events.loadingLocation")}
+                            </span>
+                          ) : (
+                            getEventAddress(event)
+                          )}
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        {event.description}
+                      </p>
+
+                      <Link to={`/event/${generateSlug(event.name, event.id)}`}>
+                        <Button className="w-full group/btn hover:shadow-glow transition-smooth">
+                          {t("home.events.learnMore")}
+                          <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-smooth" />
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                );
+              })}
 
             {/* Empty State */}
-            {events && events.length === 0 && (
+            {events?.events && events.events.length === 0 && (
               <div className="col-span-full text-center py-12">
                 <p className="text-muted-foreground">
                   {t("home.events.noEvents")}
