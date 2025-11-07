@@ -84,12 +84,12 @@ const getRoleLabel = (role: string | number, t: any) => {
   const roleStr = role.toString();
   const roleKeys = {
     "4": "host",
-    "3": "manager", 
+    "3": "manager",
     "2": "coordinator",
     "1": "validator",
     host: "host",
     manager: "manager",
-    coordinator: "coordinator", 
+    coordinator: "coordinator",
     validator: "validator",
   };
   const roleKey = roleKeys[roleStr as keyof typeof roleKeys];
@@ -151,40 +151,38 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
     setStaffPage(1);
   }, [staffFilter, staffSearch]);
 
-  // Fetch staff using React Query
-  // Get role filter value for API
-  const getRoleFilter = (): number | undefined => {
-    if (staffFilter === "all") return undefined;
-    const roleMap = {
-      validator: 1,
-      coordinator: 2,
-      manager: 3,
-      host: 4,
-    };
-    return roleMap[staffFilter as keyof typeof roleMap];
-  };
-
+  // Fetch staff using React Query with pagination
   const {
-    data: staff,
+    data: staffData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["event-staff", eventId, staffFilter, debouncedSearch],
+    queryKey: ["event-staff", eventId, staffPage, staffFilter, debouncedSearch],
     queryFn: () =>
       eventGateway.getEventStaff(
         eventId,
-        getRoleFilter(),
+        staffPage,
+        staffPerPage,
+        staffFilter === "all" ? undefined : staffFilter,
         debouncedSearch || undefined
       ),
     enabled: !!eventId,
   });
+
+  const staff = staffData?.staff || [];
+  const totalStaff = staffData?.total || 0;
+  const totalPages = staffData?.total_pages || 0;
 
   // Restore focus after query updates
   React.useEffect(() => {
     if (staffSearch && searchInputRef.current) {
       searchInputRef.current.focus();
     }
-  }, [staff, staffSearch]);
+  }, [staffData, staffSearch]);
+
+  // Calculate pagination indices for display
+  const from = (staffPage - 1) * staffPerPage;
+  const to = Math.min(from + staff.length, totalStaff);
 
   // Add staff mutation
   const addStaffMutation = useMutation({
@@ -272,12 +270,6 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
     },
     isPending: false,
   };
-
-  // Calculate pagination (server-side filtered data)
-  const from = (staffPage - 1) * staffPerPage;
-  const to = Math.min(staffPage * staffPerPage, staff?.length || 0);
-  const totalPages = Math.ceil((staff?.length || 0) / staffPerPage);
-  const paginatedStaff = staff?.slice(from, to) || [];
 
   const filterOptions = [
     { value: "all", label: t("eventManagement.staff.search.filters.all") },
@@ -407,7 +399,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
 
       {/* Staff Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {paginatedStaff.length === 0 ? (
+        {staff.length === 0 ? (
           <div className="col-span-full">
             <Card>
               <CardContent className="flex items-center justify-center h-32">
@@ -416,7 +408,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
             </Card>
           </div>
         ) : (
-          paginatedStaff.map((member, index) => (
+          staff.map((member, index) => (
             <Card
               key={`${member.id}-${staffPage}-${index}`}
               className="relative"
@@ -462,129 +454,129 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
 
                 <div className="mt-4 pt-4 border-t flex gap-2">
                   {/* Hide Edit and Remove buttons for Host users */}
-                  {member.role.toString() !== "4" && member.role !== "host" && (
+                  {member.role.toString() !== "4" && (
                     <>
                       <Dialog
-                    open={editingStaff?.id === member.id}
-                    onOpenChange={(open) => {
-                      if (open) {
-                        setEditingStaff(member);
-                        // Convert numeric role to string role for form
-                        const roleStr = member.role.toString();
-                        const roleMap = {
-                          "1": "validator",
-                          "2": "coordinator", 
-                          "3": "manager",
-                          "4": "host"
-                        };
-                        const formRole = roleMap[roleStr as keyof typeof roleMap] || roleStr;
-                        updateStaffFormik.setValues({
-                          role: formRole,
-                        });
-                      } else {
-                        setEditingStaff(null);
-                        updateStaffFormik.resetForm();
-                      }
-                    }}
-                  >
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="flex-1">
-                        <Pencil className="h-4 w-4 mr-2" />
-                        {t("eventManagement.staff.actions.edit")}
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>{t("eventManagement.staff.editDialog.title")}</DialogTitle>
-                        <DialogDescription>
-                          {t("eventManagement.staff.editDialog.description")}
-                        </DialogDescription>
-                      </DialogHeader>
-                      <form
-                        onSubmit={updateStaffFormik.handleSubmit}
-                        className="space-y-4 py-4"
+                        open={editingStaff?.id === member.id}
+                        onOpenChange={(open) => {
+                          if (open) {
+                            setEditingStaff(member);
+                            // Convert numeric role to string role for form
+                            const roleStr = member.role.toString();
+                            const roleMap = {
+                              "1": "validator",
+                              "2": "coordinator",
+                              "3": "manager",
+                              "4": "host"
+                            };
+                            const formRole = roleMap[roleStr as keyof typeof roleMap] || roleStr;
+                            updateStaffFormik.setValues({
+                              role: formRole,
+                            });
+                          } else {
+                            setEditingStaff(null);
+                            updateStaffFormik.resetForm();
+                          }
+                        }}
                       >
-                        <div className="space-y-2">
-                          <Label htmlFor="edit-role">{t("eventManagement.staff.addDialog.fields.role")}</Label>
-                          <Select
-                            value={updateStaffFormik.values.role}
-                            onValueChange={(value) =>
-                              updateStaffFormik.setFieldValue("role", value)
-                            }
-                          >
-                            <SelectTrigger id="edit-role">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="manager">{t("eventManagement.staff.roles.manager")}</SelectItem>
-                              <SelectItem value="coordinator">
-                                {t("eventManagement.staff.roles.coordinator")}
-                              </SelectItem>
-                              <SelectItem value="validator">
-                                {t("eventManagement.staff.roles.validator")}
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {updateStaffFormik.touched.role &&
-                            updateStaffFormik.errors.role && (
-                              <p className="text-sm text-red-500">
-                                {updateStaffFormik.errors.role}
-                              </p>
-                            )}
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setEditingStaff(null)}
-                          >
-                            {t("eventManagement.staff.editDialog.buttons.cancel")}
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="flex-1">
+                            <Pencil className="h-4 w-4 mr-2" />
+                            {t("eventManagement.staff.actions.edit")}
                           </Button>
-                          <Button
-                            type="submit"
-                            disabled={updateStaffMutation.isPending}
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>{t("eventManagement.staff.editDialog.title")}</DialogTitle>
+                            <DialogDescription>
+                              {t("eventManagement.staff.editDialog.description")}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <form
+                            onSubmit={updateStaffFormik.handleSubmit}
+                            className="space-y-4 py-4"
                           >
-                            {updateStaffMutation.isPending
-                              ? "Updating..."
-                              : t("eventManagement.staff.editDialog.buttons.save")}
-                          </Button>
-                        </div>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-role">{t("eventManagement.staff.addDialog.fields.role")}</Label>
+                              <Select
+                                value={updateStaffFormik.values.role}
+                                onValueChange={(value) =>
+                                  updateStaffFormik.setFieldValue("role", value)
+                                }
+                              >
+                                <SelectTrigger id="edit-role">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="manager">{t("eventManagement.staff.roles.manager")}</SelectItem>
+                                  <SelectItem value="coordinator">
+                                    {t("eventManagement.staff.roles.coordinator")}
+                                  </SelectItem>
+                                  <SelectItem value="validator">
+                                    {t("eventManagement.staff.roles.validator")}
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {updateStaffFormik.touched.role &&
+                                updateStaffFormik.errors.role && (
+                                  <p className="text-sm text-red-500">
+                                    {updateStaffFormik.errors.role}
+                                  </p>
+                                )}
+                            </div>
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setEditingStaff(null)}
+                              >
+                                {t("eventManagement.staff.editDialog.buttons.cancel")}
+                              </Button>
+                              <Button
+                                type="submit"
+                                disabled={updateStaffMutation.isPending}
+                              >
+                                {updateStaffMutation.isPending
+                                  ? "Updating..."
+                                  : t("eventManagement.staff.editDialog.buttons.save")}
+                              </Button>
+                            </div>
+                          </form>
+                        </DialogContent>
+                      </Dialog>
 
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        {t("eventManagement.staff.actions.remove")}
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>{t("eventManagement.staff.removeDialog.title")}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          {t("eventManagement.staff.removeDialog.description")}
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>{t("eventManagement.staff.removeDialog.buttons.cancel")}</AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          onClick={() => removeStaffMutation.mutate(member.id)}
-                          disabled={removeStaffMutation.isPending}
-                        >
-                          {removeStaffMutation.isPending
-                            ? "Removing..."
-                            : t("eventManagement.staff.removeDialog.buttons.remove")}
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="flex-1"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            {t("eventManagement.staff.actions.remove")}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{t("eventManagement.staff.removeDialog.title")}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {t("eventManagement.staff.removeDialog.description")}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{t("eventManagement.staff.removeDialog.buttons.cancel")}</AlertDialogCancel>
+                            <AlertDialogAction
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              onClick={() => removeStaffMutation.mutate(member.id)}
+                              disabled={removeStaffMutation.isPending}
+                            >
+                              {removeStaffMutation.isPending
+                                ? "Removing..."
+                                : t("eventManagement.staff.removeDialog.buttons.remove")}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </>
                   )}
                 </div>
@@ -602,7 +594,7 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
           onPageChange={setStaffPage}
           startIndex={from + 1}
           endIndex={to}
-          totalItems={staff?.length || 0}
+          totalItems={totalStaff}
           itemName={t("eventManagement.staff.title").toLowerCase()}
         />
       )}

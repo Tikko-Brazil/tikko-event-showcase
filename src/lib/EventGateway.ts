@@ -206,6 +206,14 @@ interface EventStaffMember {
   role: string;
 }
 
+interface PaginatedStaffResponse {
+  staff: EventStaffMember[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
 interface AddStaffRequest {
   email: string;
   role: string;
@@ -365,19 +373,27 @@ export class EventGateway {
 
   async getEventStaff(
     eventId: number,
-    role?: number,
+    page: number,
+    limit: number,
+    role?: string,
     search?: string
-  ): Promise<EventStaffMember[]> {
-    const url = new URL(`${this.baseUrl}/private/event/${eventId}/staff`);
-    if (role !== undefined) {
-      url.searchParams.append("role", role.toString());
+  ): Promise<PaginatedStaffResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    
+    if (role) {
+      params.append("role", role);
     }
-    if (search !== undefined) {
-      url.searchParams.append("search", search);
+    if (search) {
+      params.append("search", search);
     }
 
-    const response = await this.fetchWithAuth(url.toString());
-    return this.handleResponse<EventStaffMember[]>(response);
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/event/${eventId}/staff?${params}`
+    );
+    return this.handleResponse<PaginatedStaffResponse>(response);
   }
 
   async getUserEvents(params: GetUserEventsParams): Promise<PaginatedUserEventsResponse> {
