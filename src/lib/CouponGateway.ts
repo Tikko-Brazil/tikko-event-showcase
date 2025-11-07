@@ -67,6 +67,9 @@ interface Coupon {
 interface CouponsListResponse {
   coupons: Coupon[];
   total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
 }
 
 interface DeleteCouponResponse {
@@ -221,16 +224,27 @@ export class CouponGateway {
 
   async getEventCoupons(
     eventId: number,
-    ticketPricingId?: number
+    page: number,
+    limit: number,
+    ticketPricingId?: number,
+    status?: string,
+    search?: string
   ): Promise<CouponsListResponse> {
     const params = new URLSearchParams();
+    params.append("page", page.toString());
+    params.append("limit", limit.toString());
+    
     if (ticketPricingId) {
       params.append("ticket_pricing_id", ticketPricingId.toString());
     }
+    if (status) {
+      params.append("status", status);
+    }
+    if (search) {
+      params.append("search", search);
+    }
 
-    const url = `${this.baseUrl}/private/coupons/event/${eventId}${
-      params.toString() ? `?${params}` : ""
-    }`;
+    const url = `${this.baseUrl}/private/coupons/event/${eventId}?${params}`;
     const response = await this.fetchWithAuth(url);
     return this.handleResponse<CouponsListResponse>(
       response,

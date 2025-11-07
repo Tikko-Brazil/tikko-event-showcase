@@ -96,7 +96,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
     });
   };
 
-  const itemsPerPage = 6;
+  const itemsPerPage = 8;
   const couponGateway = new CouponGateway(
     import.meta.env.VITE_BACKEND_BASE_URL
   );
@@ -178,8 +178,15 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["event-coupons", eventId],
-    queryFn: () => couponGateway.getEventCoupons(eventId),
+    queryKey: ["event-coupons", eventId, couponPage, couponFilter, debouncedSearch],
+    queryFn: () => couponGateway.getEventCoupons(
+      eventId, 
+      couponPage, 
+      itemsPerPage, 
+      undefined, 
+      couponFilter === "all" ? undefined : couponFilter, 
+      debouncedSearch || undefined
+    ),
     enabled: !!eventId,
   });
 
@@ -201,24 +208,13 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
   }, [couponsData, couponSearch]);
 
   const allCoupons = couponsData?.coupons || [];
+  const totalPages = couponsData?.total_pages || 1;
+  const totalItems = couponsData?.total || 0;
 
-  // Filter coupons based on status and search
-  const filteredCoupons = allCoupons.filter((coupon) => {
-    const matchesStatus =
-      couponFilter === "all" ||
-      (couponFilter === "active" && coupon.active) ||
-      (couponFilter === "inactive" && !coupon.active);
-    const matchesSearch = coupon.code
-      .toLowerCase()
-      .includes(debouncedSearch.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
-
-  // Calculate pagination
-  const from = (couponPage - 1) * itemsPerPage;
-  const to = Math.min(couponPage * itemsPerPage, filteredCoupons.length);
-  const totalPages = Math.ceil(filteredCoupons.length / itemsPerPage);
-  const paginatedCoupons = filteredCoupons.slice(from, to);
+  // Use backend pagination data directly
+  const from = ((couponsData?.page || 1) - 1) * (couponsData?.limit || itemsPerPage);
+  const to = Math.min(from + (couponsData?.limit || itemsPerPage), totalItems);
+  const paginatedCoupons = allCoupons;
 
   const filterOptions = [
     { value: "all", label: t("eventManagement.coupons.search.filters.all") },
@@ -248,16 +244,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <SearchAndFilter
-          searchValue={couponSearch}
-          onSearchChange={setCouponSearch}
-          searchPlaceholder={t("eventManagement.coupons.search.placeholder")}
-          filterValue={couponFilter}
-          onFilterChange={setCouponFilter}
-          filterOptions={filterOptions}
-          searchInputRef={searchInputRef}
-        />
+      {/* Header Actions */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <h2 className="text-2xl font-bold">{t("eventManagement.coupons.title")}</h2>
 
         <Dialog open={isCreateCouponOpen} onOpenChange={setIsCreateCouponOpen}>
           <DialogTrigger asChild>
@@ -586,11 +575,21 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
         </Dialog>
       </div>
 
+      {/* Filters and Search */}
+      <SearchAndFilter
+        searchValue={couponSearch}
+        onSearchChange={setCouponSearch}
+        searchPlaceholder={t("eventManagement.coupons.search.placeholder")}
+        filterValue={couponFilter}
+        onFilterChange={setCouponFilter}
+        filterOptions={filterOptions}
+        searchInputRef={searchInputRef}
+      />
+
       <Card>
         <CardHeader>
-          <CardTitle>{t("eventManagement.coupons.title")}</CardTitle>
           <CardDescription>
-            Mostrando {from + 1}-{to} de {filteredCoupons.length} cupons
+            Mostrando {from + 1}-{to} de {totalItems} cupons
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -699,22 +698,20 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                 ))
               )}
             </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <Pagination
-                currentPage={couponPage}
-                totalPages={totalPages}
-                onPageChange={setCouponPage}
-                startIndex={from + 1}
-                endIndex={to}
-                totalItems={filteredCoupons.length}
-                itemName="cupons"
-              />
-            )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={couponPage}
+        totalPages={totalPages}
+        onPageChange={setCouponPage}
+        startIndex={from + 1}
+        endIndex={to}
+        totalItems={totalItems}
+        itemName="cupons"
+      />
 
       {/* Edit Coupon Dialog */}
       {editingCoupon && (
