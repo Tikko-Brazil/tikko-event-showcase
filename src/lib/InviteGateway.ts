@@ -14,33 +14,17 @@ interface User {
   id: number;
   username: string;
   email: string;
-  role: string;
   gender: string;
-  birthday: string;
   phone_number: string;
-  location: string;
-  bio: string;
   instagram_profile: string;
-  companies_following: number[];
-  is_first_access: boolean;
-  auth_method: string;
-  is_verified: boolean;
 }
 
 interface TicketPricing {
   id: number;
-  event_id: number;
   ticket_type: string;
   gender: string;
   lot: number;
   price: number;
-  sold_count: number;
-  start_date: string;
-  end_date: string;
-  active: boolean;
-  male_capacity: number;
-  female_capacity: number;
-  door: boolean;
 }
 
 interface PaymentDetails {
@@ -51,7 +35,6 @@ interface PaymentDetails {
 interface Invite {
   invite_id: number;
   user: User;
-  approved_by: User;
   ticket_pricing: TicketPricing;
   payment_details: PaymentDetails;
   is_validated: boolean;
@@ -73,6 +56,9 @@ interface RequestUserRequest {
 interface GetInvitesResponse {
   invites: Invite[];
   total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
 }
 
 interface ApiResponse {
@@ -91,7 +77,7 @@ export class InviteGateway {
   private handleError(status: number, endpoint: string): never {
     switch (status) {
       case 400:
-        throw new Error("Dados inválidos fornecidos");
+        throw new Error("Dados inválidos fornecidos ou parâmetros de paginação inválidos");
       case 401:
         throw new Error("Não autorizado. Faça login novamente");
       case 403:
@@ -147,16 +133,18 @@ export class InviteGateway {
 
   async getInvitesByEvent(
     eventId: number,
+    page: number,
+    limit: number,
     status?: InviteStatus,
     search?: string
   ): Promise<GetInvitesResponse> {
     const params = new URLSearchParams();
+    params.append("page", page.toString());
+    params.append("limit", limit.toString());
     if (status) params.append("status", status);
     if (search) params.append("search", search);
 
-    const url = `${this.baseUrl}/private/invite/event/${eventId}${
-      params.toString() ? `?${params.toString()}` : ""
-    }`;
+    const url = `${this.baseUrl}/private/invite/event/${eventId}?${params.toString()}`;
 
     const response = await this.fetchWithAuth(url);
 

@@ -74,21 +74,27 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
     setRequestPage(1);
   }, [debouncedSearch]);
 
-  // Fetch pending invites using React Query
+  // Fetch pending invites using React Query with pagination
   const {
     data: invitesData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["event-join-requests", eventId, debouncedSearch],
+    queryKey: ["event-join-requests", eventId, requestPage, debouncedSearch],
     queryFn: () =>
       inviteGateway.getInvitesByEvent(
         eventId,
+        requestPage,
+        requestsPerPage,
         InviteStatus.PENDING,
         debouncedSearch || undefined
       ),
     enabled: !!eventId,
   });
+
+  const requests = invitesData?.invites || [];
+  const totalRequests = invitesData?.total || 0;
+  const totalPages = invitesData?.total_pages || 0;
 
   // Accept join request mutation
   const acceptRequestMutation = useMutation({
@@ -139,14 +145,9 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
     }
   }, [invitesData, requestSearch]);
 
-  const allRequests = invitesData?.invites || [];
-
-  // Pagination
-  const totalRequests = allRequests.length;
-  const totalPages = Math.ceil(totalRequests / requestsPerPage);
+  // Calculate pagination indices for display
   const startIndex = (requestPage - 1) * requestsPerPage;
-  const endIndex = Math.min(startIndex + requestsPerPage, totalRequests);
-  const paginatedRequests = allRequests.slice(startIndex, endIndex);
+  const endIndex = Math.min(startIndex + requests.length, totalRequests);
 
   const onAcceptRequest = (requestId: number) => {
     acceptRequestMutation.mutate(requestId);
@@ -202,7 +203,7 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
 
       {/* Join Requests Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {paginatedRequests.map((request) => (
+        {requests.map((request) => (
           <Card key={request.invite_id} className="relative">
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
@@ -371,7 +372,7 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
       </div>
 
       {/* Empty state */}
-      {allRequests.length === 0 && (
+      {requests.length === 0 && (
         <div className="text-center py-12">
           <UserPlus className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-medium mb-2">No join requests</h3>
@@ -384,15 +385,17 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
       )}
 
       {/* Pagination */}
-      <Pagination
-        currentPage={requestPage}
-        totalPages={totalPages}
-        onPageChange={setRequestPage}
-        startIndex={startIndex + 1}
-        endIndex={endIndex}
-        totalItems={totalRequests}
-        itemName="requests"
-      />
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={requestPage}
+          totalPages={totalPages}
+          onPageChange={setRequestPage}
+          startIndex={startIndex + 1}
+          endIndex={endIndex}
+          totalItems={totalRequests}
+          itemName="requests"
+        />
+      )}
 
       <SuccessSnackbar
         visible={showSuccessSnackbar}

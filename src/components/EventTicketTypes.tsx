@@ -41,7 +41,7 @@ interface EventTicketTypesProps {
 export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
   const { t, i18n } = useTranslation();
   const [ticketTypeSearch, setTicketTypeSearch] = useState("");
-  const [ticketTypeFilter, setTicketTypeFilter] = useState("all");
+  const [ticketTypeFilter, setTicketTypeFilter] = useState("active");
   const [ticketTypePage, setTicketTypePage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -380,21 +380,21 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                     <Badge
                       variant={ticketType.active ? "default" : "secondary"}
                     >
-                      {ticketType.active 
-                        ? t("eventManagement.ticketTypes.status.active") 
+                      {ticketType.active
+                        ? t("eventManagement.ticketTypes.status.active")
                         : t("eventManagement.ticketTypes.status.inactive")}
                     </Badge>
                     <Badge variant="outline">
-                      {ticketType.gender === "male" 
-                        ? t("eventManagement.ticketTypes.createDialog.fields.male") 
+                      {ticketType.gender === "male"
+                        ? t("eventManagement.ticketTypes.createDialog.fields.male")
                         : t("eventManagement.ticketTypes.createDialog.fields.female")}
                     </Badge>
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="h-8 w-8 p-0"
                     onClick={() => {
                       setEditingTicket(ticketType);

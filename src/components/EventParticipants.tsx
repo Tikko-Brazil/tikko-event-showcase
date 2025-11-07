@@ -107,16 +107,18 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
     }
   };
 
-  // Fetch invites using React Query
+  // Fetch invites using React Query with pagination
   const {
     data: invitesData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["event-invites", eventId, participantFilter, debouncedSearch],
+    queryKey: ["event-invites", eventId, participantPage, participantFilter, debouncedSearch],
     queryFn: () =>
       inviteGateway.getInvitesByEvent(
         eventId,
+        participantPage,
+        participantsPerPage,
         getInviteStatus(participantFilter),
         debouncedSearch || undefined
       ),
@@ -124,6 +126,8 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
   });
 
   const invites = invitesData?.invites || [];
+  const totalItems = invitesData?.total || 0;
+  const totalPages = invitesData?.total_pages || 0;
 
   // Restore focus after query updates
   React.useEffect(() => {
@@ -149,11 +153,9 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
     },
   });
 
-  // Calculate pagination (following coupons.tsx pattern)
+  // Calculate pagination indices for display
   const from = (participantPage - 1) * participantsPerPage;
-  const to = Math.min(participantPage * participantsPerPage, invites.length);
-  const totalPages = Math.ceil(invites.length / participantsPerPage);
-  const paginatedInvites = invites.slice(from, to);
+  const to = Math.min(from + invites.length, totalItems);
 
   const filterOptions = [
     {
@@ -196,7 +198,7 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
 
       {/* Participants Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {paginatedInvites.length === 0 ? (
+        {invites.length === 0 ? (
           <div className="col-span-full">
             <Card>
               <CardContent className="flex items-center justify-center h-32">
@@ -207,7 +209,7 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
             </Card>
           </div>
         ) : (
-          paginatedInvites.map((invite, index) => (
+          invites.map((invite, index) => (
             <Card
               key={`${invite.invite_id}-${participantPage}-${index}`}
               className="relative"
@@ -368,7 +370,7 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
           onPageChange={setParticipantPage}
           startIndex={from + 1}
           endIndex={to}
-          totalItems={invites.length}
+          totalItems={totalItems}
           itemName={t("eventManagement.participants.pagination.participants")}
         />
       )}
