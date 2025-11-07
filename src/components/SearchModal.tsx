@@ -1,13 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { Search, X, Calendar, MapPin, Clock } from "lucide-react";
 import { debounce } from "lodash";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { EventGateway } from "@/lib/EventGateway";
+import generateSlug from "@/helpers/generateSlug";
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialEvents?: Event[];
 }
 
 interface Event {
@@ -71,31 +76,80 @@ const searchableEvents: Event[] = [
   },
 ];
 
-const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
-  const { t } = useTranslation();
+const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, initialEvents: propInitialEvents }) => {
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [displayedEvents, setDisplayedEvents] = useState<Event[]>(initialEvents);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+
+  const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+
+  const handleEventClick = (event: Event) => {
+    const slug = generateSlug(event.name, event.id);
+    navigate(`/event/${slug}`);
+    onClose();
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString(i18n.language === "pt" ? "pt-BR" : "en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(i18n.language === "pt" ? "pt-BR" : "en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Use prop events or fallback to default
+  const eventsToShow = propInitialEvents || initialEvents;
+  const [displayedEvents, setDisplayedEvents] = useState<Event[]>(eventsToShow);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Debounced search function
+  // Debounced search
   const debouncedSearch = useRef(
     debounce((query: string) => {
-      if (query.trim() === "") {
-        setDisplayedEvents(initialEvents);
-      } else {
-        const filtered = searchableEvents.filter(
-          (event) =>
-            event.name.toLowerCase().includes(query.toLowerCase()) ||
-            event.address_name.toLowerCase().includes(query.toLowerCase())
-        );
-        setDisplayedEvents(filtered);
-      }
+      setDebouncedSearchQuery(query);
     }, 300)
   ).current;
+
+  // API search query
+  const { data: searchResults } = useQuery({
+    queryKey: ["searchEvents", debouncedSearchQuery],
+    queryFn: () =>
+      eventGateway.getEvents({
+        page: 1,
+        limit: 10,
+        search: debouncedSearchQuery,
+        active: "true",
+      }),
+    enabled: !!debouncedSearchQuery.trim(),
+  });
 
   useEffect(() => {
     debouncedSearch(searchQuery);
   }, [searchQuery, debouncedSearch]);
+
+  // Update displayed events based on search results
+  useEffect(() => {
+    if (debouncedSearchQuery.trim() === "") {
+      setDisplayedEvents(eventsToShow);
+    } else if (searchResults?.events) {
+      // Transform API results to match Event interface
+      const transformedEvents = searchResults.events.map(event => ({
+        id: event.id,
+        name: event.name,
+        address_name: event.address_name,
+        time: event.start_date,
+      }));
+      setDisplayedEvents(transformedEvents);
+    }
+  }, [debouncedSearchQuery, searchResults, eventsToShow]);
 
   useEffect(() => {
     if (isOpen) {
@@ -103,7 +157,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
       setTimeout(() => inputRef.current?.focus(), 100);
       // Reset search when opening
       setSearchQuery("");
-      setDisplayedEvents(initialEvents);
+      setDisplayedEvents(eventsToShow);
     }
   }, [isOpen]);
 
@@ -179,11 +233,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                   {displayedEvents.map((event) => (
                     <button
                       key={event.id}
-                      onClick={() => {
-                        // Navigate to event - will be implemented later
-                        console.log("Navigate to event:", event.id);
-                        onClose();
-                      }}
+                      onClick={() => handleEventClick(event)}
                       className="w-full text-left px-3 py-3 rounded-md hover:bg-accent transition-colors group"
                     >
                       <div className="flex items-start gap-3">
@@ -201,7 +251,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => {
                             </span>
                             <span className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Clock className="h-3 w-3" />
-                              {new Date(event.time).toLocaleDateString()}
+                              {formatDate(event.time)} • {formatTime(event.time)}
                             </span>
                           </div>
                         </div>

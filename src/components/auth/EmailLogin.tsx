@@ -65,7 +65,7 @@ const EmailLogin: React.FC<EmailLoginProps> = ({
                 response.token_pair.refresh_token
               );
 
-              window.location.href = "/feed";
+              window.location.href = "/explore";
             } catch (error: any) {
               setErrorMessage(error.message);
               setShowError(true);

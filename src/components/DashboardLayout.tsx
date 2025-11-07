@@ -77,6 +77,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
   const currentPath = location.pathname;
 
+  // Prepare events for SearchModal
+  const searchModalEvents = dashboardData?.top_events?.slice(0, 3).map((topEvent) => ({
+    id: topEvent.event.id,
+    name: topEvent.event.name,
+    address_name: topEvent.event.address_name,
+    time: topEvent.event.start_date,
+  })) || [];
+
   if (isMobile) {
     return (
       <div className="min-h-screen bg-background">
@@ -186,7 +194,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </nav>
 
         {/* Search Modal */}
-        <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+        <SearchModal 
+          isOpen={isSearchOpen} 
+          onClose={() => setIsSearchOpen(false)} 
+          initialEvents={searchModalEvents}
+        />
       </div>
     );
   }
@@ -310,7 +322,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <main className="flex-1 overflow-auto p-6">{children}</main>
 
         {/* Search Modal */}
-        <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+        <SearchModal 
+          isOpen={isSearchOpen} 
+          onClose={() => setIsSearchOpen(false)} 
+          initialEvents={searchModalEvents}
+        />
 
         {/* Desktop Right Sidebar */}
         <aside className="w-80 border-l bg-card/50 backdrop-blur-sm p-6">

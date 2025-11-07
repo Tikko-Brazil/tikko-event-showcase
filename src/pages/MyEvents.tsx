@@ -1,30 +1,63 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { debounce } from "lodash";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, Edit } from "lucide-react";
+import { Calendar, Clock, MapPin, Edit, Loader2 } from "lucide-react";
 import { EventGateway } from "@/lib/EventGateway";
 import { useNavigate } from "react-router-dom";
 import generateSlug from "@/helpers/generateSlug";
 import DashboardLayout from "@/components/DashboardLayout";
+import { SearchAndFilter } from "@/components/SearchAndFilter";
+import { Pagination } from "@/components/Pagination";
 
 const MyEvents = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchValue, setSearchValue] = useState("");
+  const [debouncedSearchValue, setDebouncedSearchValue] = useState("");
+  const [filterValue, setFilterValue] = useState("true"); // Default to active
+  const itemsPerPage = 8;
+
+  // Debounced search handler
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setDebouncedSearchValue(value);
+      setCurrentPage(1); // Reset to first page on search
+    }, 300),
+    []
+  );
+
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value);
+    debouncedSearch(value);
+  };
 
   const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
   const { data: userEventsResponse, isLoading: isLoadingUserEvents } = useQuery({
-    queryKey: ["userEvents"],
-    queryFn: () => eventGateway.getUserEvents(),
+    queryKey: ["userEvents", currentPage, debouncedSearchValue, filterValue],
+    queryFn: () =>
+      eventGateway.getUserEvents({
+        page: currentPage,
+        limit: itemsPerPage,
+        active: filterValue as "true" | "false" | "all",
+        search: debouncedSearchValue || undefined,
+      }),
   });
 
+  const filterOptions = [
+    { value: "all", label: t("eventManagement.ticketTypes.search.filters.all") },
+    { value: "true", label: t("eventManagement.ticketTypes.search.filters.active") },
+    { value: "false", label: t("eventManagement.ticketTypes.search.filters.inactive") },
+  ];
+
   const userEvents = userEventsResponse?.events || [];
-  const hasAdminPrivileges = userEvents.some(
-    (userEvent) => userEvent.is_admin === true
-  );
+  const hasAdminPrivileges = userEventsResponse?.is_admin || false;
+  const totalPages = userEventsResponse ? Math.ceil(userEventsResponse.total / itemsPerPage) : 0;
 
   return (
     <DashboardLayout>
@@ -40,8 +73,17 @@ const MyEvents = () => {
           )}
         </div>
 
+        <SearchAndFilter
+          searchValue={searchValue}
+          onSearchChange={handleSearchChange}
+          searchPlaceholder="Search events..."
+          filterValue={filterValue}
+          onFilterChange={setFilterValue}
+          filterOptions={filterOptions}
+        />
+
         {isLoadingUserEvents ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="animate-pulse">
                 <div className="aspect-square bg-muted rounded-t-lg" />
@@ -56,13 +98,13 @@ const MyEvents = () => {
         ) : userEvents.length === 0 ? (
           <div className="text-center py-12">
             <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No events found</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("noEvents")}</h3>
             <p className="text-muted-foreground mb-4">
-              You haven't created or joined any events yet.
+              {t("haventCreatedEvents")}
             </p>
             {hasAdminPrivileges && (
               <Button onClick={() => navigate("/create-event")}>
-                Create Your First Event
+                {t("createFirstEvent")}
               </Button>
             )}
           </div>
@@ -150,9 +192,8 @@ const MyEvents = () => {
                             e.stopPropagation();
                             navigate(`/event-management/${event.id}`);
                           }}
-                          className="group"
                         >
-                          <Edit className="h-4 w-4 mr-1" />
+                          <Edit className="w-4 h-4 mr-2" />
                           {t("dashboard.myEvents.buttons.manage")}
                         </Button>
                       )}
@@ -161,6 +202,20 @@ const MyEvents = () => {
                 </Card>
               );
             })}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {userEventsResponse && totalPages > 1 && (
+          <div className="flex justify-center">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              startIndex={(currentPage - 1) * itemsPerPage + 1}
+              endIndex={Math.min(currentPage * itemsPerPage, userEventsResponse.total)}
+              totalItems={userEventsResponse.total}
+            />
           </div>
         )}
       </div>

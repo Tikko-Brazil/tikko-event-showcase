@@ -7,7 +7,7 @@ interface PublicRouteProps {
 const PublicRoute = ({ children }: PublicRouteProps) => {
   const token = localStorage.getItem('accessToken');
   
-  return token ? <Navigate to="/feed" replace /> : <>{children}</>;
+  return token ? <Navigate to="/explore" replace /> : <>{children}</>;
 };
 
 export default PublicRoute;

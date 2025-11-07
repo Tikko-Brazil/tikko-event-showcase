@@ -1,109 +1,235 @@
-import React from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Settings, Heart, MessageCircle, Share2, Clock, MapPin } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Pagination } from "@/components/Pagination";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  ArrowRight,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import { EventGateway } from "@/lib/EventGateway";
+import { GeocodingGateway } from "@/lib/GeocodingGateway";
+import generateSlug from "@/helpers/generateSlug";
 import DashboardLayout from "@/components/DashboardLayout";
+import heroEventImage from "@/assets/hero-event-image.jpg";
+
+const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+const geocodingGateway = new GeocodingGateway();
 
 const Explore = () => {
-  const mockEvents = [
-    {
-      id: 1,
-      title: "Summer Music Festival 2024",
-      date: "Jun 15, 2024",
-      time: "6:00 PM",
-      location: "Central Park, NY",
-      price: "$45",
-      image: "/placeholder.svg",
-      attendees: 234,
-      liked: false,
-    },
-    {
-      id: 2,
-      title: "Tech Conference 2024",
-      date: "Jun 20, 2024",
-      time: "9:00 AM",
-      location: "Convention Center, SF",
-      price: "$125",
-      image: "/placeholder.svg",
-      attendees: 567,
-      liked: true,
-    },
-    {
-      id: 3,
-      title: "Art Gallery Opening",
-      date: "Jun 25, 2024",
-      time: "7:00 PM",
-      location: "Downtown Gallery, LA",
-      price: "Free",
-      image: "/placeholder.svg",
-      attendees: 89,
-      liked: false,
-    },
-  ];
+  const { t, i18n } = useTranslation();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  const renderEventCard = (event: (typeof mockEvents)[0]) => (
-    <Card
-      key={event.id}
-      className="group hover:shadow-lg transition-all duration-300 border-0 bg-card/50 backdrop-blur-sm"
-    >
-      <div className="aspect-video bg-gradient-to-br from-primary/20 to-accent/20 rounded-t-lg relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute bottom-4 left-4 text-white">
-          <Badge variant="secondary" className="mb-2">
-            {event.price}
-          </Badge>
-          <h3 className="font-semibold text-lg">{event.title}</h3>
-        </div>
-      </div>
-      <CardContent className="p-4">
-        <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
-          <Clock className="h-4 w-4" />
-          <span>
-            {event.date} • {event.time}
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-muted-foreground text-sm mb-3">
-          <MapPin className="h-4 w-4" />
-          <span>{event.location}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" className="h-8">
-              <Heart
-                className={`h-4 w-4 mr-1 ${
-                  event.liked ? "fill-red-500 text-red-500" : ""
-                }`}
-              />
-              {event.attendees}
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8">
-              <MessageCircle className="h-4 w-4 mr-1" />
-              12
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8">
-              <Share2 className="h-4 w-4" />
-            </Button>
-          </div>
-          <Button size="sm">Buy Tickets</Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
+  // Fetch events with pagination and ordering by participants
+  const {
+    data: eventsData,
+    isLoading: eventsLoading,
+    error: eventsError,
+  } = useQuery({
+    queryKey: ["explore-events", currentPage],
+    queryFn: () =>
+      eventGateway.getEvents({
+        page: currentPage,
+        limit: itemsPerPage,
+        active: "true",
+        order_by_participants: true,
+      }),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
+
+  // Fetch addresses for events with coordinates
+  const { data: addresses, isLoading: addressesLoading } = useQuery({
+    queryKey: [
+      "addresses",
+      eventsData?.events?.map((e) => `${e.latitude},${e.longitude}`).join("|"),
+    ],
+    queryFn: async () => {
+      if (!eventsData?.events) return {};
+
+      const addressMap: Record<string, any> = {};
+
+      for (const event of eventsData.events) {
+        if (event.latitude && event.longitude) {
+          const cacheKey = `${event.latitude},${event.longitude}`;
+          if (!addressMap[cacheKey]) {
+            try {
+              const address = await geocodingGateway.reverseGeocode(
+                event.latitude,
+                event.longitude
+              );
+              addressMap[cacheKey] = address;
+            } catch (error) {
+              console.error(`Failed to geocode ${cacheKey}:`, error);
+              addressMap[cacheKey] = null;
+            }
+          }
+        }
+      }
+
+      return addressMap;
+    },
+    enabled: !!eventsData?.events && eventsData.events.length > 0,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  });
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(i18n.language === "pt" ? "pt-BR" : "en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (startDate: string) => {
+    const start = new Date(startDate);
+    return start.toLocaleTimeString(i18n.language === "pt" ? "pt-BR" : "en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const getEventAddress = (event: any) => {
+    const cacheKey = `${event.latitude},${event.longitude}`;
+    const address = addresses?.[cacheKey];
+    if (address) {
+      return `${address.city}, ${address.state}`;
+    }
+    return event.location || t("home.events.locationNotAvailable");
+  };
+
+  const totalPages = eventsData ? Math.ceil(eventsData.total / itemsPerPage) : 0;
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {/* Header with title and pagination */}
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Discover Events</h2>
-          <Button variant="outline" size="sm">
-            <Settings className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
+          <h2 className="text-2xl font-bold">{t("dashboard.tabs.explore")}</h2>
+
+          {/* Pagination */}
+          {eventsData && totalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              startIndex={(currentPage - 1) * itemsPerPage + 1}
+              endIndex={Math.min(currentPage * itemsPerPage, eventsData.total)}
+              totalItems={eventsData.total}
+            />
+          )}
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {mockEvents.map(renderEventCard)}
-        </div>
+
+        {/* Loading State */}
+        {eventsLoading && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <span className="ml-2 text-muted-foreground">
+              {t("home.events.loading")}
+            </span>
+          </div>
+        )}
+
+        {/* Error State */}
+        {eventsError && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {t("home.events.error")}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Events Grid */}
+        {eventsData?.events && eventsData.events.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
+            {eventsData.events.map((event) => (
+              <Card
+                key={event.id}
+                className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-border/50 hover:border-primary/30"
+              >
+                <div className="aspect-square relative overflow-hidden">
+                  <img
+                    src={event.image || heroEventImage}
+                    alt={event.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-smooth"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-background"></div>
+                  <div className="absolute top-4 right-4">
+                    <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
+                      {event.participant_count} {event.participant_count === 1 ? 'participant' : 'participants'}
+                    </Badge>
+                  </div>
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h4 className="text-2xl font-bold text-white mb-2">
+                      {event.name}
+                    </h4>
+                  </div>
+                </div>
+
+                <CardContent className="p-6">
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {formatDate(event.start_date)}
+                      <Clock className="mr-2 h-4 w-4 ml-4" />
+                      {formatTime(event.start_date)}
+                    </div>
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MapPin className="mr-2 h-4 w-4" />
+                      {addressesLoading ? (
+                        <span className="flex items-center">
+                          <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                          {t("home.events.loadingLocation")}
+                        </span>
+                      ) : (
+                        getEventAddress(event)
+                      )}
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                    {event.description}
+                  </p>
+
+                  <Link to={`/event/${generateSlug(event.name, event.id)}`}>
+                    <Button className="w-full group/btn hover:shadow-glow transition-smooth">
+                      {t("home.events.learnMore")}
+                      <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-smooth" />
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {eventsData?.events && eventsData.events.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">
+              {t("home.events.noEvents")}
+            </p>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

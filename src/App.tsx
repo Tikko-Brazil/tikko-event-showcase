@@ -57,7 +57,7 @@ const App = () => (
             <Route path="/profile-completion" element={<ProfileCompletion />} />
             <Route
               path="/dashboard"
-              element={<Navigate to="/feed" replace />}
+              element={<Navigate to="/explore" replace />}
             />
             <Route
               path="/feed"
@@ -100,30 +100,30 @@ const App = () => (
                 </PrivateRoute>
               }
             />
-              <Route
-                path="/settings"
-                element={
-                  <PrivateRoute>
-                    <Settings />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/edit-profile"
-                element={
-                  <PrivateRoute>
-                    <EditProfile />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/language"
-                element={
-                  <PrivateRoute>
-                    <Language />
-                  </PrivateRoute>
-                }
-              />
+            <Route
+              path="/settings"
+              element={
+                <PrivateRoute>
+                  <Settings />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/edit-profile"
+              element={
+                <PrivateRoute>
+                  <EditProfile />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/language"
+              element={
+                <PrivateRoute>
+                  <Language />
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/event-management/:eventId"
               element={

@@ -3,7 +3,7 @@
     "tabs": {
       "feed": "Feed",
       "explore": "Explorar",
-      "myEvents": "Eventos",
+      "myEvents": "Meus Eventos",
       "myTickets": "Ingressos",
       "profile": "Perfil"
     },
@@ -16,6 +16,7 @@
     "myEvents": {
       "title": "Meus Eventos",
       "createEvent": "Criar Evento",
+      "createFirstEvent": "Criar o Seu Primeiro Evento",
       "tags": {
         "upcoming": "Próximo",
         "past": "Passado",
@@ -779,6 +780,7 @@
       "loading": "Carregando eventos...",
       "error": "Erro ao carregar eventos. Tente novamente mais tarde.",
       "noEvents": "Nenhum evento encontrado.",
+      "haventCreatedEvents": "Você ainda não criou ou entrou em nenhum evento",
       "loadingLocation": "Carregando...",
       "locationNotAvailable": "Localização não disponível",
       "learnMore": "Saiba Mais"

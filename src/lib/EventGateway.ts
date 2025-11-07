@@ -39,6 +39,28 @@ interface GetEventsParams {
   limit: number;
 }
 
+interface UserEventData {
+  event: Event;
+  role: string;
+  has_sold_tickets: boolean;
+}
+
+interface PaginatedUserEventsResponse {
+  events: UserEventData[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+  is_admin: boolean;
+}
+
+interface GetUserEventsParams {
+  active?: "true" | "false" | "all";
+  search?: string;
+  page: number;
+  limit: number;
+}
+
 interface TicketPricing {
   id: number;
   event_id: number;
@@ -206,13 +228,12 @@ interface UploadUrlResponse {
   key: string;
 }
 
-interface UserEventResponse {
-  events: {
-    event: Event;
-    role: string;
-    has_sold_tickets: boolean;
-    is_admin: boolean;
-  }[];
+interface PaginatedUserEventsResponse {
+  events: UserEventData[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
 }
 
 export class EventGateway {
@@ -359,11 +380,23 @@ export class EventGateway {
     return this.handleResponse<EventStaffMember[]>(response);
   }
 
-  async getUserEvents(): Promise<UserEventResponse> {
+  async getUserEvents(params: GetUserEventsParams): Promise<PaginatedUserEventsResponse> {
+    const searchParams = new URLSearchParams({
+      page: params.page.toString(),
+      limit: params.limit.toString(),
+    });
+
+    if (params.active) {
+      searchParams.append("active", params.active);
+    }
+    if (params.search) {
+      searchParams.append("search", params.search);
+    }
+
     const response = await this.fetchWithAuth(
-      `${this.baseUrl}/private/event/user`
+      `${this.baseUrl}/private/event/user?${searchParams}`
     );
-    return this.handleResponse<UserEventResponse>(response);
+    return this.handleResponse<PaginatedUserEventsResponse>(response);
   }
 
   async addStaffMember(

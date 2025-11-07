@@ -16,6 +16,7 @@
     "myEvents": {
       "title": "My Events",
       "createEvent": "Create Event",
+      "createFirstEvent": "Create Your First Event",
       "tags": {
         "upcoming": "Upcoming",
         "past": "Past",
@@ -743,7 +744,7 @@
   "home": {
     "nav": {
       "events": "Events",
-      "about": "About", 
+      "about": "About",
       "contact": "Contact",
       "signIn": "Sign In",
       "getStarted": "Get Started"
@@ -762,13 +763,14 @@
       "loading": "Loading events...",
       "error": "Error loading events. Please try again later.",
       "noEvents": "No events found.",
+      "haventCreatedEvents": "You haven't created or joined any events yet.",
       "loadingLocation": "Loading...",
       "locationNotAvailable": "Location not available",
       "learnMore": "Learn More"
     },
     "stats": {
       "eventsCreated": "Events Created",
-      "happyAttendees": "Happy Attendees", 
+      "happyAttendees": "Happy Attendees",
       "citiesCovered": "Cities Covered",
       "partnersConnected": "Partners Connected"
     },

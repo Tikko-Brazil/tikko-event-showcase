@@ -26,8 +26,8 @@ const MyTickets = () => {
       ticket?.gender === "male"
         ? "Masculino"
         : ticket?.gender === "female"
-        ? "Feminino"
-        : "";
+          ? "Feminino"
+          : "";
 
     const lotText = ticket?.lot ? ` - Lote ${ticket.lot}` : "";
     const typeText = ticket?.ticket_type || "";
@@ -39,6 +39,11 @@ const MyTickets = () => {
     useQuery({
       queryKey: ["userTickets"],
       queryFn: () => ticketGateway.getUserTickets(),
+      staleTime: 5 * 60 * 1000,
+      gcTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
     });
 
   const userTickets = userTicketsResponse?.tickets || [];
@@ -155,8 +160,8 @@ const MyTickets = () => {
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="max-w-none w-screen h-screen m-0 p-0 rounded-none overflow-y-auto">
           {selectedTicketId && (
-            <TicketDetails 
-              ticketId={selectedTicketId} 
+            <TicketDetails
+              ticketId={selectedTicketId}
               onClose={() => setShowDetails(false)}
               onShowQR={() => {
                 setShowDetails(false);
@@ -171,8 +176,8 @@ const MyTickets = () => {
       <Dialog open={showQR} onOpenChange={setShowQR}>
         <DialogContent className="max-w-none w-screen h-screen m-0 p-0 rounded-none overflow-y-auto">
           {selectedTicketId && (
-            <TicketQRCode 
-              ticketId={selectedTicketId} 
+            <TicketQRCode
+              ticketId={selectedTicketId}
               onClose={() => setShowQR(false)}
             />
           )}

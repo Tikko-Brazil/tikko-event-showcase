@@ -9,7 +9,7 @@ interface PaginationProps {
   startIndex: number;
   endIndex: number;
   totalItems: number;
-  itemName: string;
+  itemName?: string;
 }
 
 export const Pagination = ({
@@ -22,7 +22,7 @@ export const Pagination = ({
   itemName,
 }: PaginationProps) => {
   const { t, i18n } = useTranslation();
-  
+
   // Helper function to format numbers according to current locale
   const formatNumber = (value: number) => {
     const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
