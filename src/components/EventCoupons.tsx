@@ -137,9 +137,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
       const updateData = {
         max_uses: values.maxUsage,
         active: values.isActive,
-        ticket_pricing_id: values.isTicketSpecific
+        ticket_pricing_ids: values.isTicketSpecific
           ? values.ticketTypes.map((id: string) => parseInt(id))
-          : null,
+          : [],
       };
       return couponGateway.updateCoupon(id, updateData);
     },
@@ -734,13 +734,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
               initialValues={{
                 maxUsage: editingCoupon.max_uses,
                 isActive: editingCoupon.active,
-                isTicketSpecific: !!editingCoupon.ticket_pricing_id,
-                ticketTypes: Array.isArray(editingCoupon.ticket_pricing_id)
-                  ? editingCoupon.ticket_pricing_id.map((id: number) =>
-                      id.toString()
-                    )
-                  : editingCoupon.ticket_pricing_id
-                  ? [editingCoupon.ticket_pricing_id.toString()]
+                isTicketSpecific: !!(editingCoupon.ticket_pricings && editingCoupon.ticket_pricings.length > 0),
+                ticketTypes: editingCoupon.ticket_pricings 
+                  ? editingCoupon.ticket_pricings.map((pricing: any) => pricing.id.toString())
                   : [],
               }}
               validationSchema={Yup.object({

@@ -35,7 +35,15 @@ interface CreateCouponRequest {
 interface UpdateCouponRequest {
   max_uses: number;
   active: boolean;
-  ticket_pricing_id: number;
+  ticket_pricing_ids: number[];
+}
+
+interface TicketPricing {
+  id: number;
+  ticket_type: string;
+  price: number;
+  lot: number;
+  gender: string;
 }
 
 interface Coupon {
@@ -53,6 +61,7 @@ interface Coupon {
   created_at: string;
   created_by: number;
   active: boolean;
+  ticket_pricings: TicketPricing[];
 }
 
 interface CouponsListResponse {
