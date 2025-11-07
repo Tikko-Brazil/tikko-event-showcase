@@ -122,13 +122,6 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
     enabled: !!eventId,
   });
 
-  // Console log the fetched data
-  React.useEffect(() => {
-    if (eventStats) {
-      console.log("Event Stats:", eventStats);
-    }
-  }, [eventStats]);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">

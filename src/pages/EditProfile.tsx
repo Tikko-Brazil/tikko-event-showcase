@@ -82,8 +82,6 @@ const EditProfile: React.FC = () => {
               validationSchema={editProfileSchema}
               onSubmit={async (values, { setSubmitting }) => {
                 try {
-                  // TODO: Integrate with backend
-                  console.log("Form values:", values);
                   setSuccessMessage("Perfil atualizado com sucesso!");
                   setShowSuccess(true);
                   setTimeout(() => {

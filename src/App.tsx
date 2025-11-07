@@ -17,6 +17,18 @@ import Settings from "./pages/Settings";
 import EditProfile from "./pages/EditProfile";
 import Language from "./pages/Language";
 import EventManagement from "./pages/EventManagement";
+import { EventManagementLayout } from "./components/EventManagementLayout";
+import { EventManagementRedirect } from "./components/EventManagementRedirect";
+import { OverviewPage } from "./pages/management/OverviewPage";
+import { EditPage } from "./pages/management/EditPage";
+import { AnalyticsPage } from "./pages/management/AnalyticsPage";
+import { ParticipantsPage } from "./pages/management/ParticipantsPage";
+import { TicketsPage } from "./pages/management/TicketsPage";
+import { CouponsPage } from "./pages/management/CouponsPage";
+import { StaffPage } from "./pages/management/StaffPage";
+import { SendTicketsPage } from "./pages/management/SendTicketsPage";
+import { RequestsPage } from "./pages/management/RequestsPage";
+import { ValidatePage } from "./pages/management/ValidatePage";
 import EventDetails from "./pages/EventDetails";
 import EventCreation from "./pages/EventCreation";
 import NotFound from "./pages/NotFound";
@@ -124,14 +136,27 @@ const App = () => (
                 </PrivateRoute>
               }
             />
+            {/* Event management routes */}
             <Route
               path="/event-management/:eventId"
               element={
                 <PrivateRoute>
-                  <EventManagement />
+                  <EventManagementLayout />
                 </PrivateRoute>
               }
-            />
+            >
+              <Route index element={<EventManagementRedirect />} />
+              <Route path="overview" element={<OverviewPage />} />
+              <Route path="edit" element={<EditPage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="participants" element={<ParticipantsPage />} />
+              <Route path="tickets" element={<TicketsPage />} />
+              <Route path="coupons" element={<CouponsPage />} />
+              <Route path="staff" element={<StaffPage />} />
+              <Route path="send-tickets" element={<SendTicketsPage />} />
+              <Route path="requests" element={<RequestsPage />} />
+              <Route path="validate" element={<ValidatePage />} />
+            </Route>
             <Route
               path="/create-event"
               element={

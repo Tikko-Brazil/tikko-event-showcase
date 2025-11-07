@@ -265,7 +265,6 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
   });
 
   const getAddressFromGeocode = () => {
-    console.log(addressData);
     if (addressData?.displayName) {
       return addressData.displayName;
     }

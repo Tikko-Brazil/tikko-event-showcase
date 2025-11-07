@@ -88,7 +88,6 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
             enableReinitialize={true}
             onSubmit={(values) => {
               const { identificationType, ...userDataValues } = values;
-              console.log("UserInfoStep submitting values:", userDataValues);
               onUserDataChange(userDataValues);
               onNext();
             }}
@@ -110,7 +109,6 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
 
               // Update validation state and sync data when valid
               React.useEffect(() => {
-                console.log("UserInfoStep validation changed:", isValid);
                 onValidationChange?.(isValid);
                 if (isValid) {
                   syncFormData();

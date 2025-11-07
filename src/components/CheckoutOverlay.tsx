@@ -109,7 +109,6 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   });
 
   const handleRegisterAndJoin = () => {
-    console.log("userData before API call:", userData);
 
     // Prepare payment data
     let paymentInfo = undefined;
@@ -254,7 +253,6 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             onIdentificationTypeChange={setIdentificationType}
             onNext={handleNext}
             onValidationChange={(isValid) => {
-              console.log("CheckoutOverlay received validation:", isValid);
               setIsUserInfoValid(isValid);
             }}
           />
