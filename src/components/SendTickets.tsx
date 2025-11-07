@@ -43,12 +43,14 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
   const queryClient = useQueryClient();
 
   // Fetch active ticket pricings
-  const { data: ticketPricings, isLoading: isLoadingPricings } = useQuery({
+  const { data: ticketPricingsData, isLoading: isLoadingPricings } = useQuery({
     queryKey: ["ticket-pricings", eventId],
     queryFn: () =>
-      ticketPricingGateway.getTicketPricingByEvent(eventId, "Active"),
+      ticketPricingGateway.getTicketPricingByEvent(eventId, 1, 100, "Active"),
     enabled: !!eventId,
   });
+
+  const ticketPricings = ticketPricingsData?.ticket_pricings || [];
 
   // Send courtesy ticket mutation
   const sendTicketMutation = useMutation({

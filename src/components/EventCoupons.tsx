@@ -180,25 +180,27 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
   } = useQuery({
     queryKey: ["event-coupons", eventId, couponPage, couponFilter, debouncedSearch],
     queryFn: () => couponGateway.getEventCoupons(
-      eventId, 
-      couponPage, 
-      itemsPerPage, 
-      undefined, 
-      couponFilter === "all" ? undefined : couponFilter, 
+      eventId,
+      couponPage,
+      itemsPerPage,
+      undefined,
+      couponFilter === "all" ? undefined : couponFilter,
       debouncedSearch || undefined
     ),
     enabled: !!eventId,
   });
 
   // Fetch active ticket pricings when checkbox is checked
-  const { data: ticketPricings, isLoading: isLoadingTicketPricings } = useQuery(
+  const { data: ticketPricingsData, isLoading: isLoadingTicketPricings } = useQuery(
     {
       queryKey: ["event-ticket-pricings", eventId],
       queryFn: () =>
-        ticketPricingGateway.getTicketPricingByEvent(eventId, "Active"),
+        ticketPricingGateway.getTicketPricingByEvent(eventId, 1, 100, "Active"),
       enabled: !!eventId && currentFormValues.isTicketSpecific,
     }
   );
+
+  const ticketPricings = ticketPricingsData?.ticket_pricings || [];
 
   // Restore focus after query updates
   React.useEffect(() => {
@@ -648,9 +650,8 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                         <div
                           className="bg-primary h-1 rounded-full"
                           style={{
-                            width: `${
-                              (coupon.used_count / coupon.max_uses) * 100
-                            }%`,
+                            width: `${(coupon.used_count / coupon.max_uses) * 100
+                              }%`,
                           }}
                         />
                       </div>
@@ -661,11 +662,10 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                       {/* Mobile: Visual indicator only */}
                       <div className="md:hidden flex items-center justify-center">
                         <div
-                          className={`w-3 h-3 rounded-full ${
-                            coupon.active ? "bg-green-500" : "bg-gray-400"
-                          }`}
-                          title={coupon.active 
-                            ? t("eventManagement.coupons.status.active") 
+                          className={`w-3 h-3 rounded-full ${coupon.active ? "bg-green-500" : "bg-gray-400"
+                            }`}
+                          title={coupon.active
+                            ? t("eventManagement.coupons.status.active")
                             : t("eventManagement.coupons.status.inactive")}
                         />
                       </div>
@@ -674,8 +674,8 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                         <Badge
                           variant={coupon.active ? "default" : "secondary"}
                         >
-                          {coupon.active 
-                            ? t("eventManagement.coupons.status.active") 
+                          {coupon.active
+                            ? t("eventManagement.coupons.status.active")
                             : t("eventManagement.coupons.status.inactive")}
                         </Badge>
                       </div>
@@ -732,7 +732,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                 maxUsage: editingCoupon.max_uses,
                 isActive: editingCoupon.active,
                 isTicketSpecific: !!(editingCoupon.ticket_pricings && editingCoupon.ticket_pricings.length > 0),
-                ticketTypes: editingCoupon.ticket_pricings 
+                ticketTypes: editingCoupon.ticket_pricings
                   ? editingCoupon.ticket_pricings.map((pricing: any) => pricing.id.toString())
                   : [],
               }}
@@ -799,7 +799,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                                   Math.max(
                                     editingCoupon.used_count,
                                     parseInt(e.target.value) ||
-                                      editingCoupon.used_count
+                                    editingCoupon.used_count
                                   )
                                 )
                               )

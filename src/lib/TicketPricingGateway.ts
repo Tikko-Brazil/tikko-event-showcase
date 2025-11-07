@@ -36,6 +36,14 @@ interface TicketPricing {
   door: boolean;
 }
 
+interface TicketPricingsListResponse {
+  ticket_pricings: TicketPricing[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
 interface AdvanceLotResponse {
   message: string;
   data: TicketPricing;
@@ -136,16 +144,23 @@ export class TicketPricingGateway {
 
   async getTicketPricingByEvent(
     eventId: number,
-    status?: "Active" | "Inactive" | "All"
-  ): Promise<TicketPricing[]> {
+    page: number,
+    limit: number,
+    status?: "Active" | "Inactive" | "All",
+    search?: string
+  ): Promise<TicketPricingsListResponse> {
     const params = new URLSearchParams();
+    params.append("page", page.toString());
+    params.append("limit", limit.toString());
+    
     if (status) {
       params.append("status", status);
     }
+    if (search) {
+      params.append("search", search);
+    }
 
-    const url = `${this.baseUrl}/private/ticketpricing/event/${eventId}${
-      params.toString() ? `?${params}` : ""
-    }`;
+    const url = `${this.baseUrl}/private/ticketpricing/event/${eventId}?${params}`;
     const response = await this.fetchWithAuth(url);
 
     if (!response.ok) {

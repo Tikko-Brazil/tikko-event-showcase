@@ -53,7 +53,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
   const [successMessage, setSuccessMessage] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const itemsPerPage = 6;
+  const itemsPerPage = 8;
   const ticketPricingGateway = new TicketPricingGateway(
     import.meta.env.VITE_BACKEND_BASE_URL
   );
@@ -130,14 +130,26 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["event-ticket-pricings", eventId, ticketTypeFilter],
+    queryKey: ["event-ticket-pricings", eventId, ticketTypePage, ticketTypeFilter, debouncedSearch],
     queryFn: () =>
       ticketPricingGateway.getTicketPricingByEvent(
         eventId,
-        getFilterStatus(ticketTypeFilter)
+        ticketTypePage,
+        itemsPerPage,
+        getFilterStatus(ticketTypeFilter),
+        debouncedSearch || undefined
       ),
     enabled: !!eventId,
   });
+
+  const allTicketTypes = ticketPricingsData?.ticket_pricings || [];
+  const totalPages = ticketPricingsData?.total_pages || 1;
+  const totalItems = ticketPricingsData?.total || 0;
+
+  // Use backend pagination data directly
+  const from = ((ticketPricingsData?.page || 1) - 1) * (ticketPricingsData?.limit || itemsPerPage);
+  const to = Math.min(from + (ticketPricingsData?.limit || itemsPerPage), totalItems);
+  const paginatedTicketTypes = allTicketTypes;
 
   // Create ticket pricing mutation
   const createTicketPricingMutation = useMutation({
@@ -194,29 +206,6 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
       searchInputRef.current.focus();
     }
   }, [ticketPricingsData, ticketTypeSearch]);
-
-  const allTicketTypes = ticketPricingsData || [];
-
-  // Filter ticket types based on search
-  const filteredTicketTypes = allTicketTypes.filter((ticketType) => {
-    const matchesSearch =
-      debouncedSearch === "" ||
-      ticketType.ticket_type
-        .toLowerCase()
-        .includes(debouncedSearch.toLowerCase()) ||
-      ticketType.gender.toLowerCase().includes(debouncedSearch.toLowerCase());
-    return matchesSearch;
-  });
-
-  // Pagination for ticket types
-  const totalTicketTypePages = Math.ceil(
-    filteredTicketTypes.length / itemsPerPage
-  );
-  const startIndex = (ticketTypePage - 1) * itemsPerPage;
-  const paginatedTicketTypes = filteredTicketTypes.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
 
   const filterOptions = [
     { value: "all", label: t("eventManagement.ticketTypes.search.filters.all") },
@@ -378,7 +367,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
       />
 
       {/* Ticket Types Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {paginatedTicketTypes.map((ticketType) => (
           <Card key={ticketType.id} className="relative">
             <CardHeader className="pb-3">
@@ -453,14 +442,11 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
       {/* Pagination */}
       <Pagination
         currentPage={ticketTypePage}
-        totalPages={totalTicketTypePages}
+        totalPages={totalPages}
         onPageChange={setTicketTypePage}
-        startIndex={startIndex}
-        endIndex={Math.min(
-          startIndex + itemsPerPage,
-          filteredTicketTypes.length
-        )}
-        totalItems={filteredTicketTypes.length}
+        startIndex={from + 1}
+        endIndex={to}
+        totalItems={totalItems}
         itemName={t("eventManagement.ticketTypes.title").toLowerCase()}
       />
 
