@@ -188,6 +188,11 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
       debouncedSearch || undefined
     ),
     enabled: !!eventId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   // Fetch active ticket pricings when checkbox is checked

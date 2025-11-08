@@ -37,7 +37,7 @@ export const EventManagementLayout = () => {
   // Get current section from URL
   const currentSection = location.pathname.split('/').pop() || 'overview';
 
-  // Fetch event data
+  // Fetch event data and user role
   const {
     data: eventData,
     isLoading: eventLoading,
@@ -46,6 +46,20 @@ export const EventManagementLayout = () => {
     queryKey: ["event-with-pricing", eventId],
     queryFn: () => eventGateway.getEventWithTicketPricing(Number(eventId)),
     enabled: !!eventId,
+  });
+
+  const {
+    data: eventInfo,
+    isLoading: eventInfoLoading,
+  } = useQuery({
+    queryKey: ["event-info", eventId],
+    queryFn: () => eventGateway.getEventInfo(Number(eventId)),
+    enabled: !!eventId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   const formatDate = (dateString: string) => {
@@ -83,7 +97,28 @@ export const EventManagementLayout = () => {
     { id: "requests", label: t("eventManagement.tabs.requests"), icon: UserPlus },
   ];
 
-  if (eventLoading) {
+  // Filter management sections based on user role
+  const getFilteredSections = (userRole: string) => {
+    switch (userRole.toLowerCase()) {
+      case 'host':
+      case 'manager':
+        return managementSections; // All sections
+      case 'coordinator':
+        return managementSections.filter(section =>
+          ['validate', 'participants', 'requests'].includes(section.id)
+        );
+      case 'validator':
+        return managementSections.filter(section => section.id === 'validate');
+      default:
+        return managementSections; // Default to all sections
+    }
+  };
+
+  // Get user role from API response
+  const userRole = eventInfo?.user_role || 'validator'; // Default to validator (least privileges)
+  const filteredSections = getFilteredSections(userRole);
+
+  if (eventLoading || eventInfoLoading) {
     return (
       <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
@@ -113,7 +148,7 @@ export const EventManagementLayout = () => {
 
   if (isMobile) {
     // Show specific management page content when on a non-overview management route
-    if (currentSection && currentSection !== 'overview' && managementSections.find(s => s.id === currentSection)) {
+    if (currentSection && currentSection !== 'overview' && filteredSections.find(s => s.id === currentSection)) {
       return (
         <div className="min-h-screen bg-background">
           <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -126,7 +161,7 @@ export const EventManagementLayout = () => {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <h1 className="font-semibold">
-                {managementSections.find((s) => s.id === currentSection)?.label}
+                {filteredSections.find((s) => s.id === currentSection)?.label}
               </h1>
               <div className="w-10" />
             </div>
@@ -172,7 +207,7 @@ export const EventManagementLayout = () => {
         <div className="p-4">
           <h2 className="text-lg font-semibold mb-4">{t("eventManagement.header.eventManagement")}</h2>
           <div className="grid grid-cols-3 gap-6 justify-items-center">
-            {managementSections.filter(section => section.id !== 'overview').map((section) => {
+            {filteredSections.filter(section => section.id !== 'overview').map((section) => {
               const Icon = section.icon;
               return (
                 <button
@@ -228,7 +263,7 @@ export const EventManagementLayout = () => {
           />
 
           <nav className="p-4 space-y-2">
-            {managementSections.map((section) => {
+            {filteredSections.map((section) => {
               const Icon = section.icon;
               const isActive = currentSection === section.id;
               return (

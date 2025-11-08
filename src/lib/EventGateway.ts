@@ -194,6 +194,25 @@ interface EventStatsOverview {
   }[];
 }
 
+interface EventInfo {
+  id: number;
+  name: string;
+  description: string;
+  is_paid: boolean;
+  start_date: string;
+  end_date: string | null;
+  address_name: string | null;
+  longitude: number | null;
+  latitude: number | null;
+  address_complement: string | null;
+  is_private: boolean;
+  auto_accept: boolean;
+  company_id: number | null;
+  ticket_pricing_id: number | null;
+  is_active: boolean;
+  user_role: string | null;
+}
+
 interface EventStaffMember {
   id: number;
   username: string;
@@ -464,5 +483,12 @@ export class EventGateway {
       `${this.baseUrl}/private/event/${eventId}/stats/overview`
     );
     return this.handleResponse<EventStatsOverview>(response);
+  }
+
+  async getEventInfo(eventId: number): Promise<EventInfo> {
+    const response = await this.fetchWithAuth(
+      `${this.baseUrl}/private/event/${eventId}/info`
+    );
+    return this.handleResponse<EventInfo>(response);
   }
 }

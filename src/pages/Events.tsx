@@ -55,6 +55,11 @@ const Events = () => {
         search: searchQuery || undefined,
         order_by_participants: true,
       }),
+          staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   // Fetch addresses for events with coordinates

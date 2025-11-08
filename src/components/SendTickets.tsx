@@ -48,6 +48,11 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
     queryFn: () =>
       ticketPricingGateway.getTicketPricingByEvent(eventId, 1, 100, "Active"),
     enabled: !!eventId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   const ticketPricings = ticketPricingsData?.ticket_pricings || [];
@@ -213,7 +218,7 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
                   <SelectTrigger
                     className={
                       formik.touched.ticket_pricing_id &&
-                      formik.errors.ticket_pricing_id
+                        formik.errors.ticket_pricing_id
                         ? "border-red-500"
                         : ""
                     }
@@ -234,8 +239,8 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
                         {pricing.gender === "male"
                           ? "Masculino"
                           : pricing.gender === "female"
-                          ? "Feminino"
-                          : pricing.gender}{" "}
+                            ? "Feminino"
+                            : pricing.gender}{" "}
                         (
                         {pricing.lot === 0
                           ? "Pré-venda"

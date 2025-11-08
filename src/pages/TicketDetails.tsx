@@ -56,6 +56,11 @@ const TicketDetails = ({
   const { data: userTicketsResponse, isLoading } = useQuery({
     queryKey: ["userTickets"],
     queryFn: () => ticketGateway.getUserTickets(),
+        staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   const ticketData = userTicketsResponse?.tickets?.find(

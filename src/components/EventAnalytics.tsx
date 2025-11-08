@@ -94,6 +94,11 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
     queryKey: ["event-stats", eventId],
     queryFn: () => eventGateway.getEventStats(eventId),
     enabled: !!eventId,
+    staleTime: 1 * 60 * 1000,
+    gcTime: 1 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   // Fetch daily sales data separately
@@ -109,6 +114,11 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
         getDaysFromTimeWindow(salesTimeWindow)
       ),
     enabled: !!eventId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   // Fetch validated tickets data
@@ -120,6 +130,11 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
         getMinutesFromTimeWindow(validationTimeWindow)
       ),
     enabled: !!eventId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   if (isLoading) {
@@ -317,11 +332,10 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
         <button
           key={option}
           onClick={() => onSelect(option)}
-          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-            selected === option
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
+          className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${selected === option
+            ? "bg-background text-foreground shadow-sm"
+            : "text-muted-foreground hover:text-foreground"
+            }`}
         >
           {t(`eventManagement.analytics.timeWindows.${option}`)}
         </button>
@@ -407,16 +421,15 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
                 {dailySales &&
                   dailySales.length > 0 &&
                   dailySales[dailySales.length - 1].percentage_change !==
-                    null &&
+                  null &&
                   dailySales[dailySales.length - 1].percentage_change !==
-                    undefined && (
+                  undefined && (
                     <div
-                      className={`text-sm font-medium ${
-                        dailySales[dailySales.length - 1].percentage_change! >=
+                      className={`text-sm font-medium ${dailySales[dailySales.length - 1].percentage_change! >=
                         0
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
+                        ? "text-green-600"
+                        : "text-red-600"
+                        }`}
                     >
                       {dailySales[dailySales.length - 1].percentage_change! >= 0
                         ? "+"

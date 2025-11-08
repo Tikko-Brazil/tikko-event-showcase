@@ -47,6 +47,11 @@ const MyEvents = () => {
         active: filterValue as "true" | "false" | "all",
         search: debouncedSearchValue || undefined,
       }),
+          staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   const filterOptions = [

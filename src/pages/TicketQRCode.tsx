@@ -66,6 +66,11 @@ const TicketQRCode = ({
   const { data: userTicketsResponse, isLoading } = useQuery({
     queryKey: ["userTickets"],
     queryFn: () => ticketGateway.getUserTickets(),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   const ticketData = userTicketsResponse?.tickets?.find(
@@ -87,7 +92,7 @@ const TicketQRCode = ({
     onSuccess: (response) => {
       // Open download URL in new tab
       window.open(response.download_url, '_blank');
-      
+
       toast.success(t("myTickets.downloadSuccess"));
       setShowDownloadDialog(false);
     },
@@ -103,8 +108,8 @@ const TicketQRCode = ({
       ticket?.gender === "male"
         ? "Masculino"
         : ticket?.gender === "female"
-        ? "Feminino"
-        : "";
+          ? "Feminino"
+          : "";
 
     const lotText = ticket?.lot ? ` - Lote ${ticket.lot}` : "";
     const typeText = ticket?.ticket_type || "";
@@ -301,7 +306,7 @@ const TicketQRCode = ({
             <AlertDialogCancel>
               {t("myTickets.downloadDialog.cancel")}
             </AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDownloadPDF}
               disabled={downloadMutation.isPending}
             >

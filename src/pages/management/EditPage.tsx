@@ -7,11 +7,16 @@ const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
 export const EditPage = () => {
   const { eventId } = useParams();
-  
+
   const { data: eventData } = useQuery({
     queryKey: ["event-with-pricing", eventId],
     queryFn: () => eventGateway.getEventWithTicketPricing(Number(eventId)),
     enabled: !!eventId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   if (!eventData) return <div>Loading...</div>;

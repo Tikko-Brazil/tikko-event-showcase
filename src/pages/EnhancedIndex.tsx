@@ -46,6 +46,11 @@ const EnhancedIndex = () => {
   } = useQuery({
     queryKey: ["events"],
     queryFn: () => eventGateway.getEvents({ page: 1, limit: 3, order_by_participants: true }),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   // Fetch addresses for events with coordinates (cached by coordinates)

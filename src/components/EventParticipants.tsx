@@ -34,8 +34,8 @@ const formatTicketName = (ticket: any) => {
     ticket?.gender === "male"
       ? "Masculino"
       : ticket?.gender === "female"
-      ? "Feminino"
-      : "Unissex";
+        ? "Feminino"
+        : "Unissex";
   const lotText = ticket?.lot === 0 ? "Pré-venda" : `Lote ${ticket?.lot}`;
   return `${ticket?.ticket_type} - ${genderText} - ${lotText}`;
 };
@@ -123,6 +123,11 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
         debouncedSearch || undefined
       ),
     enabled: !!eventId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   const invites = invitesData?.invites || [];
@@ -271,7 +276,7 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                     <span className="font-medium">
                       {formatCurrency(
                         invite.payment_details.authorized_amount ||
-                          invite.ticket_pricing.price
+                        invite.ticket_pricing.price
                       )}
                     </span>
                   </div>
@@ -349,8 +354,8 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                           {refundMutation.isPending
                             ? "..."
                             : t(
-                                "eventManagement.participants.refundDialog.confirm"
-                              )}
+                              "eventManagement.participants.refundDialog.confirm"
+                            )}
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
