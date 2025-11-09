@@ -39,143 +39,152 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import Events from "./pages/Events";
+import posthog from 'posthog-js';
+import { PostHogProvider } from '@posthog/react'
+
+posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_API_KEY, {
+  api_host: "https://us.i.posthog.com",
+  defaults: '2025-05-24',
+});
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <FirstAccessGuard>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <PublicRoute>
-                  <EnhancedIndex />
-                </PublicRoute>
-              }
-            />
-            <Route
-              path="/login"
-              element={
-                <PublicRoute>
-                  <Auth />
-                </PublicRoute>
-              }
-            />
-            <Route path="/profile-completion" element={<ProfileCompletion />} />
-            <Route
-              path="/dashboard"
-              element={<Navigate to="/explore" replace />}
-            />
-            <Route
-              path="/feed"
-              element={
-                <PrivateRoute>
-                  <Feed />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/explore"
-              element={
-                <PrivateRoute>
-                  <Explore />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/events" element={<Events />} />
-            <Route
-              path="/my-events"
-              element={
-                <PrivateRoute>
-                  <MyEvents />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/my-tickets"
-              element={
-                <PrivateRoute>
-                  <MyTickets />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <PrivateRoute>
-                  <Profile />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <PrivateRoute>
-                  <Settings />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/edit-profile"
-              element={
-                <PrivateRoute>
-                  <EditProfile />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/language"
-              element={
-                <PrivateRoute>
-                  <Language />
-                </PrivateRoute>
-              }
-            />
-            {/* Event management routes */}
-            <Route
-              path="/event-management/:eventId"
-              element={
-                <PrivateRoute>
-                  <EventManagementLayout />
-                </PrivateRoute>
-              }
-            >
-              <Route index element={<EventManagementRedirect />} />
-              <Route path="overview" element={<OverviewPage />} />
-              <Route path="edit" element={<EditPage />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="participants" element={<ParticipantsPage />} />
-              <Route path="tickets" element={<TicketsPage />} />
-              <Route path="coupons" element={<CouponsPage />} />
-              <Route path="staff" element={<StaffPage />} />
-              <Route path="send-tickets" element={<SendTicketsPage />} />
-              <Route path="requests" element={<RequestsPage />} />
-              <Route path="validate" element={<ValidatePage />} />
-            </Route>
-            <Route
-              path="/create-event"
-              element={
-                <PrivateRoute>
-                  <EventCreation />
-                </PrivateRoute>
-              }
-            />
-            <Route path="/event/:slug" element={<EventDetails />} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/cookies" element={<CookiePolicy />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </FirstAccessGuard>
-      </BrowserRouter>
-    </TooltipProvider>
+    <PostHogProvider client={posthog}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <FirstAccessGuard>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <PublicRoute>
+                    <EnhancedIndex />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <Auth />
+                  </PublicRoute>
+                }
+              />
+              <Route path="/profile-completion" element={<ProfileCompletion />} />
+              <Route
+                path="/dashboard"
+                element={<Navigate to="/explore" replace />}
+              />
+              <Route
+                path="/feed"
+                element={
+                  <PrivateRoute>
+                    <Feed />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/explore"
+                element={
+                  <PrivateRoute>
+                    <Explore />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/events" element={<Events />} />
+              <Route
+                path="/my-events"
+                element={
+                  <PrivateRoute>
+                    <MyEvents />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/my-tickets"
+                element={
+                  <PrivateRoute>
+                    <MyTickets />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <PrivateRoute>
+                    <Profile />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <PrivateRoute>
+                    <Settings />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/edit-profile"
+                element={
+                  <PrivateRoute>
+                    <EditProfile />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/language"
+                element={
+                  <PrivateRoute>
+                    <Language />
+                  </PrivateRoute>
+                }
+              />
+              {/* Event management routes */}
+              <Route
+                path="/event-management/:eventId"
+                element={
+                  <PrivateRoute>
+                    <EventManagementLayout />
+                  </PrivateRoute>
+                }
+              >
+                <Route index element={<EventManagementRedirect />} />
+                <Route path="overview" element={<OverviewPage />} />
+                <Route path="edit" element={<EditPage />} />
+                <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="participants" element={<ParticipantsPage />} />
+                <Route path="tickets" element={<TicketsPage />} />
+                <Route path="coupons" element={<CouponsPage />} />
+                <Route path="staff" element={<StaffPage />} />
+                <Route path="send-tickets" element={<SendTicketsPage />} />
+                <Route path="requests" element={<RequestsPage />} />
+                <Route path="validate" element={<ValidatePage />} />
+              </Route>
+              <Route
+                path="/create-event"
+                element={
+                  <PrivateRoute>
+                    <EventCreation />
+                  </PrivateRoute>
+                }
+              />
+              <Route path="/event/:slug" element={<EventDetails />} />
+              <Route path="/about" element={<AboutUs />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/cookies" element={<CookiePolicy />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </FirstAccessGuard>
+        </BrowserRouter>
+      </TooltipProvider>
+    </PostHogProvider>
   </QueryClientProvider>
 );
 

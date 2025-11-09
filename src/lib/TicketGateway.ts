@@ -32,6 +32,10 @@ interface TicketWithEvent {
 
 interface UserTicketsResponse {
   tickets: TicketWithEvent[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
 }
 
 interface CreateTicketRequest {
@@ -119,8 +123,13 @@ export class TicketGateway {
     return this.handleResponse<ValidateTicketResponse>(response);
   }
 
-  async getUserTickets(): Promise<UserTicketsResponse> {
-    const response = await this.fetchWithAuth(`${this.baseUrl}/private/tickets/user`);
+  async getUserTickets(page: number, limit: number): Promise<UserTicketsResponse> {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    
+    const response = await this.fetchWithAuth(`${this.baseUrl}/private/tickets/user?${params}`);
     return this.handleResponse<UserTicketsResponse>(response);
   }
 

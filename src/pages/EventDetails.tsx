@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -31,6 +31,7 @@ import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
 import getEventIdFromSlug from "@/helpers/getEventIdFromSlug";
 import heroImage from "@/assets/hero-event-image.jpg";
+import { usePostHog } from '@posthog/react'
 
 const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 const geocodingGateway = new GeocodingGateway();
@@ -42,6 +43,7 @@ export default function EventDetails() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+  const posthog = usePostHog()
 
   // Fetch event with ticket pricing
   const {
@@ -118,6 +120,15 @@ export default function EventDetails() {
     }
     return eventData?.event.location || "Localização não disponível";
   };
+
+  useEffect(() => {
+    if (eventData?.event) {
+      posthog?.capture("event_viewed", {
+        eventId: eventId,
+        eventName: eventData.event.name,
+      });
+    }
+  }, [eventData, eventId, posthog]);
 
   if (!eventId) {
     return (

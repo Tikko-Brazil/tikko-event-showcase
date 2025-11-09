@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Calendar, Ticket, QrCode } from "lucide-react";
 import { TicketGateway } from "@/lib/TicketGateway";
+import { Pagination } from "@/components/Pagination";
 import DashboardLayout from "@/components/DashboardLayout";
 import TicketDetails from "./TicketDetails";
 import TicketQRCode from "./TicketQRCode";
@@ -16,6 +17,8 @@ const MyTickets = () => {
   const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ticketsPerPage = 9;
 
   const ticketGateway = new TicketGateway(
     import.meta.env.VITE_BACKEND_BASE_URL
@@ -37,8 +40,8 @@ const MyTickets = () => {
 
   const { data: userTicketsResponse, isLoading: isLoadingUserTickets } =
     useQuery({
-      queryKey: ["userTickets"],
-      queryFn: () => ticketGateway.getUserTickets(),
+      queryKey: ["userTickets", currentPage],
+      queryFn: () => ticketGateway.getUserTickets(currentPage, ticketsPerPage),
       staleTime: 5 * 60 * 1000,
       gcTime: 5 * 60 * 1000,
       refetchOnWindowFocus: false,
@@ -47,6 +50,8 @@ const MyTickets = () => {
     });
 
   const userTickets = userTicketsResponse?.tickets || [];
+  const totalTickets = userTicketsResponse?.total || 0;
+  const totalPages = userTicketsResponse?.total_pages || 0;
 
   return (
     <DashboardLayout>
@@ -153,6 +158,19 @@ const MyTickets = () => {
               You haven't purchased any tickets yet.
             </p>
           </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            startIndex={(currentPage - 1) * ticketsPerPage + 1}
+            endIndex={Math.min(currentPage * ticketsPerPage, totalTickets)}
+            totalItems={totalTickets}
+            itemName={t("myTickets.title").toLowerCase()}
+          />
         )}
       </div>
 
