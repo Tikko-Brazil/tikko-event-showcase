@@ -156,11 +156,13 @@ const Explore = () => {
                     className="w-full h-full object-cover group-hover:scale-110 transition-smooth"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-background"></div>
-                  <div className="absolute top-4 right-4">
-                    <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
-                      {event.participant_count} {event.participant_count === 1 ? 'participant' : 'participants'}
-                    </Badge>
-                  </div>
+                  {false &&
+                    <div className="absolute top-4 right-4">
+                      <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
+                        {event.participant_count} {event.participant_count === 1 ? 'participant' : 'participants'}
+                      </Badge>
+                    </div>
+                  }
                   <div className="absolute bottom-4 left-4 right-4">
                     <h4 className="text-2xl font-bold text-white mb-2">
                       {event.name}

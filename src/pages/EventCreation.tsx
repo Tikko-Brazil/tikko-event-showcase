@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Formik, FieldArray, FormikProps } from "formik";
 import * as Yup from "yup";
 import { useMutation } from "@tanstack/react-query";
@@ -65,11 +66,77 @@ interface FormValues {
   latitude: number | null;
   longitude: number | null;
   locationDisplayName: string;
-  autoAccept: boolean;
-  isPrivate: boolean;
-  isActive: boolean;
+  approvalRequired: boolean;
   ticketPricings: TicketPricing[];
 }
+
+// Validation schema function
+const createEventCreationSchema = (t: any) => Yup.object().shape({
+  name: Yup.string()
+    .required(t("eventCreation.validation.eventNameRequired"))
+    .min(3, t("eventCreation.validation.eventNameMin"))
+    .max(100, t("eventCreation.validation.eventNameMax")),
+  description: Yup.string()
+    .required(t("eventCreation.validation.descriptionRequired"))
+    .min(10, t("eventCreation.validation.descriptionMin"))
+    .max(1500, t("eventCreation.validation.descriptionMax")),
+  startDate: Yup.string().required(t("eventCreation.validation.startDateRequired")),
+  startTime: Yup.string()
+    .required(t("eventCreation.validation.startTimeRequired"))
+    .matches(
+      /^([01][0-9]|2[0-3]):([0-5][0-9])$/,
+      t("eventCreation.validation.startTimeFormat")
+    ),
+  endDate: Yup.string().required(t("eventCreation.validation.endDateRequired")),
+  endTime: Yup.string()
+    .required(t("eventCreation.validation.endTimeRequired"))
+    .matches(
+      /^([01][0-9]|2[0-3]):([0-5][0-9])$/,
+      t("eventCreation.validation.endTimeFormat")
+    ),
+  locationName: Yup.string()
+    .required(t("eventCreation.validation.locationNameRequired"))
+    .min(3, t("eventCreation.validation.locationNameMin"))
+    .max(100, t("eventCreation.validation.locationNameMax")),
+  addressName: Yup.string()
+    .required(t("eventCreation.validation.addressRequired"))
+    .min(5, t("eventCreation.validation.addressMin"))
+    .max(200, t("eventCreation.validation.addressMax")),
+  latitude: Yup.number()
+    .nullable()
+    .test(
+      "has-location",
+      t("eventCreation.validation.locationRequired"),
+      function (value, context) {
+        const { longitude } = context.parent;
+        if (value === null || longitude === null) {
+          return false;
+        }
+        return true;
+      }
+    ),
+  longitude: Yup.number().nullable(),
+  autoAccept: Yup.boolean(),
+  isPrivate: Yup.boolean(),
+  isActive: Yup.boolean(),
+  ticketPricings: Yup.array()
+    .of(
+      Yup.object().shape({
+        ticketType: Yup.string()
+          .required(t("eventCreation.validation.ticketTypeRequired"))
+          .min(3, t("eventCreation.validation.ticketTypeMin"))
+          .max(50, t("eventCreation.validation.ticketTypeMax")),
+        gender: Yup.string().required(t("eventCreation.validation.genderRequired")),
+        price: Yup.string()
+          .required(t("eventCreation.validation.priceRequired"))
+          .matches(
+            /^\d+$/,
+            t("eventCreation.validation.priceFormat")
+          ),
+      })
+    )
+    .min(1, t("eventCreation.validation.ticketTypesRequired")),
+});
 
 // Validation schema
 const EventCreationSchema = Yup.object().shape({
@@ -117,9 +184,7 @@ const EventCreationSchema = Yup.object().shape({
       }
     ),
   longitude: Yup.number().nullable(),
-  autoAccept: Yup.boolean(),
-  isPrivate: Yup.boolean(),
-  isActive: Yup.boolean(),
+  approvalRequired: Yup.boolean(),
   ticketPricings: Yup.array()
     .of(
       Yup.object().shape({
@@ -146,6 +211,7 @@ const combineDateTime = (date: string, time: string): string => {
 
 const EventCreation = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
 
   // State
@@ -159,6 +225,9 @@ const EventCreation = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showError, setShowError] = useState(false);
+
+  // Create validation schema with translations
+  const validationSchema = createEventCreationSchema(t);
 
   // Gateways
   const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
@@ -178,9 +247,7 @@ const EventCreation = () => {
     latitude: null,
     longitude: null,
     locationDisplayName: "",
-    autoAccept: true,
-    isPrivate: false,
-    isActive: true,
+    approvalRequired: false,
     ticketPricings: [],
   };
 
@@ -211,7 +278,7 @@ const EventCreation = () => {
       setIsImageUploading(false);
     },
     onError: (error: any) => {
-      setErrorMessage(error.message || "Erro ao fazer upload da imagem");
+      setErrorMessage(error.message || t("eventCreation.messages.uploadError"));
       setShowError(true);
       setIsImageUploading(false);
     },
@@ -230,9 +297,9 @@ const EventCreation = () => {
           longitude: values.longitude!,
           latitude: values.latitude!,
           address_complement: values.addressComplement || "",
-          is_private: values.isPrivate,
-          auto_accept: values.autoAccept,
-          is_active: values.isActive,
+          is_private: false,
+          auto_accept: !values.approvalRequired,
+          is_active: true,
           image: imageKey || "",
         },
         ticket_pricing: values.ticketPricings.map((tp) => ({
@@ -255,7 +322,7 @@ const EventCreation = () => {
     },
     onError: (error: any) => {
       setErrorMessage(
-        error.message || "Erro ao criar evento. Tente novamente."
+        error.message || t("eventCreation.messages.createError")
       );
       setShowError(true);
     },
@@ -268,7 +335,7 @@ const EventCreation = () => {
       // Validate file type
       const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
       if (!allowedTypes.includes(file.type)) {
-        setErrorMessage("Apenas imagens JPG, JPEG e PNG são aceitas");
+        setErrorMessage(t("eventCreation.messages.imageError"));
         setShowError(true);
         return;
       }
@@ -338,7 +405,7 @@ const EventCreation = () => {
               <div className="flex items-center gap-3">
                 <img src={logoLight} alt="Logo" className="h-8" />
                 <div className="h-6 w-px bg-border" />
-                <h1 className="text-xl font-bold">Create Event</h1>
+                <h1 className="text-xl font-bold">{t("eventCreation.header.title")}</h1>
               </div>
             )}
           </div>
@@ -350,7 +417,7 @@ const EventCreation = () => {
         <div className="max-w-4xl mx-auto">
           <Formik
             initialValues={initialValues}
-            validationSchema={EventCreationSchema}
+            validationSchema={validationSchema}
             onSubmit={(values) => createEventMutation.mutate(values)}
           >
             {({
@@ -367,10 +434,10 @@ const EventCreation = () => {
                 <Card className="shadow-card border-border/50">
                   <CardHeader>
                     <CardTitle className="text-2xl text-foreground">
-                      Informações do Evento
+                      {t("eventCreation.sections.eventInfo.title")}
                     </CardTitle>
                     <CardDescription className="text-muted-foreground">
-                      Detalhes básicos sobre seu evento
+                      {t("eventCreation.sections.eventInfo.description")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -380,7 +447,7 @@ const EventCreation = () => {
                         htmlFor="name"
                         className="text-sm font-medium text-foreground"
                       >
-                        Nome do Evento *
+                        {t("eventCreation.fields.eventName.label")} *
                       </Label>
                       <Input
                         id="name"
@@ -388,7 +455,7 @@ const EventCreation = () => {
                         value={values.name}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        placeholder="Digite o nome do evento"
+                        placeholder={t("eventCreation.fields.eventName.placeholder")}
                         className={
                           errors.name && touched.name ? "border-red-500" : ""
                         }
@@ -401,7 +468,7 @@ const EventCreation = () => {
                     {/* Event Image */}
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-foreground">
-                        Imagem do Evento
+                        {t("eventCreation.fields.eventImage.label")}
                       </Label>
                       <div className="flex flex-col space-y-4">
                         {image && (
@@ -444,8 +511,8 @@ const EventCreation = () => {
                             )}
                             <span>
                               {isImageUploading
-                                ? "Uploading..."
-                                : "Select Image"}
+                                ? t("eventCreation.fields.eventImage.uploading")
+                                : t("eventCreation.fields.eventImage.selectImage")}
                             </span>
                           </Label>
                         </div>
@@ -458,7 +525,7 @@ const EventCreation = () => {
                         htmlFor="description"
                         className="text-sm font-medium text-foreground"
                       >
-                        Descrição *
+                        {t("eventCreation.fields.description.label")} *
                       </Label>
                       <Textarea
                         id="description"
@@ -466,7 +533,7 @@ const EventCreation = () => {
                         value={values.description}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        placeholder="Descreve seu evento..."
+                        placeholder={t("eventCreation.fields.description.placeholder")}
                         className={`min-h-[100px] resize-y ${errors.description && touched.description
                           ? "border-red-500"
                           : ""
@@ -484,7 +551,7 @@ const EventCreation = () => {
                       {/* Start Date and Time */}
                       <div className="space-y-4">
                         <Label className="text-sm font-medium text-foreground">
-                          Data e Horário de Início *
+                          {t("eventCreation.fields.startDateTime.label")} *
                         </Label>
                         <div className="space-y-3">
                           <Popover
@@ -509,7 +576,7 @@ const EventCreation = () => {
                                     new Date(values.startDate + "T00:00:00"),
                                     "dd/MM/yyyy"
                                   )
-                                  : "Selecionar data"}
+                                  : t("eventCreation.fields.startDateTime.datePlaceholder")}
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent
@@ -558,7 +625,7 @@ const EventCreation = () => {
                               {(inputProps: any) => (
                                 <Input
                                   {...inputProps}
-                                  placeholder="Horário de início"
+                                  placeholder={t("eventCreation.fields.startDateTime.timePlaceholder")}
                                   className={cn(
                                     "pl-10",
                                     errors.startTime && touched.startTime
@@ -580,7 +647,7 @@ const EventCreation = () => {
                       {/* End Date and Time */}
                       <div className="space-y-4">
                         <Label className="text-sm font-medium text-foreground">
-                          Data e Horário de Término *
+                          {t("eventCreation.fields.endDateTime.label")} *
                         </Label>
                         <div className="space-y-3">
                           <Popover
@@ -605,7 +672,7 @@ const EventCreation = () => {
                                     new Date(values.endDate + "T00:00:00"),
                                     "dd/MM/yyyy"
                                   )
-                                  : "Selecionar data"}
+                                  : t("eventCreation.fields.endDateTime.datePlaceholder")}
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent
@@ -654,7 +721,7 @@ const EventCreation = () => {
                               {(inputProps: any) => (
                                 <Input
                                   {...inputProps}
-                                  placeholder="Horário de término"
+                                  placeholder={t("eventCreation.fields.endDateTime.timePlaceholder")}
                                   className={cn(
                                     "pl-10",
                                     errors.endTime && touched.endTime
@@ -682,7 +749,7 @@ const EventCreation = () => {
                           htmlFor="locationName"
                           className="text-sm font-medium text-foreground"
                         >
-                          Nome do Local *
+                          {t("eventCreation.fields.locationName.label")} *
                         </Label>
                         <Input
                           id="locationName"
@@ -690,7 +757,7 @@ const EventCreation = () => {
                           value={values.locationName}
                           onChange={handleChange}
                           onBlur={handleBlur}
-                          placeholder="Ex: Aurora Concert Hall"
+                          placeholder={t("eventCreation.fields.locationName.placeholder")}
                           className={
                             errors.locationName && touched.locationName
                               ? "border-red-500"
@@ -707,7 +774,7 @@ const EventCreation = () => {
                       {/* Address Search */}
                       <div className="space-y-2">
                         <Label className="text-sm font-medium text-foreground">
-                          Endereço *
+                          {t("eventCreation.fields.address.label")} *
                         </Label>
                         <div className="relative">
                           <Input
@@ -718,7 +785,7 @@ const EventCreation = () => {
                               debouncedLocationSearch(e.target.value);
                             }}
                             onBlur={handleBlur}
-                            placeholder="Digite o endereço completo"
+                            placeholder={t("eventCreation.fields.address.placeholder")}
                             className={`pr-10 ${errors.addressName && touched.addressName
                               ? "border-red-500"
                               : ""
@@ -765,61 +832,29 @@ const EventCreation = () => {
                         value={values.addressComplement}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        placeholder="Address complement (optional)"
+                        placeholder={t("eventCreation.fields.address.complement")}
                       />
                     </div>
 
                     {/* Settings */}
                     <div className="space-y-4 pt-4 border-t border-border">
                       <h3 className="text-lg font-medium text-foreground">
-                        Configurações
+                        {t("eventCreation.settings.title")}
                       </h3>
 
                       <div className="flex items-center space-x-3">
                         <Switch
-                          id="autoAccept"
-                          checked={values.autoAccept}
+                          id="approvalRequired"
+                          checked={values.approvalRequired}
                           onCheckedChange={(checked) =>
-                            setFieldValue("autoAccept", checked)
+                            setFieldValue("approvalRequired", checked)
                           }
                         />
                         <Label
-                          htmlFor="autoAccept"
+                          htmlFor="approvalRequired"
                           className="text-sm font-medium text-foreground cursor-pointer"
                         >
-                          Aceitar solicitações automaticamente
-                        </Label>
-                      </div>
-
-                      <div className="flex items-center space-x-3">
-                        <Switch
-                          id="isPrivate"
-                          checked={values.isPrivate}
-                          onCheckedChange={(checked) =>
-                            setFieldValue("isPrivate", checked)
-                          }
-                        />
-                        <Label
-                          htmlFor="isPrivate"
-                          className="text-sm font-medium text-foreground cursor-pointer"
-                        >
-                          Evento privado
-                        </Label>
-                      </div>
-
-                      <div className="flex items-center space-x-3">
-                        <Switch
-                          id="isActive"
-                          checked={values.isActive}
-                          onCheckedChange={(checked) =>
-                            setFieldValue("isActive", checked)
-                          }
-                        />
-                        <Label
-                          htmlFor="isActive"
-                          className="text-sm font-medium text-foreground cursor-pointer"
-                        >
-                          Event ativo
+                          {t("eventCreation.settings.approvalRequired")}
                         </Label>
                       </div>
                     </div>
@@ -830,10 +865,10 @@ const EventCreation = () => {
                 <Card className="shadow-card border-border/50">
                   <CardHeader>
                     <CardTitle className="text-2xl text-foreground">
-                      Tipos de Ingresso
+                      {t("eventCreation.sections.ticketTypes.title")}
                     </CardTitle>
                     <CardDescription className="text-muted-foreground">
-                      Defina diferentes tipos de ingresso para seu evento
+                      {t("eventCreation.sections.ticketTypes.description")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -843,12 +878,12 @@ const EventCreation = () => {
                           {/* Add New Ticket Type Form */}
                           <div className="space-y-4 p-4 border border-border rounded-lg bg-muted/30">
                             <h3 className="font-semibold text-foreground">
-                              Adicionar Tipo de Ingresso
+                              {t("eventCreation.ticketTypes.addTitle")}
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                               <Input
-                                placeholder="Nome do ingresso (ex: VIP, Pista)"
+                                placeholder={t("eventCreation.ticketTypes.ticketName")}
                                 id="newTicketName"
                               />
 
@@ -866,7 +901,7 @@ const EventCreation = () => {
                                       htmlFor="gender-male"
                                       className="text-sm font-normal cursor-pointer"
                                     >
-                                      Masculino
+                                      {t("eventCreation.ticketTypes.gender.male")}
                                     </Label>
                                   </div>
                                   <div className="flex items-center space-x-2">
@@ -881,7 +916,7 @@ const EventCreation = () => {
                                       htmlFor="gender-female"
                                       className="text-sm font-normal cursor-pointer"
                                     >
-                                      Feminino
+                                      {t("eventCreation.ticketTypes.gender.female")}
                                     </Label>
                                   </div>
                                 </div>
@@ -889,7 +924,7 @@ const EventCreation = () => {
 
                               <Input
                                 type="number"
-                                placeholder="Preço (R$)"
+                                placeholder={t("eventCreation.ticketTypes.price")}
                                 id="newTicketPrice"
                               />
                             </div>
@@ -938,7 +973,7 @@ const EventCreation = () => {
                               className="w-full md:w-auto"
                             >
                               <Plus className="h-4 w-4 mr-2" />
-                              Adicionar Tipo de Ingresso
+                              {t("eventCreation.ticketTypes.addButton")}
                             </Button>
                           </div>
 
@@ -946,7 +981,7 @@ const EventCreation = () => {
                           {values.ticketPricings.length > 0 && (
                             <div className="space-y-3">
                               <h3 className="font-semibold text-foreground">
-                                Tipos de Ingresso Adicionados
+                                {t("eventCreation.ticketTypes.addedTitle")}
                               </h3>
                               <div className="grid gap-3">
                                 {values.ticketPricings.map((ticket, index) => (
@@ -962,8 +997,8 @@ const EventCreation = () => {
                                         <div className="flex items-center gap-2 mt-1">
                                           <span className="text-sm text-muted-foreground">
                                             {ticket.gender === "male"
-                                              ? "Apenas Masculino"
-                                              : "Apenas Feminino"}
+                                              ? t("eventCreation.ticketTypes.onlyMale")
+                                              : t("eventCreation.ticketTypes.onlyFemale")}
                                           </span>
                                           <span className="text-sm text-muted-foreground">
                                             •
@@ -1012,12 +1047,12 @@ const EventCreation = () => {
                   {createEventMutation.isPending ? (
                     <>
                       <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                      Creating Event...
+                      {t("eventCreation.buttons.creating")}
                     </>
                   ) : (
                     <>
                       <Save className="h-5 w-5 mr-2" />
-                      Criar Evento
+                      {t("eventCreation.buttons.createEvent")}
                     </>
                   )}
                 </Button>
@@ -1030,7 +1065,7 @@ const EventCreation = () => {
       <SuccessSnackbar
         visible={showSuccess}
         onDismiss={() => setShowSuccess(false)}
-        message="Evento criado com sucesso!"
+        message={t("eventCreation.messages.createSuccess")}
       />
       <ErrorSnackbar
         message={errorMessage}

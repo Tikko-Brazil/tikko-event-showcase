@@ -828,6 +828,111 @@
       "confirm": "Close Account"
     }
   },
+  "eventCreation": {
+    "header": {
+      "title": "Create Event",
+      "backToEvents": "Back to Events"
+    },
+    "sections": {
+      "eventInfo": {
+        "title": "Event Information",
+        "description": "Basic details about your event"
+      },
+      "ticketTypes": {
+        "title": "Ticket Types",
+        "description": "Define different ticket types for your event"
+      }
+    },
+    "fields": {
+      "eventName": {
+        "label": "Event Name",
+        "placeholder": "Enter event name"
+      },
+      "eventImage": {
+        "label": "Event Image",
+        "selectImage": "Select Image",
+        "uploading": "Uploading..."
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Describe your event..."
+      },
+      "startDateTime": {
+        "label": "Start Date and Time",
+        "datePlaceholder": "Select date",
+        "timePlaceholder": "Start time"
+      },
+      "endDateTime": {
+        "label": "End Date and Time",
+        "datePlaceholder": "Select date",
+        "timePlaceholder": "End time"
+      },
+      "locationName": {
+        "label": "Venue Name",
+        "placeholder": "Ex: Aurora Concert Hall"
+      },
+      "address": {
+        "label": "Address",
+        "placeholder": "Enter full address",
+        "complement": "Address complement (optional)"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "approvalRequired": "Approval required for ticket purchase"
+    },
+    "ticketTypes": {
+      "addTitle": "Add Ticket Type",
+      "addedTitle": "Added Ticket Types",
+      "ticketName": "Ticket name (ex: VIP, General)",
+      "gender": {
+        "male": "Male",
+        "female": "Female"
+      },
+      "price": "Price ($)",
+      "addButton": "Add Ticket Type",
+      "onlyMale": "Male Only",
+      "onlyFemale": "Female Only"
+    },
+    "buttons": {
+      "createEvent": "Create Event",
+      "creating": "Creating Event..."
+    },
+    "validation": {
+      "eventNameRequired": "Event name is required",
+      "eventNameMin": "Name must be at least 3 characters",
+      "eventNameMax": "Name must be at most 100 characters",
+      "descriptionRequired": "Event description is required",
+      "descriptionMin": "Description must be at least 10 characters",
+      "descriptionMax": "Description must be at most 1500 characters",
+      "startDateRequired": "Start date is required",
+      "startTimeRequired": "Start time is required",
+      "startTimeFormat": "Invalid time format (HH:MM)",
+      "endDateRequired": "End date is required",
+      "endTimeRequired": "End time is required",
+      "endTimeFormat": "Invalid time format (HH:MM)",
+      "locationNameRequired": "Venue name is required",
+      "locationNameMin": "Venue name must be at least 3 characters",
+      "locationNameMax": "Venue name must be at most 100 characters",
+      "addressRequired": "Address is required",
+      "addressMin": "Address must be at least 5 characters",
+      "addressMax": "Address must be at most 200 characters",
+      "locationRequired": "Select a location on the map",
+      "ticketTypeRequired": "Ticket type is required",
+      "ticketTypeMin": "Ticket type must be at least 3 characters",
+      "ticketTypeMax": "Ticket type must be at most 50 characters",
+      "genderRequired": "Gender is required",
+      "priceRequired": "Price is required",
+      "priceFormat": "Price must be an integer (ex: 10, 25, 100)",
+      "ticketTypesRequired": "At least one ticket type is required"
+    },
+    "messages": {
+      "imageError": "Only JPG, JPEG and PNG images are accepted",
+      "createSuccess": "Event created successfully!",
+      "createError": "Error creating event. Please try again.",
+      "uploadError": "Error uploading image"
+    }
+  },
   "common": {
     "cancel": "Cancel",
     "confirm": "Confirm",

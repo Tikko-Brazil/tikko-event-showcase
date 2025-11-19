@@ -845,6 +845,111 @@
       "confirm": "Encerrar Conta"
     }
   },
+  "eventCreation": {
+    "header": {
+      "title": "Criar Evento",
+      "backToEvents": "Voltar aos Eventos"
+    },
+    "sections": {
+      "eventInfo": {
+        "title": "Informações do Evento",
+        "description": "Detalhes básicos sobre seu evento"
+      },
+      "ticketTypes": {
+        "title": "Tipos de Ingresso",
+        "description": "Defina diferentes tipos de ingresso para seu evento"
+      }
+    },
+    "fields": {
+      "eventName": {
+        "label": "Nome do Evento",
+        "placeholder": "Digite o nome do evento"
+      },
+      "eventImage": {
+        "label": "Imagem do Evento",
+        "selectImage": "Selecionar Imagem",
+        "uploading": "Enviando..."
+      },
+      "description": {
+        "label": "Descrição",
+        "placeholder": "Descreva seu evento..."
+      },
+      "startDateTime": {
+        "label": "Data e Horário de Início",
+        "datePlaceholder": "Selecionar data",
+        "timePlaceholder": "Horário de início"
+      },
+      "endDateTime": {
+        "label": "Data e Horário de Término",
+        "datePlaceholder": "Selecionar data",
+        "timePlaceholder": "Horário de término"
+      },
+      "locationName": {
+        "label": "Nome do Local",
+        "placeholder": "Ex: Aurora Concert Hall"
+      },
+      "address": {
+        "label": "Endereço",
+        "placeholder": "Digite o endereço completo",
+        "complement": "Complemento do endereço (opcional)"
+      }
+    },
+    "settings": {
+      "title": "Configurações",
+      "approvalRequired": "Aprovação necessária para compra de ingresso"
+    },
+    "ticketTypes": {
+      "addTitle": "Adicionar Tipo de Ingresso",
+      "addedTitle": "Tipos de Ingresso Adicionados",
+      "ticketName": "Nome do ingresso (ex: VIP, Pista)",
+      "gender": {
+        "male": "Masculino",
+        "female": "Feminino"
+      },
+      "price": "Preço (R$)",
+      "addButton": "Adicionar Tipo de Ingresso",
+      "onlyMale": "Apenas Masculino",
+      "onlyFemale": "Apenas Feminino"
+    },
+    "buttons": {
+      "createEvent": "Criar Evento",
+      "creating": "Criando Evento..."
+    },
+    "validation": {
+      "eventNameRequired": "Nome do evento é obrigatório",
+      "eventNameMin": "Nome deve ter pelo menos 3 caracteres",
+      "eventNameMax": "Nome deve ter no máximo 100 caracteres",
+      "descriptionRequired": "Descrição do evento é obrigatória",
+      "descriptionMin": "Descrição deve ter pelo menos 10 caracteres",
+      "descriptionMax": "Descrição deve ter no máximo 1500 caracteres",
+      "startDateRequired": "Data de início é obrigatória",
+      "startTimeRequired": "Horário de início é obrigatório",
+      "startTimeFormat": "Formato de horário inválido (HH:MM)",
+      "endDateRequired": "Data de término é obrigatória",
+      "endTimeRequired": "Horário de término é obrigatório",
+      "endTimeFormat": "Formato de horário inválido (HH:MM)",
+      "locationNameRequired": "Nome do local é obrigatório",
+      "locationNameMin": "Nome do local deve ter pelo menos 3 caracteres",
+      "locationNameMax": "Nome do local deve ter no máximo 100 caracteres",
+      "addressRequired": "Endereço é obrigatório",
+      "addressMin": "Endereço deve ter pelo menos 5 caracteres",
+      "addressMax": "Endereço deve ter no máximo 200 caracteres",
+      "locationRequired": "Selecione uma localização no mapa",
+      "ticketTypeRequired": "Tipo de ingresso é obrigatório",
+      "ticketTypeMin": "Tipo de ingresso deve ter pelo menos 3 caracteres",
+      "ticketTypeMax": "Tipo de ingresso deve ter no máximo 50 caracteres",
+      "genderRequired": "Gênero é obrigatório",
+      "priceRequired": "Preço é obrigatório",
+      "priceFormat": "Preço deve ser um número inteiro (ex: 10, 25, 100)",
+      "ticketTypesRequired": "Pelo menos um tipo de ingresso é necessário"
+    },
+    "messages": {
+      "imageError": "Apenas imagens JPG, JPEG e PNG são aceitas",
+      "createSuccess": "Evento criado com sucesso!",
+      "createError": "Erro ao criar evento. Tente novamente.",
+      "uploadError": "Erro ao fazer upload da imagem"
+    }
+  },
   "common": {
     "cancel": "Cancelar",
     "confirm": "Confirmar",
