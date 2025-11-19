@@ -29,6 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CheckoutOverlay } from "@/components/CheckoutOverlay";
 import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
+import { formatEventDate, formatEventTime } from "@/lib/utils";
 import getEventIdFromSlug from "@/helpers/getEventIdFromSlug";
 import heroImage from "@/assets/hero-event-image.jpg";
 import { usePostHog } from '@posthog/react'
@@ -73,25 +74,13 @@ export default function EventDetails() {
   });
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("pt-BR", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    return formatEventDate(dateString, "EEEE, d 'de' MMMM 'de' yyyy");
   };
 
   const formatTime = (startDate: string, endDate: string) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    return `${start.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })} - ${end.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
+    const startTime = formatEventTime(startDate);
+    const endTime = formatEventTime(endDate);
+    return `${startTime} - ${endTime}`;
   };
 
   const formatTicketName = (ticket: any) => {

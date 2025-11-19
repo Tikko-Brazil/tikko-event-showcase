@@ -128,7 +128,7 @@ export class TicketGateway {
       page: page.toString(),
       limit: limit.toString(),
     });
-    
+
     const response = await this.fetchWithAuth(`${this.baseUrl}/private/tickets/user?${params}`);
     return this.handleResponse<UserTicketsResponse>(response);
   }

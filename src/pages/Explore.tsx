@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
+import { formatEventDate, formatEventTime } from "@/lib/utils";
 import generateSlug from "@/helpers/generateSlug";
 import DashboardLayout from "@/components/DashboardLayout";
 import heroEventImage from "@/assets/hero-event-image.jpg";
@@ -89,24 +90,6 @@ const Explore = () => {
     refetchOnReconnect: false,
   });
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(i18n.language === "pt" ? "pt-BR" : "en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const formatTime = (startDate: string) => {
-    const start = new Date(startDate);
-    return start.toLocaleTimeString(i18n.language === "pt" ? "pt-BR" : "en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   const getEventAddress = (event: any) => {
     const cacheKey = `${event.latitude},${event.longitude}`;
     const address = addresses?.[cacheKey];
@@ -160,7 +143,7 @@ const Explore = () => {
 
         {/* Events Grid */}
         {eventsData?.events && eventsData.events.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {eventsData.events.map((event) => (
               <Card
                 key={event.id}
@@ -189,9 +172,9 @@ const Explore = () => {
                   <div className="space-y-3 mb-4">
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Calendar className="mr-2 h-4 w-4" />
-                      {formatDate(event.start_date)}
+                      {formatEventDate(event.start_date, "EEEE, d 'de' MMMM 'de' yyyy")}
                       <Clock className="mr-2 h-4 w-4 ml-4" />
-                      {formatTime(event.start_date)}
+                      {formatEventTime(event.start_date)}
                     </div>
                     <div className="flex items-center text-sm text-muted-foreground">
                       <MapPin className="mr-2 h-4 w-4" />

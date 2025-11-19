@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
+import { formatEventDate, formatEventTime } from "@/lib/utils";
 import generateSlug from "@/helpers/generateSlug";
 import heroEventImage from "@/assets/hero-event-image.jpg";
 import { Pagination } from "@/components/Pagination";
@@ -54,8 +55,9 @@ const Events = () => {
         limit: ITEMS_PER_PAGE,
         search: searchQuery || undefined,
         order_by_participants: true,
+        active: "true"
       }),
-          staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -109,19 +111,6 @@ const Events = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     debouncedSearch(e.target.value);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("pt-BR");
-  };
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   const getEventAddress = (event: any) => {
@@ -235,94 +224,94 @@ const Events = () => {
           {!eventsLoading && events?.events && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-              {events.events.map((event) => (
-                <Card
-                  key={event.id}
-                  className="group hover:shadow-elegant transition-smooth hover:-translate-y-2 gradient-card border-border/50 overflow-hidden"
-                >
-                  <div className="relative aspect-square overflow-hidden">
-                    <img
-                      src={event.image || heroEventImage}
-                      alt={event.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-smooth"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <Badge
-                        variant="secondary"
-                        className="bg-background/80 backdrop-blur-sm"
-                      >
-                        Evento
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-xl group-hover:text-primary transition-smooth">
-                      {event.name}
-                    </CardTitle>
-                  </CardHeader>
-
-                  <CardContent className="pt-0">
-                    <div className="space-y-3 mb-4">
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {formatDate(event.start_date)}
-                        <Clock className="mr-2 h-4 w-4 ml-4" />
-                        {formatTime(event.start_date)}
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <MapPin className="mr-2 h-4 w-4" />
-                        {addressesLoading ? (
-                          <span className="flex items-center">
-                            <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                            {t("home.events.loadingLocation")}
-                          </span>
-                        ) : (
-                          getEventAddress(event)
-                        )}
+                {events.events.map((event) => (
+                  <Card
+                    key={event.id}
+                    className="group hover:shadow-elegant transition-smooth hover:-translate-y-2 gradient-card border-border/50 overflow-hidden"
+                  >
+                    <div className="relative aspect-square overflow-hidden">
+                      <img
+                        src={event.image || heroEventImage}
+                        alt={event.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-smooth"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <Badge
+                          variant="secondary"
+                          className="bg-background/80 backdrop-blur-sm"
+                        >
+                          Evento
+                        </Badge>
                       </div>
                     </div>
 
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {event.description}
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-xl group-hover:text-primary transition-smooth">
+                        {event.name}
+                      </CardTitle>
+                    </CardHeader>
+
+                    <CardContent className="pt-0">
+                      <div className="space-y-3 mb-4">
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {formatEventDate(event.start_date)}
+                          <Clock className="mr-2 h-4 w-4 ml-4" />
+                          {formatEventTime(event.start_date)}
+                        </div>
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <MapPin className="mr-2 h-4 w-4" />
+                          {addressesLoading ? (
+                            <span className="flex items-center">
+                              <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                              {t("home.events.loadingLocation")}
+                            </span>
+                          ) : (
+                            getEventAddress(event)
+                          )}
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                        {event.description}
+                      </p>
+
+                      <Link to={`/event/${generateSlug(event.name, event.id)}`}>
+                        <Button className="w-full group/btn hover:shadow-glow transition-smooth">
+                          {t("home.events.learnMore")}
+                          <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-smooth" />
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                ))}
+
+                {/* Empty State */}
+                {events.events.length === 0 && (
+                  <div className="col-span-full text-center py-12">
+                    <p className="text-muted-foreground">
+                      {t("home.events.noEvents")}
                     </p>
+                  </div>
+                )}
+              </div>
 
-                    <Link to={`/event/${generateSlug(event.name, event.id)}`}>
-                      <Button className="w-full group/btn hover:shadow-glow transition-smooth">
-                        {t("home.events.learnMore")}
-                        <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-smooth" />
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {/* Empty State */}
-              {events.events.length === 0 && (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-muted-foreground">
-                    {t("home.events.noEvents")}
-                  </p>
+              {/* Pagination */}
+              {events.total_pages > 1 && (
+                <div className="max-w-7xl mx-auto">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={events.total_pages}
+                    onPageChange={setCurrentPage}
+                    startIndex={startIndex}
+                    endIndex={endIndex}
+                    totalItems={events.total}
+                    itemName={t("home.events.title").toLowerCase()}
+                  />
                 </div>
               )}
-            </div>
-
-            {/* Pagination */}
-            {events.total_pages > 1 && (
-              <div className="max-w-7xl mx-auto">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={events.total_pages}
-                  onPageChange={setCurrentPage}
-                  startIndex={startIndex}
-                  endIndex={endIndex}
-                  totalItems={events.total}
-                  itemName={t("home.events.title").toLowerCase()}
-                />
-              </div>
-            )}
-          </>
-        )}
+            </>
+          )}
         </div>
       </div>
 

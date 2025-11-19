@@ -184,6 +184,7 @@ const EventCreation = () => {
     ticketPricings: [],
   };
 
+
   // Image upload mutation
   const uploadImageMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -309,10 +310,10 @@ const EventCreation = () => {
     const city = address.municipality || address.town || address.city || address.city_district || address.village || '';
     const state = address.state || '';
     const country = address.country || '';
-    
+
     const addressParts = [name, city, state, country].filter(part => part && part.trim());
     const simplifiedAddress = addressParts.join(', ');
-    
+
     setFieldValue("addressName", simplifiedAddress);
     setFieldValue("latitude", parseFloat(location.latitude));
     setFieldValue("longitude", parseFloat(location.longitude));
@@ -465,12 +466,11 @@ const EventCreation = () => {
                         value={values.description}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        placeholder="Describe your event..."
-                        className={`min-h-[100px] resize-y ${
-                          errors.description && touched.description
-                            ? "border-red-500"
-                            : ""
-                        }`}
+                        placeholder="Descreve seu evento..."
+                        className={`min-h-[100px] resize-y ${errors.description && touched.description
+                          ? "border-red-500"
+                          : ""
+                          }`}
                       />
                       {errors.description && touched.description && (
                         <p className="text-sm text-red-500">
@@ -499,16 +499,16 @@ const EventCreation = () => {
                                   "w-full justify-start text-left font-normal",
                                   !values.startDate && "text-muted-foreground",
                                   errors.startDate &&
-                                    touched.startDate &&
-                                    "border-red-500"
+                                  touched.startDate &&
+                                  "border-red-500"
                                 )}
                               >
                                 <Calendar className="mr-2 h-4 w-4" />
                                 {values.startDate
                                   ? format(
-                                      new Date(values.startDate),
-                                      "dd/MM/yyyy"
-                                    )
+                                    new Date(values.startDate + "T00:00:00"),
+                                    "dd/MM/yyyy"
+                                  )
                                   : "Selecionar data"}
                               </Button>
                             </PopoverTrigger>
@@ -520,7 +520,7 @@ const EventCreation = () => {
                                 mode="single"
                                 selected={
                                   values.startDate
-                                    ? new Date(values.startDate)
+                                    ? new Date(values.startDate + "T00:00:00")
                                     : undefined
                                 }
                                 onSelect={(date) => {
@@ -595,16 +595,16 @@ const EventCreation = () => {
                                   "w-full justify-start text-left font-normal",
                                   !values.endDate && "text-muted-foreground",
                                   errors.endDate &&
-                                    touched.endDate &&
-                                    "border-red-500"
+                                  touched.endDate &&
+                                  "border-red-500"
                                 )}
                               >
                                 <Calendar className="mr-2 h-4 w-4" />
                                 {values.endDate
                                   ? format(
-                                      new Date(values.endDate),
-                                      "dd/MM/yyyy"
-                                    )
+                                    new Date(values.endDate + "T00:00:00"),
+                                    "dd/MM/yyyy"
+                                  )
                                   : "Selecionar data"}
                               </Button>
                             </PopoverTrigger>
@@ -616,7 +616,7 @@ const EventCreation = () => {
                                 mode="single"
                                 selected={
                                   values.endDate
-                                    ? new Date(values.endDate)
+                                    ? new Date(values.endDate + "T00:00:00")
                                     : undefined
                                 }
                                 onSelect={(date) => {
@@ -719,11 +719,10 @@ const EventCreation = () => {
                             }}
                             onBlur={handleBlur}
                             placeholder="Digite o endereço completo"
-                            className={`pr-10 ${
-                              errors.addressName && touched.addressName
-                                ? "border-red-500"
-                                : ""
-                            }`}
+                            className={`pr-10 ${errors.addressName && touched.addressName
+                              ? "border-red-500"
+                              : ""
+                              }`}
                           />
                           <MapPin className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
 

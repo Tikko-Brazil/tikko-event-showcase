@@ -4,9 +4,11 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { Calendar, Ticket, QrCode } from "lucide-react";
 import { TicketGateway } from "@/lib/TicketGateway";
+import { formatEventDate } from "@/lib/utils";
 import { Pagination } from "@/components/Pagination";
 import DashboardLayout from "@/components/DashboardLayout";
 import TicketDetails from "./TicketDetails";
@@ -105,7 +107,7 @@ const MyTickets = () => {
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
                       <span>
-                        {new Date(ticketData.event.date).toLocaleDateString(i18n.language === 'pt' ? 'pt-BR' : 'en-US')}
+                        {formatEventDate(ticketData.event.date)}
                       </span>
                     </div>
                     {ticketData.ticket.validation_date && (
@@ -113,9 +115,7 @@ const MyTickets = () => {
                         <Calendar className="h-4 w-4" />
                         <span>
                           Validated:{" "}
-                          {new Date(
-                            ticketData.ticket.validation_date
-                          ).toLocaleDateString(i18n.language === 'pt' ? 'pt-BR' : 'en-US')}
+                          {formatEventDate(ticketData.ticket.validation_date)}
                         </span>
                       </div>
                     )}
@@ -177,6 +177,10 @@ const MyTickets = () => {
       {/* Full-screen Ticket Details Dialog */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="max-w-none w-screen h-screen m-0 p-0 rounded-none overflow-y-auto">
+          <VisuallyHidden>
+            <DialogTitle>Detalhes do Ingresso</DialogTitle>
+            <DialogDescription>Visualizar detalhes completos do ingresso</DialogDescription>
+          </VisuallyHidden>
           {selectedTicketId && (
             <TicketDetails
               ticketId={selectedTicketId}
@@ -193,6 +197,10 @@ const MyTickets = () => {
       {/* Full-screen QR Code Dialog */}
       <Dialog open={showQR} onOpenChange={setShowQR}>
         <DialogContent className="max-w-none w-screen h-screen m-0 p-0 rounded-none overflow-y-auto">
+          <VisuallyHidden>
+            <DialogTitle>QR Code do Ingresso</DialogTitle>
+            <DialogDescription>Visualizar QR Code para validação do ingresso</DialogDescription>
+          </VisuallyHidden>
           {selectedTicketId && (
             <TicketQRCode
               ticketId={selectedTicketId}

@@ -274,9 +274,9 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
   const initialValues: FormValues = {
     name: event.name,
     description: event.description,
-    startDate: format(new Date(event.start_date), "yyyy-MM-dd"),
+    startDate: format(new Date(event.start_date + "T00:00:00"), "yyyy-MM-dd"),
     startTime: format(new Date(event.start_date), "HH:mm"),
-    endDate: format(new Date(event.end_date), "yyyy-MM-dd"),
+    endDate: format(new Date(event.end_date + "T00:00:00"), "yyyy-MM-dd"),
     endTime: format(new Date(event.end_date), "HH:mm"),
     locationName: event.address_name,
     addressName: getAddressFromGeocode(),
@@ -474,7 +474,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {values.startDate
-                              ? format(new Date(values.startDate), "dd/MM/yyyy")
+                              ? format(new Date(values.startDate + "T00:00:00"), "dd/MM/yyyy")
                               : "Selecionar data"}
                           </Button>
                         </PopoverTrigger>
@@ -483,7 +483,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                             mode="single"
                             selected={
                               values.startDate
-                                ? new Date(values.startDate)
+                                ? new Date(values.startDate + "T00:00:00")
                                 : undefined
                             }
                             onSelect={(date) => {
@@ -560,7 +560,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {values.endDate
-                              ? format(new Date(values.endDate), "dd/MM/yyyy")
+                              ? format(new Date(values.endDate + "T00:00:00"), "dd/MM/yyyy")
                               : "Selecionar data"}
                           </Button>
                         </PopoverTrigger>
@@ -569,7 +569,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                             mode="single"
                             selected={
                               values.endDate
-                                ? new Date(values.endDate)
+                                ? new Date(values.endDate + "T00:00:00")
                                 : undefined
                             }
                             onSelect={(date) => {

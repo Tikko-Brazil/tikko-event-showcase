@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
+import { formatEventDate, formatEventTime } from "@/lib/utils";
 import generateSlug from "@/helpers/generateSlug";
 import logoLight from "@/assets/logoLight.png";
 import mark from "@/assets/mark.png";
@@ -87,19 +88,6 @@ const EnhancedIndex = () => {
     enabled: !!events?.events && events.events.length > 0,
     staleTime: 24 * 60 * 60 * 1000,
   });
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("pt-BR");
-  };
-
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   const getEventAddress = (event: any) => {
     const cacheKey = `${event.latitude},${event.longitude}`;
@@ -277,9 +265,9 @@ const EnhancedIndex = () => {
                       <div className="space-y-3 mb-4">
                         <div className="flex items-center text-sm text-muted-foreground">
                           <Calendar className="mr-2 h-4 w-4" />
-                          {formatDate(event.start_date)}
+                          {formatEventDate(event.start_date)}
                           <Clock className="mr-2 h-4 w-4 ml-4" />
-                          {formatTime(event.start_date)}
+                          {formatEventTime(event.start_date)}
                         </div>
                         <div className="flex items-center text-sm text-muted-foreground">
                           <MapPin className="mr-2 h-4 w-4" />

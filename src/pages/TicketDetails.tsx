@@ -54,9 +54,9 @@ const TicketDetails = ({
   );
 
   const { data: userTicketsResponse, isLoading } = useQuery({
-    queryKey: ["userTickets"],
-    queryFn: () => ticketGateway.getUserTickets(),
-        staleTime: 5 * 60 * 1000,
+    queryKey: ["userTickets", 1, 100], // Get first 100 tickets to find the specific one
+    queryFn: () => ticketGateway.getUserTickets(1, 100),
+    staleTime: 5 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,

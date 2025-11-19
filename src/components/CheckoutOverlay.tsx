@@ -1,7 +1,8 @@
 import React, { useState, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { X, ArrowLeft, ArrowRight } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { Button } from "@/components/ui/button";
 import { PriceSummary } from "./PriceSummary";
 import ErrorSnackbar from "./ErrorSnackbar";
@@ -391,6 +392,10 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         onOpenChange={(open) => !open && handleDialogClose()}
       >
         <DialogContent className="lg:max-w-none lg:max-h-[90vh] max-h-screen w-screen h-screen lg:w-[1050px] lg:h-[805px] overflow-hidden p-0">
+          <VisuallyHidden>
+            <DialogTitle>Checkout</DialogTitle>
+            <DialogDescription>Processo de compra de ingressos</DialogDescription>
+          </VisuallyHidden>
           <div className="flex flex-col lg:flex-row h-full">
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-h-0 lg:h-auto">

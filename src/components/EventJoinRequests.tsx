@@ -260,7 +260,7 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
                     {new Intl.NumberFormat("pt-BR", {
                       style: "currency",
                       currency: "BRL",
-                    }).format(request.payment_details.authorized_amount / 100)}
+                    }).format(request.payment_details.authorized_amount)}
                   </span>
                 </div>
 

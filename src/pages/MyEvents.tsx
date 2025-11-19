@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, Edit, Loader2 } from "lucide-react";
 import { EventGateway } from "@/lib/EventGateway";
+import { formatEventDate, formatEventTime } from "@/lib/utils";
+import { parseISO } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import generateSlug from "@/helpers/generateSlug";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -47,7 +49,7 @@ const MyEvents = () => {
         active: filterValue as "true" | "false" | "all",
         search: debouncedSearchValue || undefined,
       }),
-          staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -88,7 +90,7 @@ const MyEvents = () => {
         />
 
         {isLoadingUserEvents ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="animate-pulse">
                 <div className="aspect-square bg-muted rounded-t-lg" />
@@ -105,19 +107,19 @@ const MyEvents = () => {
             <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">{t("noEvents")}</h3>
             <p className="text-muted-foreground mb-4">
-              {t("haventCreatedEvents")}
+              {t("eventManagement.home.events.haventCreatedEvents")}
             </p>
             {hasAdminPrivileges && (
               <Button onClick={() => navigate("/create-event")}>
-                {t("createFirstEvent")}
+                {t("dashboard.myEvents.createFirstEvent")}
               </Button>
             )}
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {userEvents.map((userEvent) => {
               const event = userEvent.event;
-              const eventDate = new Date(event.start_date);
+              const eventDate = parseISO(event.start_date);
               const isUpcoming = eventDate > new Date();
 
               return (
@@ -156,21 +158,13 @@ const MyEvents = () => {
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4" />
                           <span className="text-sm">
-                            {eventDate.toLocaleDateString(
-                              i18n.language === "pt" ? "pt-BR" : "en-US"
-                            )}
+                            {formatEventDate(event.start_date)}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />
                           <span className="text-sm">
-                            {eventDate.toLocaleTimeString(
-                              i18n.language === "pt" ? "pt-BR" : "en-US",
-                              {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              }
-                            )}
+                            {formatEventTime(event.start_date)}
                           </span>
                         </div>
                       </div>
