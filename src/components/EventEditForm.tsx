@@ -25,8 +25,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { format, parseISO } from "date-fns";
+import { cn, formatEventTime } from "@/lib/utils";
 import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
 import SuccessSnackbar from "@/components/SuccessSnackbar";
@@ -74,7 +74,6 @@ interface FormValues {
   latitude: number | null;
   longitude: number | null;
   autoAccept: boolean;
-  isPrivate: boolean;
   isActive: boolean;
 }
 
@@ -132,7 +131,6 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
       .nullable()
       .required(t("eventManagement.editEvent.validation.coordinatesRequired")),
     autoAccept: Yup.boolean(),
-    isPrivate: Yup.boolean(),
     isActive: Yup.boolean(),
   });
 
@@ -247,7 +245,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
         longitude: values.longitude!,
         latitude: values.latitude!,
         address_complement: values.addressComplement,
-        is_private: values.isPrivate,
+        is_private: false,
         auto_accept: values.autoAccept,
         is_active: values.isActive,
       };
@@ -274,17 +272,16 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
   const initialValues: FormValues = {
     name: event.name,
     description: event.description,
-    startDate: format(new Date(event.start_date + "T00:00:00"), "yyyy-MM-dd"),
-    startTime: format(new Date(event.start_date), "HH:mm"),
-    endDate: format(new Date(event.end_date + "T00:00:00"), "yyyy-MM-dd"),
-    endTime: format(new Date(event.end_date), "HH:mm"),
+    startDate: format(parseISO(event.start_date), "yyyy-MM-dd"),
+    startTime: formatEventTime(event.start_date),
+    endDate: format(parseISO(event.end_date), "yyyy-MM-dd"),
+    endTime: formatEventTime(event.end_date),
     locationName: event.address_name,
     addressName: getAddressFromGeocode(),
     addressComplement: event.address_complement || "",
     latitude: event.latitude,
     longitude: event.longitude,
     autoAccept: event.auto_accept,
-    isPrivate: event.is_private,
     isActive: event.is_active,
   };
 
@@ -369,7 +366,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                         <img
                           src={imagePreview}
                           alt="Preview"
-                          className="w-full h-48 object-cover rounded-lg border border-border"
+                          className="w-full aspect-square object-cover rounded-lg border border-border"
                         />
                         <Button
                           type="button"
@@ -438,8 +435,8 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                     className={cn(
                       "min-h-[100px] resize-y",
                       errors.description &&
-                        touched.description &&
-                        "border-red-500"
+                      touched.description &&
+                      "border-red-500"
                     )}
                   />
                   {errors.description && touched.description && (
@@ -468,8 +465,8 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                               "w-full justify-start text-left font-normal",
                               !values.startDate && "text-muted-foreground",
                               errors.startDate &&
-                                touched.startDate &&
-                                "border-red-500"
+                              touched.startDate &&
+                              "border-red-500"
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
@@ -523,8 +520,8 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                               className={cn(
                                 "w-full pl-10",
                                 errors.startTime &&
-                                  touched.startTime &&
-                                  "border-red-500"
+                                touched.startTime &&
+                                "border-red-500"
                               )}
                             />
                           )}
@@ -554,8 +551,8 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                               "w-full justify-start text-left font-normal",
                               !values.endDate && "text-muted-foreground",
                               errors.endDate &&
-                                touched.endDate &&
-                                "border-red-500"
+                              touched.endDate &&
+                              "border-red-500"
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
@@ -607,8 +604,8 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                               className={cn(
                                 "w-full pl-10",
                                 errors.endTime &&
-                                  touched.endTime &&
-                                  "border-red-500"
+                                touched.endTime &&
+                                "border-red-500"
                               )}
                             />
                           )}
@@ -643,8 +640,8 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       className={cn(
                         "w-full",
                         errors.locationName &&
-                          touched.locationName &&
-                          "border-red-500"
+                        touched.locationName &&
+                        "border-red-500"
                       )}
                     />
                     {errors.locationName && touched.locationName && (
@@ -683,8 +680,8 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                         className={cn(
                           "w-full pl-10",
                           errors.addressName &&
-                            touched.addressName &&
-                            "border-red-500"
+                          touched.addressName &&
+                          "border-red-500"
                         )}
                       />
                       <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -695,11 +692,9 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                           <div className="absolute z-50 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
                             {locationSuggestions.map((location, index) => {
                               const { road, suburb, city, state } = location;
-                              const formattedAddress = `${road || ""}${
-                                road && suburb ? ", " : ""
-                              }${suburb || ""}${
-                                (road || suburb) && city ? ", " : ""
-                              }${city}${state ? ` - ${state}` : ""}`;
+                              const formattedAddress = `${road || ""}${road && suburb ? ", " : ""
+                                }${suburb || ""}${(road || suburb) && city ? ", " : ""
+                                }${city}${state ? ` - ${state}` : ""}`;
 
                               return (
                                 <div
@@ -782,25 +777,6 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       )}
                     </Label>
                   </div>
-
-                  {/* Private Event */}
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="isPrivate"
-                      checked={values.isPrivate}
-                      onCheckedChange={(checked) =>
-                        setFieldValue("isPrivate", !!checked)
-                      }
-                    />
-                    <Label
-                      htmlFor="isPrivate"
-                      className="text-sm text-foreground cursor-pointer"
-                    >
-                      {t("eventManagement.editEvent.fields.privateEvent")}{" "}
-                      (apenas por convite)
-                    </Label>
-                  </div>
-
                   {/* Event Active Status */}
                   <div className="flex items-center space-x-3">
                     <Checkbox

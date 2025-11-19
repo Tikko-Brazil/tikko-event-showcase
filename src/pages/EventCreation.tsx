@@ -476,7 +476,7 @@ const EventCreation = () => {
                             <img
                               src={image}
                               alt="Preview"
-                              className="w-full h-48 object-cover rounded-lg border border-border"
+                              className="w-full aspect-square object-cover rounded-lg border border-border"
                             />
                             <Button
                               type="button"
