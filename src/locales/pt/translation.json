@@ -13,6 +13,12 @@
       "help": "Ajuda",
       "signOut": "Sair"
     },
+    "signOutDialog": {
+      "title": "Confirmar Saída",
+      "description": "Tem certeza de que deseja sair da sua conta? Você precisará fazer login novamente para acessar o sistema.",
+      "cancel": "Cancelar",
+      "confirm": "Sair"
+    },
     "myEvents": {
       "title": "Meus Eventos",
       "createEvent": "Criar Evento",

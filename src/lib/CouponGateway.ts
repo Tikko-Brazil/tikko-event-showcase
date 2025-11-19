@@ -78,11 +78,11 @@ interface DeleteCouponResponse {
 
 const ERROR_MESSAGES = {
   getCouponPrice: {
-    400: "Invalid event ID or ticket pricing ID",
+    400: "Invalid event ID or ticket type ID",
     403: "Coupon no longer valid",
     404: "Coupon not found",
-    422: "Coupon invalid for this ticket pricing",
-    423: "Coupon inactive",
+    422: "Coupon inactive",
+    423: "Coupon invalid for this ticket type",
     500: "Server error during coupon validation",
   },
   createCoupon: {
@@ -233,7 +233,7 @@ export class CouponGateway {
     const params = new URLSearchParams();
     params.append("page", page.toString());
     params.append("limit", limit.toString());
-    
+
     if (ticketPricingId) {
       params.append("ticket_pricing_id", ticketPricingId.toString());
     }

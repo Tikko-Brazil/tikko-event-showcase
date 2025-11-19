@@ -15,6 +15,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Home,
   Search,
   Calendar,
@@ -45,6 +55,16 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
+
+  const handleSignOut = () => {
+    // Remove tokens from localStorage
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+
+    // Redirect to login page
+    navigate("/login");
+  };
 
   const userGateway = new UserGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
@@ -155,7 +175,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   <DropdownMenuSeparator />
 
                   <div className="p-2">
-                    <DropdownMenuItem className="cursor-pointer rounded-md px-3 py-2 text-destructive focus:text-destructive focus:bg-destructive/10">
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md px-3 py-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+                      onClick={() => setShowSignOutDialog(true)}
+                    >
                       <LogOut className="mr-3 h-4 w-4" />
                       <span>{t("dashboard.menu.signOut")}</span>
                     </DropdownMenuItem>
@@ -194,9 +217,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         </nav>
 
         {/* Search Modal */}
-        <SearchModal 
-          isOpen={isSearchOpen} 
-          onClose={() => setIsSearchOpen(false)} 
+        <SearchModal
+          isOpen={isSearchOpen}
+          onClose={() => setIsSearchOpen(false)}
           initialEvents={searchModalEvents}
         />
       </div>
@@ -211,7 +234,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           <div className="flex items-center gap-6">
             <img src={logoLight} alt="Tikko" className="h-8" />
           </div>
-          
+
           {/* Centered Search Bar */}
           <div className="absolute left-1/2 -translate-x-1/2">
             <button
@@ -285,7 +308,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 <DropdownMenuSeparator />
 
                 <div className="p-2">
-                  <DropdownMenuItem className="cursor-pointer rounded-md px-3 py-2 text-destructive focus:text-destructive focus:bg-destructive/10">
+                  <DropdownMenuItem
+                    className="cursor-pointer rounded-md px-3 py-2 text-destructive focus:text-destructive focus:bg-destructive/10"
+                    onClick={() => setShowSignOutDialog(true)}
+                  >
                     <LogOut className="mr-3 h-4 w-4" />
                     <span>{t("dashboard.menu.signOut")}</span>
                   </DropdownMenuItem>
@@ -322,9 +348,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <main className="flex-1 overflow-auto p-6">{children}</main>
 
         {/* Search Modal */}
-        <SearchModal 
-          isOpen={isSearchOpen} 
-          onClose={() => setIsSearchOpen(false)} 
+        <SearchModal
+          isOpen={isSearchOpen}
+          onClose={() => setIsSearchOpen(false)}
           initialEvents={searchModalEvents}
         />
 
@@ -392,6 +418,27 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </div>
         </aside>
       </div>
+
+      {/* Sign Out Confirmation Dialog */}
+      <AlertDialog open={showSignOutDialog} onOpenChange={setShowSignOutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("dashboard.signOutDialog.title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("dashboard.signOutDialog.description")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("dashboard.signOutDialog.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSignOut}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("dashboard.signOutDialog.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
