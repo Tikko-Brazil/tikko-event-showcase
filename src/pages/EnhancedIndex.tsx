@@ -46,7 +46,7 @@ const EnhancedIndex = () => {
     error: eventsError,
   } = useQuery({
     queryKey: ["events"],
-    queryFn: () => eventGateway.getEvents({ page: 1, limit: 3, order_by_participants: true }),
+    queryFn: () => eventGateway.getEvents({ page: 1, limit: 3, order_by_participants: true, active: "true" }),
     staleTime: 5 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
