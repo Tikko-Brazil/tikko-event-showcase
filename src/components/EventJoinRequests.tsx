@@ -207,7 +207,7 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
       </div>
 
       {/* Join Requests Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 px-1 sm:px-0">
         {requests.map((request) => (
           <Card key={request.invite_id} className="relative">
             <CardContent className="p-6">

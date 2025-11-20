@@ -84,7 +84,7 @@ export const PaymentInfoStep: React.FC<PaymentInfoStepProps> = ({
   };
 
   return (
-    <div className="space-y-4 w-full max-w-full overflow-hidden">
+    <div className="space-y-4 w-full max-w-full overflow-hidden pb-20">
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
