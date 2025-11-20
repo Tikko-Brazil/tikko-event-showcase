@@ -807,7 +807,8 @@
       "information": "Information",
       "contact": "Contact",
       "phone": "Phone: +55 (47) 9712-1190",
-      "email": "Email: contact@tikko.com",
+      "email": "Email: contato@tikko.com",
+      "cnpj": "CNPJ: 58.451.195/0001-76",
       "copyright": "© 2025 Tikko. All rights reserved."
     }
   },
@@ -937,6 +938,94 @@
       "createSuccess": "Event created successfully!",
       "createError": "Error creating event. Please try again.",
       "uploadError": "Error uploading image"
+    }
+  },
+  "about": {
+    "header": {
+      "backToHome": "Back to Home"
+    },
+    "hero": {
+      "title": "About Tikko",
+      "subtitle": "We're on a mission to transform how people discover, attend, and create memorable experiences through events that bring communities together."
+    },
+    "story": {
+      "title": "Our Story",
+      "paragraph1": "Founded in 2024, Tikko emerged from a simple observation: finding and attending great events was unnecessarily complicated. We believed there had to be a better way to connect people with experiences that matter to them.",
+      "paragraph2": "Our platform combines cutting-edge technology with human-centered design to make event discovery and ticketing a simple and intuitive experience, from intimate workshops to large festivals.",
+      "paragraph3": "But we're more than just a ticketing platform. We're building a community of passionate event-goers, creative organizers, and innovative venues who believe that shared experiences are what make life memorable."
+    },
+    "values": {
+      "title": "Our Values",
+      "community": {
+        "title": "Community First",
+        "description": "We prioritize building meaningful connections and fostering vibrant communities through shared experiences."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "description": "We constantly push boundaries to create better, smarter solutions for event discovery and management."
+      },
+      "passion": {
+        "title": "Passion",
+        "description": "We're genuinely passionate about events and the magic they create in people's lives."
+      },
+      "excellence": {
+        "title": "Excellence",
+        "description": "We're committed to delivering exceptional experiences for both organizers and attendees."
+      }
+    },
+    "cta": {
+      "title": "Join Our Journey",
+      "subtitle": "Be part of a community that's redefining how people experience events.",
+      "button": "Get Started Today"
+    },
+    "footer": {
+      "rights": "All rights reserved."
+    }
+  },
+  "contact": {
+    "header": {
+      "backToHome": "Back to Home"
+    },
+    "hero": {
+      "title": "Get in Touch",
+      "subtitle": "Have questions or feedback? We'd love to hear from you. Our team is here to help make your event experience amazing."
+    },
+    "form": {
+      "title": "Send us a Message",
+      "name": {
+        "label": "Name",
+        "placeholder": "Your full name"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "your.email@example.com"
+      },
+      "subject": {
+        "label": "Subject",
+        "placeholder": "What's this about?"
+      },
+      "message": {
+        "label": "Message",
+        "placeholder": "Tell us more..."
+      },
+      "button": "Send Message"
+    },
+    "info": {
+      "title": "Contact Information",
+      "subtitle": "Reach out through any of these channels and we'll get back to you as soon as possible.",
+      "email": {
+        "title": "Email"
+      },
+      "phone": {
+        "title": "Phone",
+        "hours": "Mon-Fri, 9am-6pm BRT"
+      },
+      "office": {
+        "title": "Office"
+      }
+    },
+    "footer": {
+      "rights": "All rights reserved."
     }
   },
   "common": {

@@ -1,10 +1,13 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Target, Heart, Award, ArrowLeft } from "lucide-react";
 import logoLight from "@/assets/logoLight.png";
 
 const AboutUs = () => {
+  const { t } = useTranslation();
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -17,7 +20,7 @@ const AboutUs = () => {
             <Link to="/">
               <Button variant="ghost" className="transition-smooth">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Home
+                {t("about.header.backToHome")}
               </Button>
             </Link>
           </div>
@@ -30,10 +33,10 @@ const AboutUs = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
-              About Tikko
+              {t("about.hero.title")}
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              We're on a mission to transform how people discover, attend, and create memorable experiences through events that bring communities together.
+              {t("about.hero.subtitle")}
             </p>
           </div>
         </div>
@@ -44,17 +47,17 @@ const AboutUs = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-center">
-              Our <span className="text-primary">Story</span>
+              {t("about.story.title")}
             </h2>
             <div className="prose prose-invert max-w-none">
               <p className="text-lg text-muted-foreground mb-4">
-                Founded in 2024, Tikko emerged from a simple observation: finding and attending great events was unnecessarily complicated. We believed there had to be a better way to connect people with experiences that matter to them.
+                {t("about.story.paragraph1")}
               </p>
               <p className="text-lg text-muted-foreground mb-4">
-                Today, Tikko serves thousands of event organizers and millions of attendees worldwide, powering everything from intimate workshops to massive music festivals. Our platform combines cutting-edge technology with human-centered design to make event discovery and ticketing seamless.
+                {t("about.story.paragraph2")}
               </p>
               <p className="text-lg text-muted-foreground">
-                But we're more than just a ticketing platform. We're building a community of passionate event-goers, creative organizers, and innovative venues who believe that shared experiences are what make life memorable.
+                {t("about.story.paragraph3")}
               </p>
             </div>
           </div>
@@ -65,7 +68,7 @@ const AboutUs = () => {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
-            Our <span className="text-primary">Values</span>
+            {t("about.values.title")}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <Card className="gradient-card hover:shadow-elegant transition-smooth">
@@ -74,9 +77,9 @@ const AboutUs = () => {
                   <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center mb-4">
                     <Users className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">Community First</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t("about.values.community.title")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    We prioritize building meaningful connections and fostering vibrant communities through shared experiences.
+                    {t("about.values.community.description")}
                   </p>
                 </div>
               </CardContent>
@@ -88,9 +91,9 @@ const AboutUs = () => {
                   <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center mb-4">
                     <Target className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">Innovation</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t("about.values.innovation.title")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    We constantly push boundaries to create better, smarter solutions for event discovery and management.
+                    {t("about.values.innovation.description")}
                   </p>
                 </div>
               </CardContent>
@@ -102,9 +105,9 @@ const AboutUs = () => {
                   <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center mb-4">
                     <Heart className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">Passion</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t("about.values.passion.title")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    We're genuinely passionate about events and the magic they create in people's lives.
+                    {t("about.values.passion.description")}
                   </p>
                 </div>
               </CardContent>
@@ -116,9 +119,9 @@ const AboutUs = () => {
                   <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center mb-4">
                     <Award className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">Excellence</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t("about.values.excellence.title")}</h3>
                   <p className="text-sm text-muted-foreground">
-                    We're committed to delivering exceptional experiences for both organizers and attendees.
+                    {t("about.values.excellence.description")}
                   </p>
                 </div>
               </CardContent>
@@ -133,14 +136,14 @@ const AboutUs = () => {
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
-              Join Our Journey
+              {t("about.cta.title")}
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Be part of a community that's redefining how people experience events.
+              {t("about.cta.subtitle")}
             </p>
             <Link to="/login">
               <Button size="lg" className="h-14 px-8 text-lg gradient-button hover:shadow-elegant transition-bounce">
-                Get Started Today
+                {t("about.cta.button")}
               </Button>
             </Link>
           </div>
@@ -150,7 +153,7 @@ const AboutUs = () => {
       {/* Footer */}
       <footer className="bg-card border-t border-border py-8">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 Tikko. All rights reserved.</p>
+          <p>&copy; 2025 Tikko. {t("about.footer.rights")}</p>
         </div>
       </footer>
     </div>

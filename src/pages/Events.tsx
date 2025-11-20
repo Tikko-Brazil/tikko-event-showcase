@@ -350,14 +350,6 @@ const Events = () => {
                     {t("home.nav.contact")}
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    to="#"
-                    className="hover:text-foreground transition-smooth"
-                  >
-                    Careers
-                  </Link>
-                </li>
               </ul>
             </div>
 

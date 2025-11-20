@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,8 @@ import { Mail, MapPin, Phone, ArrowLeft } from "lucide-react";
 import logoLight from "@/assets/logoLight.png";
 
 const Contact = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -20,7 +23,7 @@ const Contact = () => {
             <Link to="/">
               <Button variant="ghost" className="transition-smooth">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Home
+                {t("contact.header.backToHome")}
               </Button>
             </Link>
           </div>
@@ -33,10 +36,10 @@ const Contact = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
-              Get in Touch
+              {t("contact.hero.title")}
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              Have questions or feedback? We'd love to hear from you. Our team is here to help make your event experience amazing.
+              {t("contact.hero.subtitle")}
             </p>
           </div>
         </div>
@@ -45,63 +48,66 @@ const Contact = () => {
       {/* Contact Content */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-12 max-w-6xl mx-auto">
+            {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto"> */}
             {/* Contact Form */}
-            <Card className="gradient-card border-border/50">
-              <CardHeader>
-                <CardTitle className="text-2xl">Send us a Message</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      placeholder="Your full name"
-                      className="bg-background/50"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="your.email@example.com"
-                      className="bg-background/50"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
-                    <Input
-                      id="subject"
-                      placeholder="What's this about?"
-                      className="bg-background/50"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
-                    <Textarea
-                      id="message"
-                      placeholder="Tell us more..."
-                      rows={6}
-                      className="bg-background/50"
-                    />
-                  </div>
-                  <Button className="w-full gradient-button hover:shadow-elegant transition-smooth">
-                    Send Message
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+            {false &&
+              <Card className="gradient-card border-border/50">
+                <CardHeader>
+                  <CardTitle className="text-2xl">{t("contact.form.title")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">{t("contact.form.name.label")}</Label>
+                      <Input
+                        id="name"
+                        placeholder={t("contact.form.name.placeholder")}
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">{t("contact.form.email.label")}</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder={t("contact.form.email.placeholder")}
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="subject">{t("contact.form.subject.label")}</Label>
+                      <Input
+                        id="subject"
+                        placeholder={t("contact.form.subject.placeholder")}
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="message">{t("contact.form.message.label")}</Label>
+                      <Textarea
+                        id="message"
+                        placeholder={t("contact.form.message.placeholder")}
+                        rows={6}
+                        className="bg-background/50"
+                      />
+                    </div>
+                    <Button className="w-full gradient-button hover:shadow-elegant transition-smooth">
+                      {t("contact.form.button")}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            }
 
             {/* Contact Info */}
             <div className="space-y-6">
               <div>
                 <h2 className="text-3xl font-bold mb-6">
-                  Contact <span className="text-primary">Information</span>
+                  {t("contact.info.title")}
                 </h2>
                 <p className="text-muted-foreground mb-8">
-                  Reach out through any of these channels and we'll get back to you as soon as possible.
+                  {t("contact.info.subtitle")}
                 </p>
               </div>
 
@@ -112,12 +118,9 @@ const Contact = () => {
                       <Mail className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold mb-1">Email</h3>
+                      <h3 className="font-semibold mb-1">{t("contact.info.email.title")}</h3>
                       <p className="text-sm text-muted-foreground">
-                        support@tikko.com
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        business@tikko.com
+                        contato@tikko.com
                       </p>
                     </div>
                   </div>
@@ -131,12 +134,12 @@ const Contact = () => {
                       <Phone className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold mb-1">Phone</h3>
+                      <h3 className="font-semibold mb-1">{t("contact.info.phone.title")}</h3>
                       <p className="text-sm text-muted-foreground">
-                        +1 (555) 123-4567
+                        +55 (47) 9712-1190
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Mon-Fri, 9am-6pm EST
+                        {t("contact.info.phone.hours")}
                       </p>
                     </div>
                   </div>
@@ -150,12 +153,12 @@ const Contact = () => {
                       <MapPin className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold mb-1">Office</h3>
+                      <h3 className="font-semibold mb-1">{t("contact.info.office.title")}</h3>
                       <p className="text-sm text-muted-foreground">
-                        123 Event Street, Suite 456
+                        Av. Paulista, 1106, Sala 01, Andar 16
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        San Francisco, CA 94102
+                        Bela Vista, São Paulo-SP - 01.310.914
                       </p>
                     </div>
                   </div>
@@ -169,7 +172,7 @@ const Contact = () => {
       {/* Footer */}
       <footer className="bg-card border-t border-border py-8">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 Tikko. All rights reserved.</p>
+          <p>&copy; 2025 Tikko. {t("contact.footer.rights")}</p>
         </div>
       </footer>
     </div>

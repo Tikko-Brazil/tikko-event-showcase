@@ -825,6 +825,7 @@
       "contact": "Contato",
       "phone": "Telefone: +55 (47) 9712-1190",
       "email": "E-mail: contato@tikko.com",
+      "cnpj": "CNPJ: 58.451.195/0001-76",
       "copyright": "© 2025 Tikko. Todos os direitos reservados."
     }
   },
@@ -954,6 +955,94 @@
       "createSuccess": "Evento criado com sucesso!",
       "createError": "Erro ao criar evento. Tente novamente.",
       "uploadError": "Erro ao fazer upload da imagem"
+    }
+  },
+  "about": {
+    "header": {
+      "backToHome": "Voltar ao Início"
+    },
+    "hero": {
+      "title": "Sobre a Tikko",
+      "subtitle": "Estamos em uma missão para transformar como as pessoas descobrem, participam e criam experiências memoráveis através de eventos que unem comunidades."
+    },
+    "story": {
+      "title": "Nossa História",
+      "paragraph1": "Fundada em 2024, a Tikko surgiu de uma observação simples: encontrar e participar de grandes eventos era desnecessariamente complicado. Acreditávamos que deveria haver uma maneira melhor de conectar pessoas com experiências que importam para elas.",
+      "paragraph2": "Nossa plataforma combina tecnologia de ponta com design centrado no ser humano para tornar a descoberta e venda de ingressos uma experiência simples e intuitiva, desde workshops íntimos até grandes festivais.",
+      "paragraph3": "Mas somos mais do que apenas uma plataforma de ingressos. Estamos construindo uma comunidade de entusiastas de eventos apaixonados, organizadores criativos e locais inovadores que acreditam que experiências compartilhadas são o que torna a vida memorável."
+    },
+    "values": {
+      "title": "Nossos Valores",
+      "community": {
+        "title": "Comunidade em Primeiro Lugar",
+        "description": "Priorizamos a construção de conexões significativas e o fomento de comunidades vibrantes através de experiências compartilhadas."
+      },
+      "innovation": {
+        "title": "Inovação",
+        "description": "Constantemente ultrapassamos limites para criar soluções melhores e mais inteligentes para descoberta e gerenciamento de eventos."
+      },
+      "passion": {
+        "title": "Paixão",
+        "description": "Somos genuinamente apaixonados por eventos e pela magia que eles criam na vida das pessoas."
+      },
+      "excellence": {
+        "title": "Excelência",
+        "description": "Estamos comprometidos em oferecer experiências excepcionais tanto para organizadores quanto para participantes."
+      }
+    },
+    "cta": {
+      "title": "Junte-se à Nossa Jornada",
+      "subtitle": "Faça parte de uma comunidade que está redefinindo como as pessoas vivenciam eventos.",
+      "button": "Comece Hoje"
+    },
+    "footer": {
+      "rights": "Todos os direitos reservados."
+    }
+  },
+  "contact": {
+    "header": {
+      "backToHome": "Voltar ao Início"
+    },
+    "hero": {
+      "title": "Entre em Contato",
+      "subtitle": "Tem dúvidas ou feedback? Adoraríamos ouvir você. Nossa equipe está aqui para ajudar a tornar sua experiência com eventos incrível."
+    },
+    "form": {
+      "title": "Envie uma Mensagem",
+      "name": {
+        "label": "Nome",
+        "placeholder": "Seu nome completo"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "seu.email@exemplo.com"
+      },
+      "subject": {
+        "label": "Assunto",
+        "placeholder": "Sobre o que é?"
+      },
+      "message": {
+        "label": "Mensagem",
+        "placeholder": "Conte-nos mais..."
+      },
+      "button": "Enviar Mensagem"
+    },
+    "info": {
+      "title": "Informações de Contato",
+      "subtitle": "Entre em contato através de qualquer um desses canais e retornaremos o mais breve possível.",
+      "email": {
+        "title": "Email"
+      },
+      "phone": {
+        "title": "Telefone",
+        "hours": "Seg-Sex, 9h-18h BRT"
+      },
+      "office": {
+        "title": "Escritório"
+      }
+    },
+    "footer": {
+      "rights": "Todos os direitos reservados."
     }
   },
   "common": {

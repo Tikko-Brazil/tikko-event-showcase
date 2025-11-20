@@ -382,14 +382,6 @@ const EnhancedIndex = () => {
                     {t("home.nav.contact")}
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    to="#"
-                    className="hover:text-foreground transition-smooth"
-                  >
-                    Careers
-                  </Link>
-                </li>
               </ul>
             </div>
 
@@ -398,6 +390,7 @@ const EnhancedIndex = () => {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>{t("home.footer.phone")}</li>
                 <li>{t("home.footer.email")}</li>
+                <li>{t("home.footer.cnpj")}</li>
               </ul>
             </div>
           </div>
