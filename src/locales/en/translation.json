@@ -815,6 +815,7 @@
   "settings": {
     "title": "Settings & Privacy",
     "subtitle": "Manage your account settings and preferences",
+    "mercadoPagoSuccess": "Mercado Pago account connected successfully!",
     "sections": {
       "profileInformation": "Profile Information",
       "generalPreferences": "General Preferences",
@@ -825,6 +826,8 @@
       "editProfileDesc": "Update your personal information and preferences",
       "language": "Language",
       "languageDesc": "Choose your preferred language for the app",
+      "linkMercadoPago": "Link Mercado Pago",
+      "linkMercadoPagoDesc": "Connect your Mercado Pago account for payments",
       "closeAccount": "Close Account",
       "closeAccountDesc": "Permanently delete your account and all associated data"
     },

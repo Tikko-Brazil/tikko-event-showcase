@@ -832,6 +832,7 @@
   "settings": {
     "title": "Configurações e Privacidade",
     "subtitle": "Gerencie as configurações e preferências da sua conta",
+    "mercadoPagoSuccess": "Conta do Mercado Pago conectada com sucesso!",
     "sections": {
       "profileInformation": "Informações do Perfil",
       "generalPreferences": "Preferências Gerais",
@@ -842,6 +843,8 @@
       "editProfileDesc": "Atualize suas informações pessoais e preferências",
       "language": "Idioma",
       "languageDesc": "Escolha seu idioma preferido para o aplicativo",
+      "linkMercadoPago": "Conectar Mercado Pago",
+      "linkMercadoPagoDesc": "Conecte sua conta do Mercado Pago para pagamentos",
       "closeAccount": "Encerrar Conta",
       "closeAccountDesc": "Excluir permanentemente sua conta e todos os dados associados"
     },
