@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, User, Globe, XCircle, ArrowLeft } from "lucide-react";
+import { ChevronRight, User, Globe, XCircle, ArrowLeft, CreditCard } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { PaymentGateway } from "@/lib/PaymentGateway";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +21,18 @@ import {
 const Settings = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const paymentGateway = new PaymentGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+
+  const mercadoPagoMutation = useMutation({
+    mutationFn: () => paymentGateway.getMercadoPagoOAuth(),
+    onSuccess: (data) => {
+      window.location.href = data.auth_url;
+    },
+    onError: (error) => {
+      console.error("Error getting Mercado Pago OAuth URL:", error);
+    },
+  });
 
   const handleCloseAccount = () => {
     // TODO: Implement account closure logic
@@ -118,6 +132,25 @@ const Settings = () => {
                 {t("settings.sections.accountManagement")}
               </h2>
             </div>
+            <Button
+              variant="ghost"
+              className="w-full justify-between px-4 md:px-6 py-3 md:py-4 h-auto rounded-none hover:bg-accent border-b"
+              onClick={() => mercadoPagoMutation.mutate()}
+              disabled={mercadoPagoMutation.isPending}
+            >
+              <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                <CreditCard className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
+                <div className="text-left flex-1 min-w-0" style={{ textWrap: 'wrap' }}>
+                  <p className="font-medium text-sm md:text-base">
+                    Link Mercado Pago
+                  </p>
+                  <p className="text-xs md:text-sm text-muted-foreground break-words">
+                    Connect your Mercado Pago account for payments
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0" />
+            </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
