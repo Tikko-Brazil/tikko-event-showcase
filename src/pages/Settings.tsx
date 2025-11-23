@@ -209,7 +209,7 @@ const Settings = () => {
           </CardContent>
         </Card>
       </div>
-      
+
       <SuccessSnackbar
         message={t("settings.mercadoPagoSuccess")}
         visible={showSuccessSnackbar}
