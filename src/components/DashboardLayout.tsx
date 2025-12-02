@@ -222,6 +222,27 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           onClose={() => setIsSearchOpen(false)}
           initialEvents={searchModalEvents}
         />
+
+        {/* Sign Out Confirmation Dialog */}
+        <AlertDialog open={showSignOutDialog} onOpenChange={setShowSignOutDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("dashboard.signOutDialog.title")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("dashboard.signOutDialog.description")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("dashboard.signOutDialog.cancel")}</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleSignOut}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {t("dashboard.signOutDialog.confirm")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     );
   }
