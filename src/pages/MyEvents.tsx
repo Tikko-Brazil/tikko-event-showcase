@@ -105,9 +105,9 @@ const MyEvents = () => {
         ) : userEvents.length === 0 ? (
           <div className="text-center py-12">
             <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">{t("noEvents")}</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("home.events.noEvents")}</h3>
             <p className="text-muted-foreground mb-4">
-              {t("eventManagement.home.events.haventCreatedEvents")}
+              {t("home.events.haventCreatedEvents")}
             </p>
             {hasAdminPrivileges && (
               <Button onClick={() => navigate("/create-event")}>

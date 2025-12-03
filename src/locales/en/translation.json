@@ -538,6 +538,48 @@
       "noRequestsFound": "No join requests found"
     }
   },
+  "ticketValidation": {
+    "title": "Ticket Validation",
+    "subtitle": "Scan and validate tickets at the event entrance",
+    "instructions": {
+      "title": "Instructions",
+      "step1": "Click \"Start Validation\" and allow camera access",
+      "step2": "Point the camera at the ticket's QR code to scan it",
+      "step3": "Verify the ticket information before confirming validation"
+    },
+    "camera": {
+      "title": "Scan Ticket QR Code",
+      "closeCamera": "Close Camera",
+      "instruction": "Point the camera at the QR code on the ticket",
+      "manualInput": "Manual Input (Testing)",
+      "accessError": "Unable to access camera. Please check permissions."
+    },
+    "confirmation": {
+      "title": "Confirm Ticket Validation",
+      "description": "Please verify the ticket information with the customer's documents:",
+      "ticketId": "Ticket ID",
+      "userName": "User Name",
+      "ticketType": "Ticket Type",
+      "loading": "Loading ticket information...",
+      "alreadyValidated": "WARNING: This ticket has already been validated!",
+      "cancel": "Cancel",
+      "close": "Close",
+      "validate": "Validate Ticket",
+      "validating": "Validating..."
+    },
+    "messages": {
+      "success": "Ticket validated successfully!",
+      "alreadyValidated": "This ticket has already been validated.",
+      "notFound": "This ticket does not exist or has been cancelled.",
+      "noPermission": "You don't have permission to validate this ticket.",
+      "error": "Failed to validate ticket. Please try again.",
+      "loadError": "Failed to load ticket information"
+    },
+    "buttons": {
+      "startValidation": "Start Validation",
+      "tryAgain": "Try Again"
+    }
+  },
   "validation": {
     "required": "This field is required",
     "email": {

@@ -555,6 +555,48 @@
       "noRequestsFound": "Nenhuma solicitação encontrada"
     }
   },
+  "ticketValidation": {
+    "title": "Validação de Ingressos",
+    "subtitle": "Escaneie e valide ingressos na entrada do evento",
+    "instructions": {
+      "title": "Instruções",
+      "step1": "Clique em \"Iniciar Validação\" e permita o acesso à câmera",
+      "step2": "Aponte a câmera para o código QR do ingresso para escaneá-lo",
+      "step3": "Verifique as informações do ingresso antes de confirmar a validação"
+    },
+    "camera": {
+      "title": "Escanear Código QR do Ingresso",
+      "closeCamera": "Fechar Câmera",
+      "instruction": "Aponte a câmera para o código QR no ingresso",
+      "manualInput": "Entrada Manual (Teste)",
+      "accessError": "Não foi possível acessar a câmera. Verifique as permissões."
+    },
+    "confirmation": {
+      "title": "Confirmar Validação do Ingresso",
+      "description": "Verifique as informações do ingresso com os documentos do cliente:",
+      "ticketId": "ID do Ingresso",
+      "userName": "Nome do Usuário",
+      "ticketType": "Tipo do Ingresso",
+      "loading": "Carregando informações do ingresso...",
+      "alreadyValidated": "ATENÇÃO: Este ingresso já foi validado anteriormente!",
+      "cancel": "Cancelar",
+      "close": "Fechar",
+      "validate": "Validar Ingresso",
+      "validating": "Validando..."
+    },
+    "messages": {
+      "success": "Ingresso validado com sucesso!",
+      "alreadyValidated": "Este ingresso já foi validado anteriormente.",
+      "notFound": "Este ingresso não existe ou foi cancelado.",
+      "noPermission": "Você não tem permissão para validar este ingresso.",
+      "error": "Falha ao validar ingresso. Tente novamente.",
+      "loadError": "Falha ao carregar informações do ingresso"
+    },
+    "buttons": {
+      "startValidation": "Iniciar Validação",
+      "tryAgain": "Tentar Novamente"
+    }
+  },
   "validation": {
     "required": "Este campo é obrigatório",
     "email": {
