@@ -238,9 +238,18 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Instagram:</span>
-                  <span className="font-medium">
-                    {request.user.instagram_profile || "N/A"}
-                  </span>
+                  {request.user.instagram_profile ? (
+                    <a
+                      href={`https://instagram.com/${request.user.instagram_profile.replace('@', '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-primary hover:underline cursor-pointer"
+                    >
+                      @{request.user.instagram_profile.replace('@', '')}
+                    </a>
+                  ) : (
+                    <span className="font-medium">N/A</span>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between">
