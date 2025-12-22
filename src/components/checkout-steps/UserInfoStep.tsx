@@ -107,13 +107,11 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                 onUserDataChange(userDataValues);
               };
 
-              // Update validation state and sync data when valid
+              // Update validation state and sync data
               React.useEffect(() => {
                 onValidationChange?.(isValid);
-                if (isValid) {
-                  syncFormData();
-                }
-              }, [isValid]);
+                syncFormData(); // Always sync data, regardless of validation
+              }, [isValid, values]);
 
               return (
                 <Form className="space-y-4">
