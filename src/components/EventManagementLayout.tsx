@@ -99,23 +99,24 @@ export const EventManagementLayout = () => {
 
   // Filter management sections based on user role
   const getFilteredSections = (userRole: string) => {
-    switch (userRole.toLowerCase()) {
-      case 'host':
-      case 'manager':
-        return managementSections; // All sections
-      case 'coordinator':
+    switch (userRole) {
+      case "4":
+        return managementSections;
+      case "3":
+        return managementSections;
+      case "2":
         return managementSections.filter(section =>
           ['validate', 'participants', 'requests'].includes(section.id)
         );
-      case 'validator':
+      case "1":
         return managementSections.filter(section => section.id === 'validate');
       default:
-        return managementSections; // Default to all sections
+        return managementSections.filter(section => section.id === 'validate');
     }
   };
 
   // Get user role from API response
-  const userRole = eventInfo?.user_role || 'validator'; // Default to validator (least privileges)
+  const userRole = eventInfo?.user_role || "4"; // Default to validator (least privileges)
   const filteredSections = getFilteredSections(userRole);
 
   if (eventLoading || eventInfoLoading) {
