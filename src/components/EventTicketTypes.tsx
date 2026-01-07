@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, X } from "lucide-react";
+import { Plus, Pencil, Trash2, TrendingUp } from "lucide-react";
 import { SearchAndFilter } from "./SearchAndFilter";
 import { Pagination } from "./Pagination";
 import { TicketPricingGateway } from "@/lib/TicketPricingGateway";
@@ -46,7 +46,9 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAdvanceLotDialogOpen, setIsAdvanceLotDialogOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState<any>(null);
+  const [advancingTicket, setAdvancingTicket] = useState<any>(null);
   const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
   const [showErrorSnackbar, setShowErrorSnackbar] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -92,6 +94,13 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
       .required("Price is required")
       .min(0, "Price must be greater than or equal to 0"),
     active: Yup.boolean().required(),
+  });
+
+  // Validation schema for advance lot
+  const advanceLotValidationSchema = Yup.object({
+    new_price: Yup.number()
+      .required("New price is required")
+      .min(0, "Price must be greater than or equal to 0"),
   });
 
   // Debounced search function
@@ -154,7 +163,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
   // Use backend pagination data directly
   const from = ((ticketPricingsData?.page || 1) - 1) * (ticketPricingsData?.limit || itemsPerPage);
   const to = Math.min(from + (ticketPricingsData?.limit || itemsPerPage), totalItems);
-  const paginatedTicketTypes = allTicketTypes;
+  const paginatedTicketTypes = allTicketTypes.sort((a, b) => a.ticket_type.localeCompare(b.ticket_type));
 
   // Create ticket pricing mutation
   const createTicketPricingMutation = useMutation({
@@ -201,6 +210,28 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
     },
     onError: (error: any) => {
       setErrorMessage(error.message || "Error updating ticket type");
+      setShowErrorSnackbar(true);
+    },
+  });
+
+  // Advance lot mutation
+  const advanceLotMutation = useMutation({
+    mutationFn: async (values: any) => {
+      return ticketPricingGateway.advanceLot({
+        event_id: eventId,
+        ticket_id: advancingTicket.id,
+        new_price: values.new_price,
+      });
+    },
+    onSuccess: () => {
+      setSuccessMessage("Lot advanced successfully");
+      setShowSuccessSnackbar(true);
+      setIsAdvanceLotDialogOpen(false);
+      setAdvancingTicket(null);
+      queryClient.invalidateQueries({ queryKey: ["event-ticket-pricings", eventId] });
+    },
+    onError: (error: any) => {
+      setErrorMessage(error.message || "Error advancing lot");
       setShowErrorSnackbar(true);
     },
   });
@@ -396,26 +427,18 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                     </Badge>
                   </div>
                 </div>
-                <div className="flex gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={() => {
-                      setEditingTicket(ticketType);
-                      setIsEditDialogOpen(true);
-                    }}
-                  >
-                    <Edit className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-2"
+                  onClick={() => {
+                    setAdvancingTicket(ticketType);
+                    setIsAdvanceLotDialogOpen(true);
+                  }}
+                >
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  {t("eventManagement.ticketTypes.actions.advanceLot")}
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
@@ -438,6 +461,28 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                     {ticketType.sold_count}
                   </span>
                 </div>
+              </div>
+              <div className="mt-4 pt-4 border-t flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => {
+                    setEditingTicket(ticketType);
+                    setIsEditDialogOpen(true);
+                  }}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  {t("eventManagement.ticketTypes.actions.edit")}
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex-1"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {t("eventManagement.ticketTypes.actions.remove")}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -569,6 +614,70 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                       disabled={isSubmitting || updateTicketPricingMutation.isPending}
                     >
                       {updateTicketPricingMutation.isPending ? "Updating..." : t("eventManagement.ticketTypes.editDialog.buttons.save")}
+                    </Button>
+                  </DialogFooter>
+                </Form>
+              )}
+            </Formik>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Advance Lot Dialog */}
+      {advancingTicket && (
+        <Dialog open={isAdvanceLotDialogOpen} onOpenChange={setIsAdvanceLotDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t("eventManagement.ticketTypes.advanceLotDialog.title")}</DialogTitle>
+              <DialogDescription>
+                {t("eventManagement.ticketTypes.advanceLotDialog.description")} "{advancingTicket.ticket_type}"
+              </DialogDescription>
+            </DialogHeader>
+            <Formik
+              initialValues={{
+                new_price: "",
+              }}
+              validationSchema={advanceLotValidationSchema}
+              onSubmit={(values) => {
+                advanceLotMutation.mutate({
+                  new_price: parseFloat(values.new_price),
+                });
+              }}
+            >
+              {({ isSubmitting }) => (
+                <Form className="space-y-4">
+                  <div>
+                    <Label htmlFor="new_price">{t("eventManagement.ticketTypes.advanceLotDialog.fields.newPrice")}</Label>
+                    <Field
+                      as={Input}
+                      id="new_price"
+                      name="new_price"
+                      type="number"
+                      step="0.01"
+                      placeholder={t("eventManagement.ticketTypes.advanceLotDialog.fields.newPricePlaceholder")}
+                    />
+                    <ErrorMessage
+                      name="new_price"
+                      component="div"
+                      className="text-sm text-red-500 mt-1"
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setIsAdvanceLotDialogOpen(false);
+                        setAdvancingTicket(null);
+                      }}
+                    >
+                      {t("eventManagement.ticketTypes.advanceLotDialog.buttons.cancel")}
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting || advanceLotMutation.isPending}
+                    >
+                      {advanceLotMutation.isPending ? "Advancing..." : t("eventManagement.ticketTypes.advanceLotDialog.buttons.advance")}
                     </Button>
                   </DialogFooter>
                 </Form>

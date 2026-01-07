@@ -337,7 +337,9 @@
       },
       "actions": {
         "createTicketType": "Create Ticket Type",
-        "edit": "Edit"
+        "edit": "Edit",
+        "remove": "Remove",
+        "advanceLot": "Advance Lot"
       },
       "createDialog": {
         "title": "Create New Ticket Type",
@@ -367,6 +369,18 @@
         "buttons": {
           "cancel": "Cancel",
           "save": "Save Changes"
+        }
+      },
+      "advanceLotDialog": {
+        "title": "Advance Lot",
+        "description": "Set a new price for the next lot",
+        "fields": {
+          "newPrice": "New Price",
+          "newPricePlaceholder": "Enter new price for next lot"
+        },
+        "buttons": {
+          "cancel": "Cancel",
+          "advance": "Advance Lot"
         }
       }
     },

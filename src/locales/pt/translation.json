@@ -354,7 +354,9 @@
       },
       "actions": {
         "createTicketType": "Criar Tipo de Ingresso",
-        "edit": "Editar"
+        "edit": "Editar",
+        "remove": "Remover",
+        "advanceLot": "Avançar Lote"
       },
       "createDialog": {
         "title": "Criar Novo Tipo de Ingresso",
@@ -384,6 +386,18 @@
         "buttons": {
           "cancel": "Cancelar",
           "save": "Salvar Alterações"
+        }
+      },
+      "advanceLotDialog": {
+        "title": "Avançar Lote",
+        "description": "Definir um novo preço para o próximo lote",
+        "fields": {
+          "newPrice": "Novo Preço",
+          "newPricePlaceholder": "Digite o novo preço para o próximo lote"
+        },
+        "buttons": {
+          "cancel": "Cancelar",
+          "advance": "Avançar Lote"
         }
       }
     },
