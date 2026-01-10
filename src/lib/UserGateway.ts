@@ -46,6 +46,7 @@ interface RegisterAndJoinEventRequest {
     location: string;
     bio: string;
     instagram_profile: string;
+    identification_number: string;
   };
   event_id: number;
   ticket_pricing_id: number;

@@ -158,13 +158,14 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         gender: identificationType === "cpf" ? "male" : "female",
         birthday: userData.birthdate
           ? new Date(
-              userData.birthdate.split("/").reverse().join("-")
-            ).toISOString()
+            userData.birthdate.split("/").reverse().join("-")
+          ).toISOString()
           : new Date().toISOString(),
         phone_number: userData.phone.replace(/[()\s-]/g, ""),
         location: "",
         bio: "",
         instagram_profile: userData.instagram,
+        identification_number: userData.identification
       },
       event_id: eventId,
       ticket_pricing_id: ticketPricingId,
@@ -411,8 +412,8 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
                     {currentStep === 7
                       ? "Compra Realizada!"
                       : currentStep === 8
-                      ? "Pagamento PIX"
-                      : "Checkout"}
+                        ? "Pagamento PIX"
+                        : "Checkout"}
                   </h2>
                 </div>
               </div>
@@ -425,8 +426,8 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
                       currentStep <= 3
                         ? currentStep - 1
                         : currentStep <= 5
-                        ? 3
-                        : 4
+                          ? 3
+                          : 4
                     }
                     totalSteps={4}
                   />
@@ -435,17 +436,15 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
 
               {/* Step Content - Scrollable on mobile with bottom padding for fixed price summary */}
               <div
-                className={`flex-1 ${
-                  currentStep === 8
-                    ? "p-4 lg:p-6 pt-0 pb-0 lg:pb-0"
-                    : "p-4 lg:p-6 pt-0 lg:pb-6"
-                } ${
-                  currentStep === 6
+                className={`flex-1 ${currentStep === 8
+                  ? "p-4 lg:p-6 pt-0 pb-0 lg:pb-0"
+                  : "p-4 lg:p-6 pt-0 lg:pb-6"
+                  } ${currentStep === 6
                     ? "overflow-y-auto max-h-[calc(100vh-200px)] lg:max-h-[calc(805px-200px)]"
                     : currentStep === 8
-                    ? "overflow-y-auto max-h-[100vh] lg:max-h-none"
-                    : "overflow-y-auto lg:overflow-visible max-h-[calc(100vh-200px)] lg:max-h-none"
-                }`}
+                      ? "overflow-y-auto max-h-[100vh] lg:max-h-none"
+                      : "overflow-y-auto lg:overflow-visible max-h-[calc(100vh-200px)] lg:max-h-none"
+                  }`}
               >
                 {renderStepContent()}
               </div>
