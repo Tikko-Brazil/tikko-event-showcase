@@ -194,14 +194,36 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
     mutationFn: (data: { email: string; role: string }) =>
       eventGateway.addStaffMember(eventId, data),
     onSuccess: () => {
-      setSuccessMessage("Staff member added successfully");
+      setSuccessMessage(t("eventManagement.staff.messages.success.added"));
       setShowSuccessSnackbar(true);
       setIsAddDialogOpen(false);
       addStaffFormik.resetForm();
       queryClient.invalidateQueries({ queryKey: ["event-staff", eventId] });
     },
-    onError: (error: Error) => {
-      setErrorMessage(error.message || "Failed to add staff member");
+    onError: (error: any) => {
+      let errorMessage = t("eventManagement.staff.messages.errors.addFailed");
+      
+      if (error.status) {
+        switch (error.status) {
+          case 400:
+            errorMessage = t("eventManagement.staff.messages.errors.badRequest");
+            break;
+          case 401:
+            errorMessage = t("eventManagement.staff.messages.errors.unauthorized");
+            break;
+          case 403:
+            errorMessage = t("eventManagement.staff.messages.errors.forbidden");
+            break;
+          case 404:
+            errorMessage = t("eventManagement.staff.messages.errors.userNotFound");
+            break;
+          case 500:
+            errorMessage = t("eventManagement.staff.messages.errors.serverError");
+            break;
+        }
+      }
+      
+      setErrorMessage(errorMessage);
       setShowErrorSnackbar(true);
     },
   });
@@ -235,13 +257,35 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
     mutationFn: (data: { userId: number; role: string }) =>
       eventGateway.updateStaffRole(eventId, data.userId, { role: data.role }),
     onSuccess: () => {
-      setSuccessMessage("Staff member updated successfully");
+      setSuccessMessage(t("eventManagement.staff.messages.success.updated"));
       setShowSuccessSnackbar(true);
       setEditingStaff(null);
       queryClient.invalidateQueries({ queryKey: ["event-staff", eventId] });
     },
-    onError: (error: Error) => {
-      setErrorMessage(error.message || "Failed to update staff member");
+    onError: (error: any) => {
+      let errorMessage = t("eventManagement.staff.messages.errors.updateFailed");
+      
+      if (error.status) {
+        switch (error.status) {
+          case 400:
+            errorMessage = t("eventManagement.staff.messages.errors.badRequest");
+            break;
+          case 401:
+            errorMessage = t("eventManagement.staff.messages.errors.unauthorized");
+            break;
+          case 403:
+            errorMessage = t("eventManagement.staff.messages.errors.forbidden");
+            break;
+          case 404:
+            errorMessage = t("eventManagement.staff.messages.errors.userNotFound");
+            break;
+          case 500:
+            errorMessage = t("eventManagement.staff.messages.errors.serverError");
+            break;
+        }
+      }
+      
+      setErrorMessage(errorMessage);
       setShowErrorSnackbar(true);
     },
   });

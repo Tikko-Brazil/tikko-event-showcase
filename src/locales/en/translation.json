@@ -497,6 +497,22 @@
           "remove": "Remove"
         }
       },
+      "messages": {
+        "success": {
+          "added": "Staff member added successfully",
+          "updated": "Staff member updated successfully",
+          "removed": "Staff member removed successfully"
+        },
+        "errors": {
+          "badRequest": "Invalid data provided",
+          "unauthorized": "You don't have permission to perform this action",
+          "forbidden": "Insufficient permissions for this operation",
+          "userNotFound": "User not found",
+          "serverError": "Internal server error. Please try again later",
+          "addFailed": "Failed to add staff member",
+          "updateFailed": "Failed to update staff member"
+        }
+      },
       "noStaffFound": "No staff members found"
     },
     "sendTickets": {

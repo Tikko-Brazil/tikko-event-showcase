@@ -473,48 +473,50 @@ export default function EventDetails() {
                   onValueChange={setSelectedTicket}
                   className="space-y-1"
                 >
-                  {ticket_pricing.map((ticket) => (
-                    <div
-                      key={ticket.id}
-                      className={`border rounded-lg p-3 md:p-4 transition-all duration-200 ${selectedTicket === ticket.id.toString()
-                        ? "border-primary bg-primary/5 shadow-md"
-                        : "border-border hover:border-primary/50"
-                        }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-3 flex-1">
-                          <RadioGroupItem
-                            value={ticket.id.toString()}
-                            id={ticket.id.toString()}
-                            className="mt-1"
-                          />
-                          <Label
-                            htmlFor={ticket.id.toString()}
-                            className="flex-1 cursor-pointer"
-                          >
-                            <div>
-                              <p className="font-medium text-sm md:text-base">
-                                {formatTicketName(ticket)}
-                              </p>
-                              {formatLotText(ticket.lot) && (
-                                <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
-                                  {formatLotText(ticket.lot)}
-                                </span>
-                              )}
-                              <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                                Requer aprovação
-                              </p>
-                            </div>
-                          </Label>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-base md:text-lg">
-                            {formatPrice(ticket.price)}
-                          </p>
+                  {ticket_pricing
+                    .sort((a, b) => formatTicketName(a).localeCompare(formatTicketName(b)))
+                    .map((ticket) => (
+                      <div
+                        key={ticket.id}
+                        className={`border rounded-lg p-3 md:p-4 transition-all duration-200 ${selectedTicket === ticket.id.toString()
+                          ? "border-primary bg-primary/5 shadow-md"
+                          : "border-border hover:border-primary/50"
+                          }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-3 flex-1">
+                            <RadioGroupItem
+                              value={ticket.id.toString()}
+                              id={ticket.id.toString()}
+                              className="mt-1"
+                            />
+                            <Label
+                              htmlFor={ticket.id.toString()}
+                              className="flex-1 cursor-pointer"
+                            >
+                              <div>
+                                <p className="font-medium text-sm md:text-base">
+                                  {formatTicketName(ticket)}
+                                </p>
+                                {formatLotText(ticket.lot) && (
+                                  <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full bg-primary">
+                                    {formatLotText(ticket.lot)}
+                                  </span>
+                                )}
+                                <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                                  Requer aprovação
+                                </p>
+                              </div>
+                            </Label>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-base md:text-lg">
+                              {formatPrice(ticket.price)}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </RadioGroup>
 
                 {/* Quantity selector - hidden but kept for future use */}

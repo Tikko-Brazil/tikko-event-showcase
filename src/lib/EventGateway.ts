@@ -445,7 +445,15 @@ export class EventGateway {
         body: JSON.stringify(data),
       }
     );
-    return this.handleResponse<AddStaffResponse>(response);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const error = new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      (error as any).status = response.status;
+      throw error;
+    }
+    
+    return response.json();
   }
 
   async updateStaffRole(

@@ -514,6 +514,22 @@
           "remove": "Remover"
         }
       },
+      "messages": {
+        "success": {
+          "added": "Membro da equipe adicionado com sucesso",
+          "updated": "Membro da equipe atualizado com sucesso",
+          "removed": "Membro da equipe removido com sucesso"
+        },
+        "errors": {
+          "badRequest": "Dados inválidos fornecidos",
+          "unauthorized": "Você não tem permissão para realizar esta ação",
+          "forbidden": "Permissões insuficientes para esta operação",
+          "userNotFound": "Usuário não encontrado",
+          "serverError": "Erro interno do servidor. Tente novamente mais tarde",
+          "addFailed": "Falha ao adicionar membro da equipe",
+          "updateFailed": "Falha ao atualizar membro da equipe"
+        }
+      },
       "noStaffFound": "Nenhum membro da equipe encontrado"
     },
     "sendTickets": {

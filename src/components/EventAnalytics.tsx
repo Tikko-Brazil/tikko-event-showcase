@@ -879,21 +879,23 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("eventManagement.analytics.cards.quickActions.title")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button className="w-full justify-start" variant="outline">
-              <FileText className="h-4 w-4 mr-2" />
-              {t("eventManagement.analytics.actions.exportReport")}
-            </Button>
-            <Button className="w-full justify-start" variant="outline">
-              <TrendingUp className="h-4 w-4 mr-2" />
-              {t("eventManagement.analytics.actions.viewDetailedCharts")}
-            </Button>
-          </CardContent>
-        </Card>
+        {
+          false && (<Card>
+            <CardHeader>
+              <CardTitle>{t("eventManagement.analytics.cards.quickActions.title")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button className="w-full justify-start" variant="outline">
+                <FileText className="h-4 w-4 mr-2" />
+                {t("eventManagement.analytics.actions.exportReport")}
+              </Button>
+              <Button className="w-full justify-start" variant="outline">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                {t("eventManagement.analytics.actions.viewDetailedCharts")}
+              </Button>
+            </CardContent>
+          </Card>)
+        }
       </div>
     </div>
   );
