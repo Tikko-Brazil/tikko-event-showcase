@@ -90,8 +90,12 @@ export default function EventDetails() {
         : ticket?.gender === "female"
           ? "Feminino"
           : "Unissex";
-    const lotText = ticket?.lot === 0 ? "Pré-venda" : `Lote ${ticket?.lot}`;
-    return `${ticket?.ticket_type} - ${genderText} - ${lotText}`;
+    return `${ticket?.ticket_type} - ${genderText}`;
+  };
+
+  const formatLotText = (lot: number | undefined) => {
+    if (lot === undefined || lot === null) return "";
+    return lot === 0 ? "Pré-venda" : `Lote ${lot}`;
   };
 
   const formatPrice = (price: number) => {
@@ -492,7 +496,12 @@ export default function EventDetails() {
                               <p className="font-medium text-sm md:text-base">
                                 {formatTicketName(ticket)}
                               </p>
-                              <p className="text-xs md:text-sm text-muted-foreground">
+                              {formatLotText(ticket.lot) && (
+                                <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full bg-primary/10 text-primary">
+                                  {formatLotText(ticket.lot)}
+                                </span>
+                              )}
+                              <p className="text-xs md:text-sm text-muted-foreground mt-1">
                                 Requer aprovação
                               </p>
                             </div>
