@@ -106,7 +106,7 @@ export const EventManagementLayout = () => {
         return managementSections;
       case "2":
         return managementSections.filter(section =>
-          ['validate', 'participants', 'requests'].includes(section.id)
+          ['validate', 'participants', 'requests', 'send-tickets'].includes(section.id)
         );
       case "1":
         return managementSections.filter(section => section.id === 'validate');
