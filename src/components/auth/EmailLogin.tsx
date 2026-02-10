@@ -14,6 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { AuthGateway } from "@/lib/AuthGateway";
+import { useLogin } from "@/api/auth/api";
+import { loginErrorMessage } from "@/api/auth/errors";
+import { AppError } from "@/api/errors";
+import { toast } from "@/hooks/use-toast";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
 import { createCommonValidations } from "@/lib/validationSchemas";
 
@@ -32,6 +36,7 @@ const EmailLogin: React.FC<EmailLoginProps> = ({
   const [showError, setShowError] = React.useState(false);
 
   const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const { mutateAsync: login, isPending } = useLogin();
 
   const commonValidations = createCommonValidations(t);
   const loginSchema = Yup.object().shape({
@@ -51,7 +56,7 @@ const EmailLogin: React.FC<EmailLoginProps> = ({
           validationSchema={loginSchema}
           onSubmit={async (values, { setSubmitting }) => {
             try {
-              const response = await authGateway.login({
+              const response = await login({
                 email: values.email,
                 password: values.password,
               });
@@ -66,9 +71,9 @@ const EmailLogin: React.FC<EmailLoginProps> = ({
               );
 
               window.location.href = "/explore";
-            } catch (error: any) {
-              setErrorMessage(error.message);
-              setShowError(true);
+            } catch (error) {
+              const message = loginErrorMessage(error as AppError, t);
+              toast({ variant: "destructive", description: message });
             } finally {
               setSubmitting(false);
             }

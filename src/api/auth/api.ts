@@ -70,6 +70,16 @@ export interface VerifyResponse {
   token_pair: TokenPair
 }
 
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface LoginResponse {
+  user: User
+  token_pair: TokenPair
+}
+
 export function useExchange() {
   return useMutation({
     mutationFn: async (data: ExchangeRequest) => {
@@ -115,6 +125,19 @@ export function useVerify() {
       try {
         const res = await api.post("/public/verify", data)
         return res.data as VerifyResponse
+      } catch (error) {
+        throw normalizeApiError(error)
+      }
+    },
+  })
+}
+
+export function useLogin() {
+  return useMutation({
+    mutationFn: async (data: LoginRequest) => {
+      try {
+        const res = await api.post("/public/login", data)
+        return res.data as LoginResponse
       } catch (error) {
         throw normalizeApiError(error)
       }
