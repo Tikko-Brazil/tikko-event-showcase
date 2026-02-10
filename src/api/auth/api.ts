@@ -60,6 +60,16 @@ export interface RefreshResponse {
   token_pair: TokenPair
 }
 
+export interface VerifyRequest {
+  email: string
+  code: string
+}
+
+export interface VerifyResponse {
+  user: User
+  token_pair: TokenPair
+}
+
 export function useExchange() {
   return useMutation({
     mutationFn: async (data: ExchangeRequest) => {
@@ -92,6 +102,19 @@ export function useRefresh() {
       try {
         const res = await api.post("/public/login/refresh", data)
         return res.data as RefreshResponse
+      } catch (error) {
+        throw normalizeApiError(error)
+      }
+    },
+  })
+}
+
+export function useVerify() {
+  return useMutation({
+    mutationFn: async (data: VerifyRequest) => {
+      try {
+        const res = await api.post("/public/verify", data)
+        return res.data as VerifyResponse
       } catch (error) {
         throw normalizeApiError(error)
       }

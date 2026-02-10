@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,6 +11,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthGateway } from "@/lib/AuthGateway";
+import { useVerify } from "@/api/auth/api";
+import { verifyErrorMessage } from "@/api/auth/errors";
+import { AppError } from "@/api/errors";
+import { toast } from "@/hooks/use-toast";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
 import SuccessSnackbar from "@/components/SuccessSnackbar";
 
@@ -30,6 +35,7 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
   description,
   isResetFlow = false,
 }) => {
+  const { t } = useTranslation();
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
@@ -40,6 +46,7 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
   const [showSuccess, setShowSuccess] = useState(false);
 
   const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const { mutateAsync: verify } = useVerify();
 
   useEffect(() => {
     if (countdown > 0) {
@@ -95,7 +102,7 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
 
     setIsVerifying(true);
     try {
-      const response = await authGateway.verify({
+      const response = await verify({
         email,
         code: codeToVerify,
       });
@@ -104,9 +111,14 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
       localStorage.setItem("refreshToken", response.token_pair.refresh_token);
 
       onSuccess();
-    } catch (error: any) {
-      setErrorMessage(error.message);
-      setShowError(true);
+    } catch (error) {
+      const appError = error as AppError;
+      const message = verifyErrorMessage(appError, t);
+      toast({ variant: "destructive", description: message });
+      
+      if (appError.code === "TOO_MANY_VERIFICATION_ATTEMPTS") {
+        setTimeout(() => onBack(), 2000);
+      }
     } finally {
       setIsVerifying(false);
     }

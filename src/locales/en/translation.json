@@ -1166,10 +1166,16 @@
       "AUTH_METHOD_APPLE": "This account is registered with Apple. Please sign in with Apple.",
       "OAUTH_EXCHANGE_FAILED": "Unable to complete sign in with this provider. Please try again.",
       "MISSING_REQUIRED_FIELDS": "Please fill in all required fields (email, username, and password).",
+      "MISSING_VERIFY_FIELDS": "Please provide both email and verification code.",
       "WEAK_PASSWORD": "Password must be at least 8 characters and include: uppercase letter, lowercase letter, number, and special character.",
       "USER_ALREADY_EXISTS": "An account with this email already exists. Please sign in instead.",
       "MISSING_REFRESH_TOKEN": "Session expired. Please sign in again.",
       "INVALID_REFRESH_TOKEN": "Your session has expired. Please sign in again.",
+      "INVALID_VERIFICATION_CODE": "The verification code is incorrect. Please check and try again.",
+      "NO_VERIFICATION_RECORD": "No verification found for this email. Please sign up first.",
+      "VERIFICATION_EXPIRED": "This verification code has expired. Please request a new one.",
+      "VERIFICATION_ALREADY_USED": "This verification code has already been used.",
+      "TOO_MANY_VERIFICATION_ATTEMPTS": "Too many verification attempts. Please request a new code.",
       "INTERNAL_SERVER_ERROR": "Server error. Please try again later."
     }
   }
