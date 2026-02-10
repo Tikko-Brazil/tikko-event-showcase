@@ -777,6 +777,9 @@
       "or": "or"
     }
   },
+  "profileCompletion": {
+    "success": "Profile completed successfully!"
+  },
   "signup": {
     "title": "Create Account",
     "subtitle": "Fill in your details to get started",

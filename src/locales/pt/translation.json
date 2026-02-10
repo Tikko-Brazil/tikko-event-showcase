@@ -794,6 +794,9 @@
       "or": "ou"
     }
   },
+  "profileCompletion": {
+    "success": "Perfil completado com sucesso!"
+  },
   "signup": {
     "title": "Criar Conta",
     "subtitle": "Preencha seus dados para começar",

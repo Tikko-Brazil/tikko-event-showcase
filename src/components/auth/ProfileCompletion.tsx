@@ -15,21 +15,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { AuthGateway } from "@/lib/AuthGateway";
-import { UserGateway } from "@/lib/UserGateway";
-import ErrorSnackbar from "@/components/ErrorSnackbar";
-import SuccessSnackbar from "@/components/SuccessSnackbar";
+import { useUpdateUser } from "@/api/user/api";
+import { updateUserErrorMessage } from "@/api/user/errors";
+import { AppError } from "@/api/errors";
+import { toast } from "@/hooks/use-toast";
 import { createCommonValidations, PHONE_MASK } from "@/lib/validationSchemas";
 import logoLight from "@/assets/logoLight.png";
 
 const ProfileCompletion: React.FC = () => {
   const { t } = useTranslation();
-  const [errorMessage, setErrorMessage] = React.useState("");
-  const [showError, setShowError] = React.useState(false);
-  const [successMessage, setSuccessMessage] = React.useState("");
-  const [showSuccess, setShowSuccess] = React.useState(false);
-
-  const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const { mutateAsync: updateUser, isPending } = useUpdateUser();
 
   const commonValidations = createCommonValidations(t);
 
@@ -41,7 +36,6 @@ const ProfileCompletion: React.FC = () => {
     instagram_profile: commonValidations.instagram,
     bio: commonValidations.bio,
   });
-  const userGateway = new UserGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 
   const initialValues = {
     username: "",
@@ -70,28 +64,27 @@ const ProfileCompletion: React.FC = () => {
             validationSchema={profileCompletionSchema}
             onSubmit={async (values, { setSubmitting }) => {
               try {
-                await userGateway.updateCurrentUser({
+                await updateUser({
                   username: values.username,
                   gender: values.gender,
                   birthday: new Date(
                     values.birthday.split("/").reverse().join("-")
                   ).toISOString(),
-                  phone_number: values.phone_number,
-                  location: "", // Empty location as requested
+                  phone_number: values.phone_number.replace(/[()\\s-]/g, ""),
+                  location: "",
                   bio: values.bio,
                   instagram_profile: values.instagram_profile,
-                  companies_following: [], // Empty array as requested
+                  companies_following: [],
                 });
 
-                setSuccessMessage("Perfil completado com sucesso!");
-                setShowSuccess(true);
+                toast({ description: t("profileCompletion.success") });
                 localStorage.removeItem("isFirstAccess");
                 setTimeout(() => {
                   window.location.href = "/explore";
                 }, 2000);
-              } catch (error: any) {
-                setErrorMessage(error.message);
-                setShowError(true);
+              } catch (error) {
+                const message = updateUserErrorMessage(error as AppError, t);
+                toast({ variant: "destructive", description: message });
               } finally {
                 setSubmitting(false);
               }
@@ -272,16 +265,6 @@ const ProfileCompletion: React.FC = () => {
             )}
           </Formik>
         </CardContent>
-        <ErrorSnackbar
-          message={errorMessage}
-          visible={showError}
-          onDismiss={() => setShowError(false)}
-        />
-        <SuccessSnackbar
-          message={successMessage}
-          visible={showSuccess}
-          onDismiss={() => setShowSuccess(false)}
-        />
       </Card>
     </div>
   );
