@@ -87,3 +87,18 @@ export function forgotPasswordErrorMessage(error: AppError, t: TFunction) {
 
   return t("errors.generic.UNKNOWN_ERROR")
 }
+
+export function resetPasswordErrorMessage(error: AppError, t: TFunction) {
+  const featureKey = `errors.auth.${error.code}`
+  if (t(featureKey, { defaultValue: "" })) {
+    return t(featureKey, error.details)
+  }
+
+  if (error.status) {
+    return t(`errors.http.${error.status}`, {
+      defaultValue: t("errors.generic.UNKNOWN_ERROR"),
+    })
+  }
+
+  return t("errors.generic.UNKNOWN_ERROR")
+}

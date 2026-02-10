@@ -18,8 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AuthGateway } from "@/lib/AuthGateway";
-import { useSignup } from "@/api/auth/api";
-import { signupErrorMessage } from "@/api/auth/errors";
+import { useSignup, useResetPassword } from "@/api/auth/api";
+import { signupErrorMessage, resetPasswordErrorMessage } from "@/api/auth/errors";
 import { AppError } from "@/api/errors";
 import { toast } from "@/hooks/use-toast";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
@@ -65,6 +65,7 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
 
   const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
   const { mutateAsync: signup } = useSignup();
+  const { mutateAsync: resetPassword } = useResetPassword();
 
   const commonValidations = createCommonValidations(t);
 
@@ -121,7 +122,7 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
             if (isPasswordReset) {
               try {
                 const resetData = values as any;
-                await authGateway.resetPassword({
+                await resetPassword({
                   token: resetToken || "",
                   password: resetData.password,
                 });
@@ -129,9 +130,9 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                 setSuccessMessage(t('signup.passwordReset.success'));
                 setShowSuccess(true);
                 setTimeout(() => onNext(), 2000);
-              } catch (error: any) {
-                setErrorMessage(error.message);
-                setShowError(true);
+              } catch (error) {
+                const message = resetPasswordErrorMessage(error as AppError, t);
+                toast({ variant: "destructive", description: message });
               } finally {
                 setSubmitting(false);
               }

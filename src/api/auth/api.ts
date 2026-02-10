@@ -166,3 +166,26 @@ export function useForgotPassword() {
     },
   })
 }
+
+export interface ResetPasswordRequest {
+  token: string
+  password: string
+}
+
+export interface ResetPasswordResponse {
+  message: string
+  email: string
+}
+
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: async (data: ResetPasswordRequest) => {
+      try {
+        const res = await api.post("/public/reset-password", data)
+        return res.data as ResetPasswordResponse
+      } catch (error) {
+        throw normalizeApiError(error)
+      }
+    },
+  })
+}
