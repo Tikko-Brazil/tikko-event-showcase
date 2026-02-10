@@ -1182,6 +1182,9 @@
       "AUTH_METHOD_FACEBOOK": "Esta conta foi registrada com Facebook. Por favor, faça login com Facebook.",
       "AUTH_METHOD_APPLE": "Esta conta foi registrada com Apple. Por favor, faça login com Apple.",
       "OAUTH_EXCHANGE_FAILED": "Não foi possível completar o login com este provedor. Por favor, tente novamente.",
+      "MISSING_REQUIRED_FIELDS": "Por favor, preencha todos os campos obrigatórios (email, nome de usuário e senha).",
+      "WEAK_PASSWORD": "A senha deve ter pelo menos 8 caracteres e incluir: letra maiúscula, letra minúscula, número e caractere especial.",
+      "USER_ALREADY_EXISTS": "Já existe uma conta com este email. Por favor, faça login.",
       "INTERNAL_SERVER_ERROR": "Erro no servidor. Por favor, tente novamente mais tarde."
     }
   }

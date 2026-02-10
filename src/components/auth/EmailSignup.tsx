@@ -18,6 +18,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AuthGateway } from "@/lib/AuthGateway";
+import { useSignup } from "@/api/auth/api";
+import { signupErrorMessage } from "@/api/auth/errors";
+import { AppError } from "@/api/errors";
+import { toast } from "@/hooks/use-toast";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
 import SuccessSnackbar from "@/components/SuccessSnackbar";
 import { createCommonValidations, PHONE_MASK } from "@/lib/validationSchemas";
@@ -60,6 +64,7 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
   const [showSuccess, setShowSuccess] = React.useState(false);
 
   const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const { mutateAsync: signup } = useSignup();
 
   const commonValidations = createCommonValidations(t);
 
@@ -135,13 +140,13 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
 
             try {
               const signupData = values as any;
-              await authGateway.signup({
+              await signup({
                 email: signupData.email,
                 username: signupData.fullName,
                 password: signupData.password,
                 gender: signupData.gender,
                 phone_number: signupData.phone,
-                location: "", // Add location field if needed
+                location: "",
                 bio: signupData.bio,
                 instagram_profile: signupData.instagram,
               });
@@ -151,9 +156,9 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
               );
               setShowSuccess(true);
               setTimeout(() => onNext(signupData.email), 2000);
-            } catch (error: any) {
-              setErrorMessage(error.message);
-              setShowError(true);
+            } catch (error) {
+              const message = signupErrorMessage(error as AppError, t);
+              toast({ variant: "destructive", description: message });
             } finally {
               setSubmitting(false);
             }

@@ -35,12 +35,42 @@ export interface ExchangeResponse {
   token_pair: TokenPair
 }
 
+export interface SignupRequest {
+  email: string
+  username: string
+  password: string
+  gender: string
+  phone_number: string
+  location: string
+  bio: string
+  instagram_profile: string
+}
+
+export interface SignupResponse {
+  message: string
+  email: string
+  next_regenerate_in: number
+}
+
 export function useExchange() {
   return useMutation({
     mutationFn: async (data: ExchangeRequest) => {
       try {
         const res = await api.post("/public/login/exchange", data)
         return res.data as ExchangeResponse
+      } catch (error) {
+        throw normalizeApiError(error)
+      }
+    },
+  })
+}
+
+export function useSignup() {
+  return useMutation({
+    mutationFn: async (data: SignupRequest) => {
+      try {
+        const res = await api.post("/public/signup", data)
+        return res.data as SignupResponse
       } catch (error) {
         throw normalizeApiError(error)
       }
