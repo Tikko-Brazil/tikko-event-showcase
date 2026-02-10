@@ -1109,5 +1109,34 @@
     "loading": "Loading...",
     "error": "Error",
     "back": "Back"
+  },
+  "errors": {
+    "http": {
+      "401": "Unauthorized. Please log in again.",
+      "403": "You don't have permission to perform this action.",
+      "404": "Resource not found.",
+      "500": "Internal server error. Please try again later."
+    },
+    "generic": {
+      "NETWORK_ERROR": "Network error. Please check your connection.",
+      "UNKNOWN_ERROR": "An unexpected error occurred."
+    },
+    "user": {
+      "INVALID_REQUEST": "Invalid request. Please check all required fields.",
+      "INVALID_EMAIL": "Please enter a valid email address (e.g., user@example.com).",
+      "INVALID_PHONE_NUMBER": "Please enter a valid phone number with country code (e.g., +55 11 99999-9999 for Brazil).",
+      "INVALID_USERNAME": "Username must be between 2 and 50 characters and contain your full name.",
+      "INVALID_GENDER": "Please select a valid gender option.",
+      "INSTAGRAM_PROFILE_REQUIRED": "Instagram username is required. Enter your username without the @ symbol (e.g., yourusername).",
+      "INVALID_EVENT_ID": "Invalid event. Please try again or contact support.",
+      "INVALID_TICKET_PRICING_ID": "Invalid ticket type. Please select a valid ticket option.",
+      "USER_NOT_FOUND": "User not found.",
+      "EVENT_NOT_FOUND": "Event not found. It may have been removed or is no longer available.",
+      "DUPLICATE_TICKET": "You already have a ticket for this event.",
+      "DUPLICATE_INVITE": "You already have a pending invite for this event.",
+      "INVITE_REJECTED": "Your invite for this event was previously rejected.",
+      "PAYMENT_FAILED": "Payment processing failed. Please check your payment details and try again.",
+      "INTERNAL_SERVER_ERROR": "Server error. Please try again later."
+    }
   }
 }
