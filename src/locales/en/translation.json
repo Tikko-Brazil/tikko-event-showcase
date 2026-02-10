@@ -1148,6 +1148,12 @@
       "COUPON_INACTIVE": "This coupon is not active.",
       "COUPON_EXPIRED": "This coupon has expired.",
       "COUPON_INVALID_TICKET_TYPE": "This coupon is not valid for the selected ticket type."
+    },
+    "event": {
+      "INVALID_REQUEST": "Unable to load events. Please try again.",
+      "INVALID_PAGINATION": "Invalid page number. Please try again.",
+      "INVALID_ACTIVE_FILTER": "Invalid filter option. Please try again.",
+      "INTERNAL_SERVER_ERROR": "Server error. Please try again later."
     }
   }
 }

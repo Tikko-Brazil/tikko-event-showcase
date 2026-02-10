@@ -1165,6 +1165,12 @@
       "COUPON_INACTIVE": "Este cupom não está ativo.",
       "COUPON_EXPIRED": "Este cupom expirou.",
       "COUPON_INVALID_TICKET_TYPE": "Este cupom não é válido para o tipo de ingresso selecionado."
+    },
+    "event": {
+      "INVALID_REQUEST": "Não foi possível carregar os eventos. Por favor, tente novamente.",
+      "INVALID_PAGINATION": "Número de página inválido. Por favor, tente novamente.",
+      "INVALID_ACTIVE_FILTER": "Opção de filtro inválida. Por favor, tente novamente.",
+      "INTERNAL_SERVER_ERROR": "Erro no servidor. Por favor, tente novamente mais tarde."
     }
   }
 }
