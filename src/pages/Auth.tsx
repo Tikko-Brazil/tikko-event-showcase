@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,6 +17,10 @@ import EmailLogin from "@/components/auth/EmailLogin";
 import VerificationScreen from "@/components/auth/VerificationScreen";
 import ForgotPassword from "@/components/auth/ForgotPassword";
 import { AuthGateway } from "@/lib/AuthGateway";
+import { useExchange } from "@/api/auth/api";
+import { exchangeErrorMessage } from "@/api/auth/errors";
+import { AppError } from "@/api/errors";
+import { toast } from "@/hooks/use-toast";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
 import SuccessSnackbar from "@/components/SuccessSnackbar";
 
@@ -29,6 +34,7 @@ export type AuthScreen =
   | "new-password";
 
 const Auth = () => {
+  const { t } = useTranslation();
   const [currentScreen, setCurrentScreen] = useState<AuthScreen>("entry");
   const [userEmail, setUserEmail] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -39,6 +45,7 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
 
   const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const { mutateAsync: exchange } = useExchange();
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -96,7 +103,7 @@ const Auth = () => {
     }`;
 
     try {
-      const data = await authGateway.exchange({
+      const data = await exchange({
         code,
         redirectUri,
         codeVerifier: codeVerifier || "",
@@ -114,10 +121,9 @@ const Auth = () => {
       } else {
         window.location.href = "/explore";
       }
-    } catch (error: any) {
-      console.error("OAuth exchange failed:", error);
-      setErrorMessage(`Authentication failed: ${error.message}`);
-      setShowError(true);
+    } catch (error) {
+      const message = exchangeErrorMessage(error as AppError, t);
+      toast({ variant: "destructive", description: message });
       setIsGoogleLoading(false);
     }
   };

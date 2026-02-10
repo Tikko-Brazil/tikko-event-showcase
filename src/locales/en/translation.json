@@ -1154,6 +1154,18 @@
       "INVALID_PAGINATION": "Invalid page number. Please try again.",
       "INVALID_ACTIVE_FILTER": "Invalid filter option. Please try again.",
       "INTERNAL_SERVER_ERROR": "Server error. Please try again later."
+    },
+    "auth": {
+      "INVALID_REQUEST": "Unable to complete sign in. Please try again.",
+      "MISSING_CODE": "Authentication code is missing. Please try signing in again.",
+      "MISSING_CODE_VERIFIER": "Authentication verification failed. Please try signing in again.",
+      "UNSUPPORTED_IDENTITY_PROVIDER": "This sign-in method is not supported. Please use a different method.",
+      "AUTH_METHOD_PASSWORD": "This account is registered with email and password. Please sign in with your password.",
+      "AUTH_METHOD_GOOGLE": "This account is registered with Google. Please sign in with Google.",
+      "AUTH_METHOD_FACEBOOK": "This account is registered with Facebook. Please sign in with Facebook.",
+      "AUTH_METHOD_APPLE": "This account is registered with Apple. Please sign in with Apple.",
+      "OAUTH_EXCHANGE_FAILED": "Unable to complete sign in with this provider. Please try again.",
+      "INTERNAL_SERVER_ERROR": "Server error. Please try again later."
     }
   }
 }

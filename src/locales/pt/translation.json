@@ -1171,6 +1171,18 @@
       "INVALID_PAGINATION": "Número de página inválido. Por favor, tente novamente.",
       "INVALID_ACTIVE_FILTER": "Opção de filtro inválida. Por favor, tente novamente.",
       "INTERNAL_SERVER_ERROR": "Erro no servidor. Por favor, tente novamente mais tarde."
+    },
+    "auth": {
+      "INVALID_REQUEST": "Não foi possível completar o login. Por favor, tente novamente.",
+      "MISSING_CODE": "Código de autenticação ausente. Por favor, tente fazer login novamente.",
+      "MISSING_CODE_VERIFIER": "Falha na verificação de autenticação. Por favor, tente fazer login novamente.",
+      "UNSUPPORTED_IDENTITY_PROVIDER": "Este método de login não é suportado. Por favor, use um método diferente.",
+      "AUTH_METHOD_PASSWORD": "Esta conta foi registrada com email e senha. Por favor, faça login com sua senha.",
+      "AUTH_METHOD_GOOGLE": "Esta conta foi registrada com Google. Por favor, faça login com Google.",
+      "AUTH_METHOD_FACEBOOK": "Esta conta foi registrada com Facebook. Por favor, faça login com Facebook.",
+      "AUTH_METHOD_APPLE": "Esta conta foi registrada com Apple. Por favor, faça login com Apple.",
+      "OAUTH_EXCHANGE_FAILED": "Não foi possível completar o login com este provedor. Por favor, tente novamente.",
+      "INTERNAL_SERVER_ERROR": "Erro no servidor. Por favor, tente novamente mais tarde."
     }
   }
 }
