@@ -1168,6 +1168,8 @@
       "MISSING_REQUIRED_FIELDS": "Please fill in all required fields (email, username, and password).",
       "WEAK_PASSWORD": "Password must be at least 8 characters and include: uppercase letter, lowercase letter, number, and special character.",
       "USER_ALREADY_EXISTS": "An account with this email already exists. Please sign in instead.",
+      "MISSING_REFRESH_TOKEN": "Session expired. Please sign in again.",
+      "INVALID_REFRESH_TOKEN": "Your session has expired. Please sign in again.",
       "INTERNAL_SERVER_ERROR": "Server error. Please try again later."
     }
   }

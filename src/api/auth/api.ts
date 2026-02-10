@@ -52,6 +52,14 @@ export interface SignupResponse {
   next_regenerate_in: number
 }
 
+export interface RefreshRequest {
+  refresh_token: string
+}
+
+export interface RefreshResponse {
+  token_pair: TokenPair
+}
+
 export function useExchange() {
   return useMutation({
     mutationFn: async (data: ExchangeRequest) => {
@@ -71,6 +79,19 @@ export function useSignup() {
       try {
         const res = await api.post("/public/signup", data)
         return res.data as SignupResponse
+      } catch (error) {
+        throw normalizeApiError(error)
+      }
+    },
+  })
+}
+
+export function useRefresh() {
+  return useMutation({
+    mutationFn: async (data: RefreshRequest) => {
+      try {
+        const res = await api.post("/public/login/refresh", data)
+        return res.data as RefreshResponse
       } catch (error) {
         throw normalizeApiError(error)
       }

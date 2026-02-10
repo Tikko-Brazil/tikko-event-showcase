@@ -1185,6 +1185,8 @@
       "MISSING_REQUIRED_FIELDS": "Por favor, preencha todos os campos obrigatórios (email, nome de usuário e senha).",
       "WEAK_PASSWORD": "A senha deve ter pelo menos 8 caracteres e incluir: letra maiúscula, letra minúscula, número e caractere especial.",
       "USER_ALREADY_EXISTS": "Já existe uma conta com este email. Por favor, faça login.",
+      "MISSING_REFRESH_TOKEN": "Sessão expirada. Por favor, faça login novamente.",
+      "INVALID_REFRESH_TOKEN": "Sua sessão expirou. Por favor, faça login novamente.",
       "INTERNAL_SERVER_ERROR": "Erro no servidor. Por favor, tente novamente mais tarde."
     }
   }
