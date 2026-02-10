@@ -774,6 +774,26 @@
       "unknown": "Erro desconhecido"
     }
   },
+  "forgotPassword": {
+    "success": "Link de redefinição de senha enviado para seu email!"
+  },
+  "auth": {
+    "welcome": {
+      "title": "Bem-vindo à Tikko",
+      "subtitle": "Sua plataforma para eventos incríveis"
+    },
+    "buttons": {
+      "createAccount": "Criar Conta",
+      "signIn": "Entrar",
+      "continueWithGoogle": "Continuar com Google",
+      "signingIn": "Entrando...",
+      "back": "Voltar",
+      "home": "Início"
+    },
+    "divider": {
+      "or": "ou"
+    }
+  },
   "signup": {
     "title": "Criar Conta",
     "subtitle": "Preencha seus dados para começar",
@@ -829,8 +849,15 @@
       "submit": "Criar Conta",
       "submitting": "Criando...",
       "showPassword": "Mostrar senha",
-      "hidePassword": "Ocultar senha"
+      "hidePassword": "Ocultar senha",
+      "resetPassword": "Redefinir"
     },
+    "passwordReset": {
+      "title": "Definir Nova Senha",
+      "subtitle": "Digite sua nova senha abaixo",
+      "success": "Senha atualizada com sucesso!"
+    },
+    "verificationSent": "Código de verificação enviado para seu email!",
     "links": {
       "hasAccount": "Já tem uma conta?",
       "signIn": "Entrar"
@@ -1190,6 +1217,9 @@
       "INVALID_CREDENTIALS": "Email ou senha inválidos. Por favor, tente novamente.",
       "EMAIL_NOT_VERIFIED": "Por favor, verifique seu email antes de fazer login. Verifique sua caixa de entrada para o código de verificação.",
       "PASSWORD_NOT_SET": "Por favor, cadastre-se primeiro para criar sua conta e definir uma senha.",
+      "MISSING_EMAIL": "Por favor, forneça seu endereço de email.",
+      "PASSWORD_RESET_RATE_LIMITED": "Por favor, aguarde {{minutes}} minutos antes de solicitar outra redefinição de senha.",
+      "TOO_MANY_PASSWORD_RESET_ATTEMPTS": "Muitas tentativas de redefinição de senha. Por favor, tente novamente em {{hours}} horas.",
       "MISSING_REFRESH_TOKEN": "Sessão expirada. Por favor, faça login novamente.",
       "INVALID_REFRESH_TOKEN": "Sua sessão expirou. Por favor, faça login novamente.",
       "INVALID_VERIFICATION_CODE": "O código de verificação está incorreto. Por favor, verifique e tente novamente.",

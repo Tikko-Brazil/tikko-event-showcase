@@ -80,6 +80,15 @@ export interface LoginResponse {
   token_pair: TokenPair
 }
 
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ForgotPasswordResponse {
+  message: string
+  email: string
+}
+
 export function useExchange() {
   return useMutation({
     mutationFn: async (data: ExchangeRequest) => {
@@ -138,6 +147,19 @@ export function useLogin() {
       try {
         const res = await api.post("/public/login", data)
         return res.data as LoginResponse
+      } catch (error) {
+        throw normalizeApiError(error)
+      }
+    },
+  })
+}
+
+export function useForgotPassword() {
+  return useMutation({
+    mutationFn: async (data: ForgotPasswordRequest) => {
+      try {
+        const res = await api.post("/public/forgot-password", data)
+        return res.data as ForgotPasswordResponse
       } catch (error) {
         throw normalizeApiError(error)
       }

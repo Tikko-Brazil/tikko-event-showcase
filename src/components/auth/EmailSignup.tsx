@@ -105,11 +105,11 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">
-          {isPasswordReset ? "Definir Nova Senha" : t('signup.title')}
+          {isPasswordReset ? t('signup.passwordReset.title') : t('signup.title')}
         </CardTitle>
         <CardDescription>
           {isPasswordReset
-            ? "Digite sua nova senha abaixo"
+            ? t('signup.passwordReset.subtitle')
             : t('signup.subtitle')}
         </CardDescription>
       </CardHeader>
@@ -126,7 +126,7 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
                   password: resetData.password,
                 });
 
-                setSuccessMessage("Senha atualizada com sucesso!");
+                setSuccessMessage(t('signup.passwordReset.success'));
                 setShowSuccess(true);
                 setTimeout(() => onNext(), 2000);
               } catch (error: any) {
@@ -152,7 +152,7 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
               });
 
               setSuccessMessage(
-                "Código de verificação enviado para seu email!"
+                t('signup.verificationSent')
               );
               setShowSuccess(true);
               setTimeout(() => onNext(signupData.email), 2000);
@@ -456,6 +456,8 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
               >
                 {isSubmitting
                   ? t("signup.buttons.submitting")
+                  : isPasswordReset
+                  ? t("signup.buttons.resetPassword")
                   : t("signup.buttons.submit")}
               </Button>
 

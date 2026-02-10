@@ -757,6 +757,26 @@
       "unknown": "Unknown error"
     }
   },
+  "forgotPassword": {
+    "success": "Password reset link sent to your email!"
+  },
+  "auth": {
+    "welcome": {
+      "title": "Welcome to Tikko",
+      "subtitle": "Your gateway to amazing events"
+    },
+    "buttons": {
+      "createAccount": "Create Account",
+      "signIn": "Sign In",
+      "continueWithGoogle": "Continue with Google",
+      "signingIn": "Signing in...",
+      "back": "Back",
+      "home": "Home"
+    },
+    "divider": {
+      "or": "or"
+    }
+  },
   "signup": {
     "title": "Create Account",
     "subtitle": "Fill in your details to get started",
@@ -812,8 +832,15 @@
       "submit": "Create Account",
       "submitting": "Creating...",
       "showPassword": "Show password",
-      "hidePassword": "Hide password"
+      "hidePassword": "Hide password",
+      "resetPassword": "Reset Password"
     },
+    "passwordReset": {
+      "title": "Set New Password",
+      "subtitle": "Enter your new password below",
+      "success": "Password updated successfully!"
+    },
+    "verificationSent": "Verification code sent to your email!",
     "links": {
       "hasAccount": "Already have an account?",
       "signIn": "Sign In"
@@ -1173,6 +1200,9 @@
       "INVALID_CREDENTIALS": "Invalid email or password. Please try again.",
       "EMAIL_NOT_VERIFIED": "Please verify your email before signing in. Check your inbox for the verification code.",
       "PASSWORD_NOT_SET": "Please sign up first to create your account and set a password.",
+      "MISSING_EMAIL": "Please provide your email address.",
+      "PASSWORD_RESET_RATE_LIMITED": "Please wait {{minutes}} minutes before requesting another password reset.",
+      "TOO_MANY_PASSWORD_RESET_ATTEMPTS": "Too many password reset attempts. Please try again in {{hours}} hours.",
       "MISSING_REFRESH_TOKEN": "Session expired. Please sign in again.",
       "INVALID_REFRESH_TOKEN": "Your session has expired. Please sign in again.",
       "INVALID_VERIFICATION_CODE": "The verification code is incorrect. Please check and try again.",

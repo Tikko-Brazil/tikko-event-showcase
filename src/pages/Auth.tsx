@@ -175,9 +175,9 @@ const Auth = () => {
             <CardHeader className="text-center">
               <img src={logoLight} alt="Tikko" className="h-12 mx-auto mb-4" />
               <CardTitle className="text-2xl font-bold">
-                Welcome to Tikko
+                {t('auth.welcome.title')}
               </CardTitle>
-              <CardDescription>Your gateway to amazing events</CardDescription>
+              <CardDescription>{t('auth.welcome.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Button
@@ -185,7 +185,7 @@ const Auth = () => {
                 className="w-full h-12 text-lg"
                 size="lg"
               >
-                Create Account
+                {t('auth.buttons.createAccount')}
               </Button>
               <Button
                 onClick={() => setCurrentScreen("login")}
@@ -193,13 +193,13 @@ const Auth = () => {
                 className="w-full h-12 text-lg"
                 size="lg"
               >
-                Sign In
+                {t('auth.buttons.signIn')}
               </Button>
 
               <div className="relative my-6">
                 <Separator />
                 <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-muted-foreground text-sm">
-                  or
+                  {t('auth.divider.or')}
                 </span>
               </div>
 
@@ -211,7 +211,7 @@ const Auth = () => {
                 disabled={isGoogleLoading}
               >
                 <Mail className="mr-2 h-5 w-5" />
-                {isGoogleLoading ? "Signing in..." : "Continue with Google"}
+                {isGoogleLoading ? t('auth.buttons.signingIn') : t('auth.buttons.continueWithGoogle')}
               </Button>
             </CardContent>
           </Card>
@@ -302,7 +302,7 @@ const Auth = () => {
               className="hover:bg-accent"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
+              {t('auth.buttons.back')}
             </Button>
           ) : (
             <div></div>
@@ -310,7 +310,7 @@ const Auth = () => {
           <Button variant="ghost" asChild className="hover:bg-accent">
             <Link to="/">
               <Home className="mr-2 h-4 w-4" />
-              Home
+              {t('auth.buttons.home')}
             </Link>
           </Button>
         </div>
