@@ -1139,14 +1139,14 @@
       "UNKNOWN_ERROR": "Ocorreu um erro inesperado."
     },
     "user": {
-      "INVALID_REQUEST": "Requisição inválida. Por favor, verifique todos os campos obrigatórios.",
+      "INVALID_REQUEST": "Por favor, verifique todos os campos obrigatórios e tente novamente.",
       "INVALID_EMAIL": "Por favor, insira um endereço de email válido (ex: usuario@exemplo.com).",
       "INVALID_PHONE_NUMBER": "Por favor, insira um número de telefone válido com código do país (ex: +55 11 99999-9999 para Brasil).",
       "INVALID_USERNAME": "O nome de usuário deve ter entre 2 e 50 caracteres e conter seu nome completo.",
       "INVALID_GENDER": "Por favor, selecione uma opção de gênero válida.",
       "INSTAGRAM_PROFILE_REQUIRED": "Nome de usuário do Instagram é obrigatório. Insira seu usuário sem o símbolo @ (ex: seuusuario).",
-      "INVALID_EVENT_ID": "Evento inválido. Por favor, tente novamente ou entre em contato com o suporte.",
-      "INVALID_TICKET_PRICING_ID": "Tipo de ingresso inválido. Por favor, selecione uma opção de ingresso válida.",
+      "INVALID_EVENT_ID": "Algo deu errado com a seleção do evento. Por favor, tente novamente ou entre em contato com o suporte.",
+      "INVALID_TICKET_PRICING_ID": "Algo deu errado com a seleção do ingresso. Por favor, tente novamente.",
       "USER_NOT_FOUND": "Usuário não encontrado.",
       "EVENT_NOT_FOUND": "Evento não encontrado. Ele pode ter sido removido ou não está mais disponível.",
       "DUPLICATE_TICKET": "Você já possui um ingresso para este evento.",
@@ -1154,6 +1154,17 @@
       "INVITE_REJECTED": "Seu convite para este evento foi rejeitado anteriormente.",
       "PAYMENT_FAILED": "Falha no processamento do pagamento. Por favor, verifique seus dados de pagamento e tente novamente.",
       "INTERNAL_SERVER_ERROR": "Erro no servidor. Por favor, tente novamente mais tarde."
+    },
+    "coupon": {
+      "INVALID_REQUEST": "Não foi possível aplicar o cupom. Por favor, verifique o código e tente novamente.",
+      "INVALID_TICKET_PRICING_ID": "Algo deu errado com a seleção do ingresso. Por favor, tente novamente.",
+      "INVALID_EVENT_ID": "Algo deu errado com a seleção do evento. Por favor, tente novamente ou entre em contato com o suporte.",
+      "VALIDATION_FAILED": "Não foi possível validar o cupom. Por favor, tente novamente.",
+      "COUPON_NOT_FOUND": "Código de cupom não encontrado. Por favor, verifique o código e tente novamente.",
+      "REQUEST_TIMEOUT": "Tempo de espera esgotado. Por favor, tente novamente.",
+      "COUPON_INACTIVE": "Este cupom não está ativo.",
+      "COUPON_EXPIRED": "Este cupom expirou.",
+      "COUPON_INVALID_TICKET_TYPE": "Este cupom não é válido para o tipo de ingresso selecionado."
     }
   }
 }

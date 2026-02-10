@@ -123,3 +123,7 @@ function MyComponent() {
 3. **Feature errors localized** - Specific messages per error code
 4. **Type safety** - Proper TypeScript types throughout
 5. **Automatic token refresh** - apiAuth handles 401 transparently
+6. **User-friendly messages** - Avoid technical jargon (e.g., "request", "validation failed")
+   - ❌ "Invalid request" → ✅ "Please check all required fields"
+   - ❌ "Validation failed" → ✅ "Unable to validate"
+   - Focus on what the user needs to do, not technical details

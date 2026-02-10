@@ -1122,14 +1122,14 @@
       "UNKNOWN_ERROR": "An unexpected error occurred."
     },
     "user": {
-      "INVALID_REQUEST": "Invalid request. Please check all required fields.",
+      "INVALID_REQUEST": "Please check all required fields and try again.",
       "INVALID_EMAIL": "Please enter a valid email address (e.g., user@example.com).",
       "INVALID_PHONE_NUMBER": "Please enter a valid phone number with country code (e.g., +55 11 99999-9999 for Brazil).",
       "INVALID_USERNAME": "Username must be between 2 and 50 characters and contain your full name.",
       "INVALID_GENDER": "Please select a valid gender option.",
       "INSTAGRAM_PROFILE_REQUIRED": "Instagram username is required. Enter your username without the @ symbol (e.g., yourusername).",
-      "INVALID_EVENT_ID": "Invalid event. Please try again or contact support.",
-      "INVALID_TICKET_PRICING_ID": "Invalid ticket type. Please select a valid ticket option.",
+      "INVALID_EVENT_ID": "Something went wrong with the event selection. Please try again or contact support.",
+      "INVALID_TICKET_PRICING_ID": "Something went wrong with the ticket selection. Please try again.",
       "USER_NOT_FOUND": "User not found.",
       "EVENT_NOT_FOUND": "Event not found. It may have been removed or is no longer available.",
       "DUPLICATE_TICKET": "You already have a ticket for this event.",
@@ -1137,6 +1137,17 @@
       "INVITE_REJECTED": "Your invite for this event was previously rejected.",
       "PAYMENT_FAILED": "Payment processing failed. Please check your payment details and try again.",
       "INTERNAL_SERVER_ERROR": "Server error. Please try again later."
+    },
+    "coupon": {
+      "INVALID_REQUEST": "Unable to apply coupon. Please check the code and try again.",
+      "INVALID_TICKET_PRICING_ID": "Something went wrong with the ticket selection. Please try again.",
+      "INVALID_EVENT_ID": "Something went wrong with the event selection. Please try again or contact support.",
+      "VALIDATION_FAILED": "Unable to validate coupon. Please try again.",
+      "COUPON_NOT_FOUND": "Coupon code not found. Please check the code and try again.",
+      "REQUEST_TIMEOUT": "Request timed out. Please try again.",
+      "COUPON_INACTIVE": "This coupon is not active.",
+      "COUPON_EXPIRED": "This coupon has expired.",
+      "COUPON_INVALID_TICKET_TYPE": "This coupon is not valid for the selected ticket type."
     }
   }
 }
