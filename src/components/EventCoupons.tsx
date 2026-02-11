@@ -34,7 +34,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Plus, Edit, Save } from "lucide-react";
+import { Plus, Edit, Save, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { SearchAndFilter } from "./SearchAndFilter";
 import { Pagination } from "./Pagination";
 import { useListCoupons, useCreateCoupon, useUpdateCoupon, useDeleteCoupon } from "@/api/coupon/api";
@@ -561,119 +572,109 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
         searchInputRef={searchInputRef}
       />
 
-      <Card>
-        <CardHeader>
-          <CardDescription>
-            Mostrando {from + 1}-{to} de {totalItems} cupons
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Mobile Header - Visible only on mobile */}
-            <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground border-b pb-2 md:hidden">
-              <span className="col-span-4">{t("eventManagement.coupons.table.code")}</span>
-              <span className="col-span-2">{t("eventManagement.coupons.table.value")}</span>
-              <span className="col-span-2">{t("eventManagement.coupons.table.currentUsage")}</span>
-              <span className="col-span-2 text-center">{t("eventManagement.coupons.table.status")}</span>
-              <span className="col-span-1 text-center">{t("eventManagement.coupons.table.actions")}</span>
-            </div>
-
-            {/* Desktop Header - Hidden on mobile */}
-            <div className="hidden md:grid md:grid-cols-12 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
-              <span className="col-span-4">{t("eventManagement.coupons.table.code")}</span>
-              <span className="col-span-2">{t("eventManagement.coupons.table.value")}</span>
-              <span className="col-span-3">{t("eventManagement.coupons.table.currentUsage")}</span>
-              <span className="col-span-2 text-center">{t("eventManagement.coupons.table.status")}</span>
-              <span className="col-span-1 text-center">{t("eventManagement.coupons.table.actions")}</span>
-            </div>
-
-            <div className="space-y-2">
-              {paginatedCoupons.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  {t("eventManagement.coupons.noCouponsFound")}
-                </div>
-              ) : (
-                paginatedCoupons.map((coupon, index) => (
-                  <div
-                    key={`${coupon.id}-${couponPage}-${index}`}
-                    className="grid grid-cols-12 gap-2 md:gap-4 text-sm py-3 border-b border-border/50 last:border-0 items-center"
-                  >
-                    {/* Code */}
-                    <div className="col-span-4 md:col-span-4">
-                      <span className="font-mono font-medium text-xs md:text-sm break-all">
-                        {coupon.code}
-                      </span>
-                    </div>
-
-                    {/* Value */}
-                    <div className="col-span-2 md:col-span-2">
-                      <span className="text-xs md:text-sm">
+      {/* Coupons Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {paginatedCoupons.length === 0 ? (
+          <div className="col-span-full text-center py-12 text-muted-foreground">
+            {t("eventManagement.coupons.noCouponsFound")}
+          </div>
+        ) : (
+          paginatedCoupons.map((coupon) => (
+            <Card key={coupon.id} className="relative">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg font-mono break-all">
+                      {coupon.code}
+                    </CardTitle>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge
+                        variant={coupon.active ? "default" : "secondary"}
+                      >
+                        {coupon.active
+                          ? t("eventManagement.coupons.status.active")
+                          : t("eventManagement.coupons.status.inactive")}
+                      </Badge>
+                      <Badge variant="outline">
                         {coupon.discount_type === "percentage"
-                          ? `${coupon.discount_value}%`
-                          : formatCurrency(coupon.discount_value)}
-                      </span>
-                    </div>
-
-                    {/* Usage */}
-                    <div className="col-span-2 md:col-span-3">
-                      <div className="text-xs md:text-sm">
-                        {coupon.used_count}/{coupon.max_uses}
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-1 mt-1">
-                        <div
-                          className="bg-primary h-1 rounded-full"
-                          style={{
-                            width: `${(coupon.used_count / coupon.max_uses) * 100
-                              }%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Status */}
-                    <div className="col-span-2 md:col-span-2">
-                      {/* Mobile: Visual indicator only */}
-                      <div className="md:hidden flex items-center justify-center">
-                        <div
-                          className={`w-3 h-3 rounded-full ${coupon.active ? "bg-green-500" : "bg-gray-400"
-                            }`}
-                          title={coupon.active
-                            ? t("eventManagement.coupons.status.active")
-                            : t("eventManagement.coupons.status.inactive")}
-                        />
-                      </div>
-                      {/* Desktop: Badge with text */}
-                      <div className="hidden md:flex md:items-center md:justify-center">
-                        <Badge
-                          variant={coupon.active ? "default" : "secondary"}
-                        >
-                          {coupon.active
-                            ? t("eventManagement.coupons.status.active")
-                            : t("eventManagement.coupons.status.inactive")}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="col-span-1 md:col-span-1">
-                      <div className="flex items-center justify-center">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onEditCoupon(coupon)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit className="h-3 w-3 md:h-4 md:w-4" />
-                        </Button>
-                      </div>
+                          ? t("eventManagement.coupons.types.percentage")
+                          : t("eventManagement.coupons.types.fixed")}
+                      </Badge>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">
+                      {t("eventManagement.coupons.table.value")}
+                    </span>
+                    <span className="text-lg font-bold">
+                      {coupon.discount_type === "percentage"
+                        ? `${coupon.discount_value}%`
+                        : formatCurrency(coupon.discount_value)}
+                    </span>
+                  </div>
+                  <div className="mt-2">
+                    <div className="flex justify-between text-sm text-muted-foreground mb-1">
+                      <span>{t("eventManagement.coupons.table.currentUsage")}</span>
+                      <span className="font-medium">{coupon.used_count}/{coupon.max_uses} ({Math.round((coupon.used_count / coupon.max_uses) * 100)}%)</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full transition-all"
+                        style={{
+                          width: `${Math.min((coupon.used_count / coupon.max_uses) * 100, 100)}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => onEditCoupon(coupon)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    {t("eventManagement.coupons.actions.edit")}
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          {t("eventManagement.coupons.deleteDialog.title")}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {t("eventManagement.coupons.deleteDialog.description")}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>
+                          {t("eventManagement.coupons.deleteDialog.cancel")}
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          onClick={() => deleteCoupon(coupon.id)}
+                        >
+                          {t("eventManagement.coupons.deleteDialog.confirm")}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
 
       {/* Pagination */}
       <Pagination

@@ -417,6 +417,13 @@
         "edit": "Editar",
         "delete": "Excluir"
       },
+      "deleteConfirm": "Tem certeza que deseja excluir este cupom?",
+      "deleteDialog": {
+        "title": "Excluir Cupom",
+        "description": "Tem certeza que deseja excluir este cupom? Esta ação não pode ser desfeita.",
+        "cancel": "Cancelar",
+        "confirm": "Excluir"
+      },
       "createDialog": {
         "title": "Criar Novo Cupom",
         "description": "Adicione um novo cupom para seu evento",

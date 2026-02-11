@@ -411,6 +411,13 @@
         "edit": "Edit",
         "delete": "Delete"
       },
+      "deleteConfirm": "Are you sure you want to delete this coupon?",
+      "deleteDialog": {
+        "title": "Delete Coupon",
+        "description": "Are you sure you want to delete this coupon? This action cannot be undone.",
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
       "createDialog": {
         "title": "Create New Coupon",
         "description": "Add a new coupon for your event",
