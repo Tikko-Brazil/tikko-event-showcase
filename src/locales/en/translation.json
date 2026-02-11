@@ -85,11 +85,6 @@
         "conversionRate": "Conversion Rate",
         "averageAge": "Average Age"
       },
-      "stats": {
-        "conversionRate": "conversion rate",
-        "liquidRevenue": "liquid revenue",
-        "yearsOld": "years old"
-      },
       "recentActivity": {
         "title": "Recent Activity",
         "actions": {
@@ -705,58 +700,6 @@
       "description": "Are you sure you want to download this ticket as a PDF? You can print it or save it for offline access."
     }
   },
-  "auth": {
-    "errors": {
-      "exchange": {
-        "400": "Missing authorization code or code verifier",
-        "401": "Google authentication failed",
-        "500": "Server error during authentication"
-      },
-      "refresh": {
-        "400": "Missing refresh token",
-        "401": "Invalid or expired refresh token"
-      },
-      "signup": {
-        "400": "Invalid request or missing required fields",
-        "403": "Authentication method conflict (user already has account with different login type)",
-        "409": "User already exists with this email",
-        "422": "Password is too weak",
-        "500": "Server error during registration"
-      },
-      "verify": {
-        "400": "Invalid request or missing required fields",
-        "401": "Invalid verification code",
-        "404": "No verification record found",
-        "410": "Verification code expired or already used",
-        "429": "Too many verification attempts"
-      },
-      "regenerateCode": {
-        "400": "Missing email address",
-        "404": "User not found",
-        "409": "Email already verified",
-        "429": "Too many regeneration attempts or wait required"
-      },
-      "login": {
-        "400": "Invalid request or missing required fields",
-        "401": "Invalid credentials or email not verified",
-        "403": "Authentication method error"
-      },
-      "forgotPassword": {
-        "400": "Missing email address",
-        "409": "Cannot reset password for OAuth users",
-        "429": "Too many reset attempts or wait required",
-        "500": "Server error during password reset"
-      },
-      "resetPassword": {
-        "400": "Invalid request or missing required fields",
-        "404": "Invalid reset token or user not found",
-        "410": "Reset token expired or already used",
-        "422": "Password is too weak",
-        "500": "Server error during password reset"
-      },
-      "unknown": "Unknown error"
-    }
-  },
   "forgotPassword": {
     "success": "Password reset link sent to your email!"
   },
@@ -775,7 +718,8 @@
     },
     "divider": {
       "or": "or"
-    }
+    },
+    "sessionExpired": "Your session has expired. Please sign in again."
   },
   "verification": {
     "codeResent": "Verification code resent to your email!"
@@ -1187,6 +1131,12 @@
       "INVALID_PAGINATION": "Invalid page number. Please try again.",
       "INVALID_ACTIVE_FILTER": "Invalid filter option. Please try again.",
       "INTERNAL_SERVER_ERROR": "Server error. Please try again later."
+    },
+    "ticket": {
+      "MISSING_PAGINATION_PARAMS": "Page or limit parameter is missing",
+      "INVALID_PAGE_NUMBER": "Invalid page number",
+      "INVALID_LIMIT_NUMBER": "Invalid limit number. Must be between 1 and 100",
+      "INTERNAL_SERVER_ERROR": "Unable to load tickets. Please try again later"
     },
     "auth": {
       "INVALID_REQUEST": "Unable to complete sign in. Please try again.",

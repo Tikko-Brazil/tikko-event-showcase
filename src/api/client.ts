@@ -44,7 +44,7 @@ async function refreshAccessToken(): Promise<void> {
     } catch {
       localStorage.removeItem("accessToken")
       localStorage.removeItem("refreshToken")
-      window.location.href = "/auth"
+      window.location.href = "/login?session_expired=true"
       throw new Error("Token refresh failed")
     } finally {
       isRefreshing = false

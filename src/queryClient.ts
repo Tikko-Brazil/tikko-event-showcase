@@ -8,7 +8,7 @@ function handleGlobalError(error: unknown) {
 
   if (appError.status === 401) {
     localStorage.removeItem("authToken")
-    window.location.href = "/auth"
+    window.location.href = "/login?session_expired=true"
     toast({ variant: "destructive", description: i18n.t("errors.http.401") })
     return
   }

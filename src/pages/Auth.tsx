@@ -50,7 +50,15 @@ const Auth = () => {
     if (token) {
       setCurrentScreen("new-password");
     }
-  }, [searchParams]);
+
+    const sessionExpired = searchParams.get("session_expired");
+    if (sessionExpired === "true") {
+      toast({
+        variant: "destructive",
+        description: t("auth.sessionExpired"),
+      });
+    }
+  }, [searchParams, t]);
 
   const generateCodeVerifier = () => {
     const array = new Uint8Array(32);

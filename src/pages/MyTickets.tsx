@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { Calendar, Ticket, QrCode } from "lucide-react";
-import { TicketGateway } from "@/lib/TicketGateway";
+import { useGetUserTickets } from "@/api/ticket/api";
 import { formatEventDate } from "@/lib/utils";
 import { Pagination } from "@/components/Pagination";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -21,10 +20,6 @@ const MyTickets = () => {
   const [showQR, setShowQR] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ticketsPerPage = 9;
-
-  const ticketGateway = new TicketGateway(
-    import.meta.env.VITE_BACKEND_BASE_URL
-  );
 
   const formatTicketName = (ticket: any) => {
     const genderText =
@@ -41,15 +36,7 @@ const MyTickets = () => {
   };
 
   const { data: userTicketsResponse, isLoading: isLoadingUserTickets } =
-    useQuery({
-      queryKey: ["userTickets", currentPage],
-      queryFn: () => ticketGateway.getUserTickets(currentPage, ticketsPerPage),
-      staleTime: 5 * 60 * 1000,
-      gcTime: 5 * 60 * 1000,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-    });
+    useGetUserTickets(currentPage, ticketsPerPage);
 
   const userTickets = userTicketsResponse?.tickets || [];
   const totalTickets = userTicketsResponse?.total || 0;
