@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import { api, apiAuth, normalizeApiError } from "../client"
 
 export interface UpdateUserRequest {
@@ -87,5 +87,56 @@ export function useRegisterAndJoinEvent() {
         throw normalizeApiError(error)
       }
     },
+  })
+}
+
+export interface DashboardEvent {
+  id: number
+  name: string
+  description: string
+  start_date: string
+  end_date: string
+  location: string
+  address_name: string
+  banner_url: string
+  is_active: boolean
+}
+
+export interface DashboardTopEvent {
+  event: DashboardEvent
+  ticket_count: number
+}
+
+export interface DashboardUser {
+  username: string
+  email: string
+  is_admin: boolean
+}
+
+export interface DashboardResponse {
+  success: boolean
+  data: {
+    top_events: DashboardTopEvent[]
+    user: DashboardUser
+  }
+}
+
+export function useGetDashboard() {
+  return useQuery({
+    queryKey: ["dashboard"],
+    queryFn: async () => {
+      try {
+        const res = await apiAuth.get("/private/dashboard")
+        const response = res.data as DashboardResponse
+        return response.data
+      } catch (error) {
+        throw normalizeApiError(error)
+      }
+    },
+    staleTime: 24 * 60 * 60 * 1000,
+    gcTime: 24 * 60 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   })
 }
