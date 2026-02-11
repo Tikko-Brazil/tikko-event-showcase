@@ -414,6 +414,7 @@
       "createDialog": {
         "title": "Create New Coupon",
         "description": "Add a new coupon for your event",
+        "success": "Coupon created successfully",
         "fields": {
           "code": "Coupon Code",
           "codePlaceholder": "Enter coupon code",
@@ -433,6 +434,7 @@
       "editDialog": {
         "title": "Edit Coupon",
         "description": "Update coupon information",
+        "success": "Coupon updated successfully",
         "buttons": {
           "cancel": "Cancel",
           "save": "Save Changes"
@@ -1119,12 +1121,16 @@
       "INVALID_REQUEST": "Unable to apply coupon. Please check the code and try again.",
       "INVALID_TICKET_PRICING_ID": "Something went wrong with the ticket selection. Please try again.",
       "INVALID_EVENT_ID": "Something went wrong with the event selection. Please try again or contact support.",
+      "INVALID_COUPON_ID": "Invalid coupon ID",
       "VALIDATION_FAILED": "Unable to validate coupon. Please try again.",
       "COUPON_NOT_FOUND": "Coupon code not found. Please check the code and try again.",
       "REQUEST_TIMEOUT": "Request timed out. Please try again.",
       "COUPON_INACTIVE": "This coupon is not active.",
       "COUPON_EXPIRED": "This coupon has expired.",
-      "COUPON_INVALID_TICKET_TYPE": "This coupon is not valid for the selected ticket type."
+      "COUPON_INVALID_TICKET_TYPE": "This coupon is not valid for the selected ticket type.",
+      "INVALID_PAGINATION": "Invalid page or limit number",
+      "INVALID_STATUS_FILTER": "Invalid status filter. Must be 'active', 'inactive', or 'all'",
+      "FORBIDDEN": "You don't have permission to manage coupons for this event"
     },
     "event": {
       "INVALID_REQUEST": "Unable to load events. Please try again.",

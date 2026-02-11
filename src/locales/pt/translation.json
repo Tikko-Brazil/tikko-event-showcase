@@ -420,6 +420,7 @@
       "createDialog": {
         "title": "Criar Novo Cupom",
         "description": "Adicione um novo cupom para seu evento",
+        "success": "Cupom criado com sucesso",
         "fields": {
           "code": "Código do Cupom",
           "codePlaceholder": "Digite o código do cupom",
@@ -439,6 +440,7 @@
       "editDialog": {
         "title": "Editar Cupom",
         "description": "Atualizar informações do cupom",
+        "success": "Cupom atualizado com sucesso",
         "buttons": {
           "cancel": "Cancelar",
           "save": "Salvar Alterações"
@@ -1125,12 +1127,16 @@
       "INVALID_REQUEST": "Não foi possível aplicar o cupom. Por favor, verifique o código e tente novamente.",
       "INVALID_TICKET_PRICING_ID": "Algo deu errado com a seleção do ingresso. Por favor, tente novamente.",
       "INVALID_EVENT_ID": "Algo deu errado com a seleção do evento. Por favor, tente novamente ou entre em contato com o suporte.",
+      "INVALID_COUPON_ID": "ID de cupom inválido",
       "VALIDATION_FAILED": "Não foi possível validar o cupom. Por favor, tente novamente.",
       "COUPON_NOT_FOUND": "Código de cupom não encontrado. Por favor, verifique o código e tente novamente.",
       "REQUEST_TIMEOUT": "Tempo de espera esgotado. Por favor, tente novamente.",
       "COUPON_INACTIVE": "Este cupom não está ativo.",
       "COUPON_EXPIRED": "Este cupom expirou.",
-      "COUPON_INVALID_TICKET_TYPE": "Este cupom não é válido para o tipo de ingresso selecionado."
+      "COUPON_INVALID_TICKET_TYPE": "Este cupom não é válido para o tipo de ingresso selecionado.",
+      "INVALID_PAGINATION": "Número de página ou limite inválido",
+      "INVALID_STATUS_FILTER": "Filtro de status inválido. Deve ser 'active', 'inactive' ou 'all'",
+      "FORBIDDEN": "Você não tem permissão para gerenciar cupons deste evento"
     },
     "event": {
       "INVALID_REQUEST": "Não foi possível carregar os eventos. Por favor, tente novamente.",

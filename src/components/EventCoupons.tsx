@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { debounce } from "lodash";
 import { Formik } from "formik";
 import * as Yup from "yup";
@@ -37,10 +37,11 @@ import { Slider } from "@/components/ui/slider";
 import { Plus, Edit, Save } from "lucide-react";
 import { SearchAndFilter } from "./SearchAndFilter";
 import { Pagination } from "./Pagination";
-import { CouponGateway } from "@/lib/CouponGateway";
+import { useListCoupons, useCreateCoupon, useUpdateCoupon, useDeleteCoupon } from "@/api/coupon/api";
+import { couponManagementErrorMessage } from "@/api/coupon/errors";
+import { AppError } from "@/api/errors";
+import { toast } from "@/hooks/use-toast";
 import { TicketPricingGateway } from "@/lib/TicketPricingGateway";
-import SuccessSnackbar from "./SuccessSnackbar";
-import ErrorSnackbar from "./ErrorSnackbar";
 
 interface EventCouponsProps {
   eventId: number;
@@ -65,7 +66,7 @@ const validationSchema = Yup.object({
 export const EventCoupons = ({ eventId }: EventCouponsProps) => {
   const { t, i18n } = useTranslation();
   const [couponSearch, setCouponSearch] = useState("");
-  const [couponFilter, setCouponFilter] = useState("all");
+  const [couponFilter, setCouponFilter] = useState<"active" | "inactive" | "all">("all");
   const [couponPage, setCouponPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isCreateCouponOpen, setIsCreateCouponOpen] = useState(false);
@@ -73,12 +74,14 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
   const [currentFormValues, setCurrentFormValues] = useState({
     isTicketSpecific: false,
   });
-  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
-  const [showErrorSnackbar, setShowErrorSnackbar] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const queryClient = useQueryClient();
+  const itemsPerPage = 8;
+
+  const { mutateAsync: createCoupon } = useCreateCoupon();
+  const { mutateAsync: updateCoupon } = useUpdateCoupon();
+  const { mutateAsync: deleteCoupon } = useDeleteCoupon();
 
   // Helper function to format numbers according to current locale
   const formatNumber = (value: number, options?: Intl.NumberFormatOptions) => {
@@ -96,63 +99,52 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
     });
   };
 
-  const itemsPerPage = 8;
-  const couponGateway = new CouponGateway(
-    import.meta.env.VITE_BACKEND_BASE_URL
-  );
   const ticketPricingGateway = new TicketPricingGateway(
     import.meta.env.VITE_BACKEND_BASE_URL
   );
 
-  // Create coupon mutation
-  const createCouponMutation = useMutation({
-    mutationFn: async (values: any) => {
-      const couponData = {
+  const handleCreateCoupon = async (values: any) => {
+    try {
+      await createCoupon({
         event_id: eventId,
         code: values.code,
         discount_type: values.type,
         discount_value: values.value,
-        max_uses: values.maxUsage,
-        active: values.isActive,
-        ticket_pricing_id: values.isTicketSpecific
-          ? values.ticketTypes.map((id: string) => parseInt(id))
-          : null,
-      };
-      return couponGateway.createCoupon(couponData);
-    },
-    onSuccess: () => {
-      setShowSuccessSnackbar(true);
-      queryClient.invalidateQueries({ queryKey: ["event-coupons", eventId] });
-      setIsCreateCouponOpen(false);
-    },
-    onError: (error: any) => {
-      setErrorMessage(error.message || "Erro ao criar cupom");
-      setShowErrorSnackbar(true);
-    },
-  });
-
-  // Update coupon mutation
-  const updateCouponMutation = useMutation({
-    mutationFn: async ({ id, values }: { id: number; values: any }) => {
-      const updateData = {
-        max_uses: values.maxUsage,
-        active: values.isActive,
+        max_usage: values.maxUsage,
+        is_active: values.isActive,
         ticket_pricing_ids: values.isTicketSpecific
           ? values.ticketTypes.map((id: string) => parseInt(id))
-          : [],
-      };
-      return couponGateway.updateCoupon(id, updateData);
-    },
-    onSuccess: () => {
-      setShowSuccessSnackbar(true);
-      queryClient.invalidateQueries({ queryKey: ["event-coupons", eventId] });
+          : undefined,
+      });
+      toast({ description: t("eventManagement.coupons.createDialog.success") });
+      queryClient.invalidateQueries({ queryKey: ["coupons"] });
+      setIsCreateCouponOpen(false);
+    } catch (error) {
+      const message = couponManagementErrorMessage(error as AppError, t);
+      toast({ variant: "destructive", description: message });
+    }
+  };
+
+  const handleUpdateCoupon = async (id: number, values: any) => {
+    try {
+      await updateCoupon({
+        id,
+        data: {
+          max_uses: values.maxUsage,
+          active: values.isActive,
+          ticket_pricing_ids: values.isTicketSpecific
+            ? values.ticketTypes.map((id: string) => parseInt(id))
+            : [],
+        },
+      });
+      toast({ description: t("eventManagement.coupons.editDialog.success") });
+      queryClient.invalidateQueries({ queryKey: ["coupons"] });
       setEditingCoupon(null);
-    },
-    onError: (error: any) => {
-      setErrorMessage(error.message || "Erro ao atualizar cupom");
-      setShowErrorSnackbar(true);
-    },
-  });
+    } catch (error) {
+      const message = couponManagementErrorMessage(error as AppError, t);
+      toast({ variant: "destructive", description: message });
+    }
+  };
 
   // Debounced search function
   const debouncedSetSearch = useCallback(
@@ -173,26 +165,12 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
   }, [couponFilter, debouncedSearch]);
 
   // Fetch coupons using React Query
-  const {
-    data: couponsData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["event-coupons", eventId, couponPage, couponFilter, debouncedSearch],
-    queryFn: () => couponGateway.getEventCoupons(
-      eventId,
-      couponPage,
-      itemsPerPage,
-      undefined,
-      couponFilter === "all" ? undefined : couponFilter,
-      debouncedSearch || undefined
-    ),
-    enabled: !!eventId,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
+  const { data: couponsData, isLoading } = useListCoupons({
+    event_id: eventId,
+    page: couponPage,
+    limit: itemsPerPage,
+    status: couponFilter,
+    search: debouncedSearch || undefined,
   });
 
   // Fetch active ticket pricings when checkbox is checked
@@ -241,14 +219,6 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-red-500">Error loading coupons</div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Header Actions */}
@@ -281,12 +251,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                 ticketTypes: [] as string[],
               }}
               validationSchema={validationSchema}
-              onSubmit={(values, { resetForm }) => {
-                createCouponMutation.mutate(values, {
-                  onSuccess: () => {
-                    resetForm();
-                  },
-                });
+              onSubmit={async (values, { resetForm }) => {
+                await handleCreateCoupon(values);
+                resetForm();
               }}
             >
               {({
@@ -297,6 +264,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                 handleBlur,
                 handleSubmit,
                 setFieldValue,
+                isSubmitting,
               }) => {
                 // Update state for query when isTicketSpecific changes
                 React.useEffect(() => {
@@ -567,9 +535,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                       </Button>
                       <Button
                         type="submit"
-                        disabled={createCouponMutation.isPending}
+                        disabled={isSubmitting}
                       >
-                        {createCouponMutation.isPending
+                        {isSubmitting
                           ? "Criando..."
                           : t("eventManagement.coupons.createDialog.buttons.create")}
                       </Button>
@@ -588,7 +556,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
         onSearchChange={setCouponSearch}
         searchPlaceholder={t("eventManagement.coupons.search.placeholder")}
         filterValue={couponFilter}
-        onFilterChange={setCouponFilter}
+        onFilterChange={(value) => setCouponFilter(value as "active" | "inactive" | "all")}
         filterOptions={filterOptions}
         searchInputRef={searchInputRef}
       />
@@ -735,7 +703,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
             <Formik
               initialValues={{
                 maxUsage: editingCoupon.max_uses,
-                isActive: editingCoupon.active,
+                isActive: editingCoupon.is_active ?? editingCoupon.active,
                 isTicketSpecific: !!(editingCoupon.ticket_pricings && editingCoupon.ticket_pricings.length > 0),
                 ticketTypes: editingCoupon.ticket_pricings
                   ? editingCoupon.ticket_pricings.map((pricing: any) => pricing.id.toString())
@@ -755,8 +723,8 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                   otherwise: (schema) => schema.notRequired(),
                 }),
               })}
-              onSubmit={(values) => {
-                updateCouponMutation.mutate({ id: editingCoupon.id, values });
+              onSubmit={async (values) => {
+                await handleUpdateCoupon(editingCoupon.id, values);
               }}
             >
               {({
@@ -766,6 +734,7 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                 handleBlur,
                 handleSubmit,
                 setFieldValue,
+                isSubmitting,
               }) => {
                 // Update state for query when isTicketSpecific changes
                 React.useEffect(() => {
@@ -917,9 +886,9 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
                       </Button>
                       <Button
                         type="submit"
-                        disabled={updateCouponMutation.isPending}
+                        disabled={isSubmitting}
                       >
-                        {updateCouponMutation.isPending ? (
+                        {isSubmitting ? (
                           <>
                             <Save className="h-4 w-4 mr-2" />
                             Salvando...
@@ -939,18 +908,6 @@ export const EventCoupons = ({ eventId }: EventCouponsProps) => {
           </DialogContent>
         </Dialog>
       )}
-
-      <SuccessSnackbar
-        visible={showSuccessSnackbar}
-        onDismiss={() => setShowSuccessSnackbar(false)}
-        message="Cupom criado com sucesso"
-      />
-
-      <ErrorSnackbar
-        visible={showErrorSnackbar}
-        onDismiss={() => setShowErrorSnackbar(false)}
-        message={errorMessage}
-      />
     </div>
   );
 };
