@@ -13,7 +13,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
-import { AuthGateway } from "@/lib/AuthGateway";
 import { useLogin } from "@/api/auth/api";
 import { loginErrorMessage } from "@/api/auth/errors";
 import { AppError } from "@/api/errors";
@@ -35,7 +34,6 @@ const EmailLogin: React.FC<EmailLoginProps> = ({
   const [errorMessage, setErrorMessage] = React.useState("");
   const [showError, setShowError] = React.useState(false);
 
-  const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
   const { mutateAsync: login, isPending } = useLogin();
 
   const commonValidations = createCommonValidations(t);

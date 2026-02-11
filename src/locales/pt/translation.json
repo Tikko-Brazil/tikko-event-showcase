@@ -794,6 +794,9 @@
       "or": "ou"
     }
   },
+  "verification": {
+    "codeResent": "Código reenviado para seu email!"
+  },
   "profileCompletion": {
     "success": "Perfil completado com sucesso!"
   },
@@ -1227,6 +1230,9 @@
       "EXPIRED_RESET_TOKEN": "Link de redefinição de senha expirado. Solicite um novo",
       "USED_RESET_TOKEN": "Este link de redefinição de senha já foi usado. Solicite um novo",
       "MISSING_RESET_FIELDS": "Token de redefinição ou nova senha está faltando",
+      "EMAIL_ALREADY_VERIFIED": "Seu email já está verificado",
+      "TOO_MANY_REGENERATION_ATTEMPTS": "Muitas tentativas de reenvio de código. Tente novamente mais tarde",
+      "REGENERATION_RATE_LIMITED": "Aguarde {{minutes}} minutos antes de solicitar outro código",
       "MISSING_REFRESH_TOKEN": "Sessão expirada. Por favor, faça login novamente.",
       "INVALID_REFRESH_TOKEN": "Sua sessão expirou. Por favor, faça login novamente.",
       "INVALID_VERIFICATION_CODE": "O código de verificação está incorreto. Por favor, verifique e tente novamente.",

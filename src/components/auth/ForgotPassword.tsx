@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AuthGateway } from "@/lib/AuthGateway";
 import { useForgotPassword } from "@/api/auth/api";
 import { forgotPasswordErrorMessage } from "@/api/auth/errors";
 import { AppError } from "@/api/errors";
@@ -36,7 +35,6 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNext, onBack }) => {
   const [successMessage, setSuccessMessage] = React.useState("");
   const [showSuccess, setShowSuccess] = React.useState(false);
 
-  const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
   const { mutateAsync: forgotPassword } = useForgotPassword();
   return (
     <Card className="w-full max-w-md mx-auto">

@@ -189,3 +189,25 @@ export function useResetPassword() {
     },
   })
 }
+
+export interface RegenerateCodeRequest {
+  email: string
+}
+
+export interface RegenerateCodeResponse {
+  message: string
+  next_regenerate_in: number
+}
+
+export function useRegenerateCode() {
+  return useMutation({
+    mutationFn: async (data: RegenerateCodeRequest) => {
+      try {
+        const res = await api.post("/public/regenerate-code", data)
+        return res.data as RegenerateCodeResponse
+      } catch (error) {
+        throw normalizeApiError(error)
+      }
+    },
+  })
+}

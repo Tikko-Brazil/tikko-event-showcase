@@ -17,7 +17,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
-import { AuthGateway } from "@/lib/AuthGateway";
 import { useSignup, useResetPassword } from "@/api/auth/api";
 import { signupErrorMessage, resetPasswordErrorMessage } from "@/api/auth/errors";
 import { AppError } from "@/api/errors";
@@ -63,7 +62,6 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
   const [successMessage, setSuccessMessage] = React.useState("");
   const [showSuccess, setShowSuccess] = React.useState(false);
 
-  const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
   const { mutateAsync: signup } = useSignup();
   const { mutateAsync: resetPassword } = useResetPassword();
 

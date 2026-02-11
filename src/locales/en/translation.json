@@ -777,6 +777,9 @@
       "or": "or"
     }
   },
+  "verification": {
+    "codeResent": "Verification code resent to your email!"
+  },
   "profileCompletion": {
     "success": "Profile completed successfully!"
   },
@@ -1210,6 +1213,9 @@
       "EXPIRED_RESET_TOKEN": "Password reset link has expired. Please request a new one",
       "USED_RESET_TOKEN": "This password reset link has already been used. Please request a new one",
       "MISSING_RESET_FIELDS": "Password reset token or new password is missing",
+      "EMAIL_ALREADY_VERIFIED": "Your email is already verified",
+      "TOO_MANY_REGENERATION_ATTEMPTS": "Too many code regeneration attempts. Please try again later",
+      "REGENERATION_RATE_LIMITED": "Please wait {{minutes}} minutes before requesting another code",
       "MISSING_REFRESH_TOKEN": "Session expired. Please sign in again.",
       "INVALID_REFRESH_TOKEN": "Your session has expired. Please sign in again.",
       "INVALID_VERIFICATION_CODE": "The verification code is incorrect. Please check and try again.",

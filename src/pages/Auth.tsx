@@ -16,7 +16,6 @@ import EmailSignup from "@/components/auth/EmailSignup";
 import EmailLogin from "@/components/auth/EmailLogin";
 import VerificationScreen from "@/components/auth/VerificationScreen";
 import ForgotPassword from "@/components/auth/ForgotPassword";
-import { AuthGateway } from "@/lib/AuthGateway";
 import { useExchange } from "@/api/auth/api";
 import { exchangeErrorMessage } from "@/api/auth/errors";
 import { AppError } from "@/api/errors";
@@ -44,7 +43,6 @@ const Auth = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [searchParams] = useSearchParams();
 
-  const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
   const { mutateAsync: exchange } = useExchange();
 
   useEffect(() => {
