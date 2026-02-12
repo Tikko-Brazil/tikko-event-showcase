@@ -83,7 +83,7 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
             initialValues={{ ...userData, identificationType }}
             validationSchema={validationSchema}
             validateOnMount={true}
-            validateOnChange={true}
+            validateOnChange={false}
             validateOnBlur={true}
             enableReinitialize={true}
             onSubmit={(values) => {
@@ -98,20 +98,53 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
               setFieldValue,
               values,
               handleChange,
-              handleBlur,
+              handleBlur: formikHandleBlur,
               isValid,
+              validateForm,
+              validateField,
             }) => {
-              // Helper to sync form data with parent
-              const syncFormData = () => {
+              // Custom handleBlur that persists touched state and validates
+              const handleBlur = (fieldName?: string) => async (e: any) => {
+                const field = fieldName || e.target.name;
+                setPermanentTouched(prev => ({ ...prev, [field]: true }));
+                formikHandleBlur(e);
+                // Manually trigger validation after blur
+                await validateForm();
+                // Sync data to parent after blur
                 const { identificationType, ...userDataValues } = values;
                 onUserDataChange(userDataValues);
               };
 
-              // Update validation state and sync data
+              // Custom handleChange that validates the field
+              const handleFieldChange = (fieldName?: string) => async (e: any) => {
+                const field = fieldName || e.target.name;
+                handleChange(e);
+                // Only validate if field was already touched
+                if (touched[field] || permanentTouched[field]) {
+                  setTimeout(() => validateField(field), 0);
+                }
+              };
+
+              // Update validation state only when it changes
               React.useEffect(() => {
                 onValidationChange?.(isValid);
-                syncFormData(); // Always sync data, regardless of validation
-              }, [isValid, values]);
+              }, [isValid]);
+
+              // Memoize error states to prevent flickering
+              const fieldErrors = React.useMemo(() => {
+                const result: Record<string, string | undefined> = {};
+                Object.keys(errors).forEach(key => {
+                  if (touched[key] || permanentTouched[key]) {
+                    result[key] = errors[key];
+                  }
+                });
+                return result;
+              }, [errors, touched, permanentTouched]);
+
+              // Check if field should show error
+              const shouldShowError = (fieldName: string) => {
+                return !!fieldErrors[fieldName];
+              };
 
               return (
                 <Form className="space-y-4">
@@ -123,18 +156,19 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                         id="fullName"
                         name="fullName"
                         placeholder="Seu nome completo"
-                        onBlur={handleBlur}
+                        onChange={handleFieldChange()}
+                        onBlur={handleBlur()}
                         className={
-                          errors.fullName && touched.fullName
+                          shouldShowError("fullName")
                             ? "border-destructive"
                             : ""
                         }
                       />
-                      <ErrorMessage
-                        name="fullName"
-                        component="div"
-                        className="text-destructive text-sm mt-1"
-                      />
+                      {shouldShowError("fullName") && (
+                        <div className="text-destructive text-sm mt-1">
+                          {errors.fullName}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -145,18 +179,19 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                         name="email"
                         type="email"
                         placeholder="seu@email.com"
-                        onBlur={handleBlur}
+                        onChange={handleFieldChange()}
+                        onBlur={handleBlur()}
                         className={
-                          errors.email && touched.email
+                          shouldShowError("email")
                             ? "border-destructive"
                             : ""
                         }
                       />
-                      <ErrorMessage
-                        name="email"
-                        component="div"
-                        className="text-destructive text-sm mt-1"
-                      />
+                      {shouldShowError("email") && (
+                        <div className="text-destructive text-sm mt-1">
+                          {errors.email}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -167,18 +202,19 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                         name="confirmEmail"
                         type="email"
                         placeholder="Confirme seu email"
-                        onBlur={handleBlur}
+                        onChange={handleFieldChange()}
+                        onBlur={handleBlur()}
                         className={
-                          errors.confirmEmail && touched.confirmEmail
+                          shouldShowError("confirmEmail")
                             ? "border-destructive"
                             : ""
                         }
                       />
-                      <ErrorMessage
-                        name="confirmEmail"
-                        component="div"
-                        className="text-destructive text-sm mt-1"
-                      />
+                      {shouldShowError("confirmEmail") && (
+                        <div className="text-destructive text-sm mt-1">
+                          {errors.confirmEmail}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -186,7 +222,12 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                       <InputMask
                         mask={PHONE_MASK}
                         value={values.phone}
-                        onChange={handleChange("phone")}
+                        onChange={(e) => {
+                          handleChange("phone")(e);
+                          if (touched.phone || permanentTouched.phone) {
+                            setTimeout(() => validateField("phone"), 0);
+                          }
+                        }}
                         onBlur={handleBlur("phone")}
                         beforeMaskedStateChange={({ nextState }) => {
                           // Allow flexible country codes
@@ -202,18 +243,18 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                             id="phone"
                             placeholder="+55 (11) 99999-9999"
                             className={
-                              errors.phone && touched.phone
+                              shouldShowError("phone")
                                 ? "border-destructive"
                                 : ""
                             }
                           />
                         )}
                       </InputMask>
-                      <ErrorMessage
-                        name="phone"
-                        component="div"
-                        className="text-destructive text-sm mt-1"
-                      />
+                      {shouldShowError("phone") && (
+                        <div className="text-destructive text-sm mt-1">
+                          {errors.phone}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -221,7 +262,12 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                       <InputMask
                         mask={PHONE_MASK}
                         value={values.confirmPhone}
-                        onChange={handleChange("confirmPhone")}
+                        onChange={(e) => {
+                          handleChange("confirmPhone")(e);
+                          if (touched.confirmPhone || permanentTouched.confirmPhone) {
+                            setTimeout(() => validateField("confirmPhone"), 0);
+                          }
+                        }}
                         onBlur={handleBlur("confirmPhone")}
                         beforeMaskedStateChange={({ nextState }) => {
                           if (nextState.value.length < 2) {
@@ -236,18 +282,18 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                             id="confirmPhone"
                             placeholder="Confirme seu telefone"
                             className={
-                              errors.confirmPhone && touched.confirmPhone
+                              shouldShowError("confirmPhone")
                                 ? "border-destructive"
                                 : ""
                             }
                           />
                         )}
                       </InputMask>
-                      <ErrorMessage
-                        name="confirmPhone"
-                        component="div"
-                        className="text-destructive text-sm mt-1"
-                      />
+                      {shouldShowError("confirmPhone") && (
+                        <div className="text-destructive text-sm mt-1">
+                          {errors.confirmPhone}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -278,7 +324,12 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                         <InputMask
                           mask="999.999.999-99"
                           value={values.identification}
-                          onChange={handleChange("identification")}
+                          onChange={(e) => {
+                            handleChange("identification")(e);
+                            if (touched.identification || permanentTouched.identification) {
+                              setTimeout(() => validateField("identification"), 0);
+                            }
+                          }}
                           onBlur={handleBlur("identification")}
                         >
                           {(inputProps: any) => (
@@ -287,7 +338,7 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                               id="identification"
                               placeholder="000.000.000-00"
                               className={
-                                errors.identification && touched.identification
+                                shouldShowError("identification")
                                   ? "border-destructive"
                                   : ""
                               }
@@ -298,21 +349,26 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                         <Input
                           id="identification"
                           value={values.identification}
-                          onChange={handleChange("identification")}
+                          onChange={(e) => {
+                            handleChange("identification")(e);
+                            if (touched.identification || permanentTouched.identification) {
+                              setTimeout(() => validateField("identification"), 0);
+                            }
+                          }}
                           onBlur={handleBlur("identification")}
                           placeholder="Número do documento"
                           className={
-                            errors.identification && touched.identification
+                            shouldShowError("identification")
                               ? "border-destructive"
                               : ""
                           }
                         />
                       )}
-                      <ErrorMessage
-                        name="identification"
-                        component="div"
-                        className="text-destructive text-sm mt-1"
-                      />
+                      {shouldShowError("identification") && (
+                        <div className="text-destructive text-sm mt-1">
+                          {errors.identification}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -320,7 +376,12 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                       <InputMask
                         mask="99/99/9999"
                         value={values.birthdate}
-                        onChange={handleChange("birthdate")}
+                        onChange={(e) => {
+                          handleChange("birthdate")(e);
+                          if (touched.birthdate || permanentTouched.birthdate) {
+                            setTimeout(() => validateField("birthdate"), 0);
+                          }
+                        }}
                         onBlur={handleBlur("birthdate")}
                       >
                         {(inputProps: any) => (
@@ -329,18 +390,18 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                             id="birthdate"
                             placeholder="dd/mm/aaaa"
                             className={
-                              errors.birthdate && touched.birthdate
+                              shouldShowError("birthdate")
                                 ? "border-destructive"
                                 : ""
                             }
                           />
                         )}
                       </InputMask>
-                      <ErrorMessage
-                        name="birthdate"
-                        component="div"
-                        className="text-destructive text-sm mt-1"
-                      />
+                      {shouldShowError("birthdate") && (
+                        <div className="text-destructive text-sm mt-1">
+                          {errors.birthdate}
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -350,18 +411,19 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                         id="instagram"
                         name="instagram"
                         placeholder="seu_usuario"
-                        onBlur={handleBlur}
+                        onChange={handleFieldChange()}
+                        onBlur={handleBlur()}
                         className={
-                          errors.instagram && touched.instagram
+                          shouldShowError("instagram")
                             ? "border-destructive"
                             : ""
                         }
                       />
-                      <ErrorMessage
-                        name="instagram"
-                        component="div"
-                        className="text-destructive text-sm mt-1"
-                      />
+                      {shouldShowError("instagram") && (
+                        <div className="text-destructive text-sm mt-1">
+                          {errors.instagram}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Form>
