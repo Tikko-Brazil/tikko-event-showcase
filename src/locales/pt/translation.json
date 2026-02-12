@@ -79,16 +79,11 @@
     "overview": {
       "cards": {
         "totalTickets": "Total de Ingressos",
-        "soldTickets": "Ingressos Vendidos",
+        "issuedTickets": "Ingressos Emitidos",
         "revenue": "Receita",
         "attendees": "Participantes",
         "conversionRate": "Taxa de Conversão",
         "averageAge": "Idade Média"
-      },
-      "stats": {
-        "conversionRate": "taxa de conversão",
-        "liquidRevenue": "receita líquida",
-        "yearsOld": "anos"
       },
       "recentActivity": {
         "title": "Atividade Recente",
@@ -105,17 +100,6 @@
           "daysAgo": "{{count}} dia atrás",
           "daysAgo_plural": "{{count}} dias atrás"
         },
-        "ticketPurchased": "Ingresso comprado",
-        "newRegistration": "Nova inscrição",
-        "paymentReceived": "Pagamento recebido",
-        "ticketValidated": "Ingresso validado",
-        "ago": "atrás",
-        "minutes": "minutos",
-        "hours": "horas",
-        "days": "dias"
-      },
-      "recentActivity": {
-        "title": "Atividade Recente",
         "ticketPurchased": "Ingresso comprado",
         "newRegistration": "Nova inscrição",
         "paymentReceived": "Pagamento recebido",
@@ -205,8 +189,8 @@
           "title": "Receita Total",
           "subtitle": "Receita gerada"
         },
-        "ticketsSold": {
-          "title": "Ingressos Vendidos",
+        "ticketsIssued": {
+          "title": "Ingressos Emitidos",
           "subtitle": "Total de ingressos vendidos"
         },
         "conversionRate": {
@@ -433,9 +417,17 @@
         "edit": "Editar",
         "delete": "Excluir"
       },
+      "deleteConfirm": "Tem certeza que deseja excluir este cupom?",
+      "deleteDialog": {
+        "title": "Excluir Cupom",
+        "description": "Tem certeza que deseja excluir este cupom? Esta ação não pode ser desfeita.",
+        "cancel": "Cancelar",
+        "confirm": "Excluir"
+      },
       "createDialog": {
         "title": "Criar Novo Cupom",
         "description": "Adicione um novo cupom para seu evento",
+        "success": "Cupom criado com sucesso",
         "fields": {
           "code": "Código do Cupom",
           "codePlaceholder": "Digite o código do cupom",
@@ -455,12 +447,24 @@
       "editDialog": {
         "title": "Editar Cupom",
         "description": "Atualizar informações do cupom",
+        "success": "Cupom atualizado com sucesso",
         "buttons": {
           "cancel": "Cancelar",
           "save": "Salvar Alterações"
         }
       },
-      "noCouponsFound": "Nenhum cupom encontrado"
+      "noCouponsFound": "Nenhum cupom encontrado",
+      "copiedToClipboard": "Código do cupom copiado para a área de transferência!",
+      "linkCopied": "Link do evento com cupom copiado para a área de transferência!",
+      "linkCopyError": "Falha ao copiar link",
+      "share": {
+        "copyLink": "Copiar link",
+        "useCode": "Use o cupom"
+      },
+      "status": {
+        "active": "Ativo",
+        "inactive": "Inativo"
+      }
     },
     "staff": {
       "title": "Equipe do Evento",
@@ -722,57 +726,32 @@
       "description": "Tem certeza que deseja baixar este ingresso em PDF? Você pode imprimi-lo ou salvá-lo para acesso offline."
     }
   },
+  "forgotPassword": {
+    "success": "Link de redefinição de senha enviado para seu email!"
+  },
   "auth": {
-    "errors": {
-      "exchange": {
-        "400": "Código de autorização ou verificador ausente",
-        "401": "Falha na autenticação do Google",
-        "500": "Erro do servidor durante a autenticação"
-      },
-      "refresh": {
-        "400": "Token de atualização ausente",
-        "401": "Token de atualização inválido ou expirado"
-      },
-      "signup": {
-        "400": "Solicitação inválida ou campos obrigatórios ausentes",
-        "403": "Conflito no método de autenticação (usuário já possui conta com outro tipo de login)",
-        "409": "Usuário já existe com este email",
-        "422": "Senha muito fraca",
-        "500": "Erro do servidor durante o registro"
-      },
-      "verify": {
-        "400": "Solicitação inválida ou campos obrigatórios ausentes",
-        "401": "Código de verificação inválido",
-        "404": "Nenhum registro de verificação encontrado",
-        "410": "Código de verificação expirado ou já usado",
-        "429": "Muitas tentativas de verificação"
-      },
-      "regenerateCode": {
-        "400": "Endereço de email ausente",
-        "404": "Usuário não encontrado",
-        "409": "Email já verificado",
-        "429": "Muitas tentativas de regeneração ou aguarde"
-      },
-      "login": {
-        "400": "Solicitação inválida ou campos obrigatórios ausentes",
-        "401": "Credenciais inválidas ou email não verificado",
-        "403": "Erro no método de autenticação"
-      },
-      "forgotPassword": {
-        "400": "Endereço de email ausente",
-        "409": "Não é possível redefinir senha para usuários OAuth",
-        "429": "Muitas tentativas de redefinição ou aguarde",
-        "500": "Erro do servidor durante a redefinição de senha"
-      },
-      "resetPassword": {
-        "400": "Solicitação inválida ou campos obrigatórios ausentes",
-        "404": "Token de redefinição inválido ou usuário não encontrado",
-        "410": "Token de redefinição expirado ou já usado",
-        "422": "Senha muito fraca",
-        "500": "Erro do servidor durante a redefinição de senha"
-      },
-      "unknown": "Erro desconhecido"
-    }
+    "welcome": {
+      "title": "Bem-vindo à Tikko",
+      "subtitle": "Sua plataforma para eventos incríveis"
+    },
+    "buttons": {
+      "createAccount": "Criar Conta",
+      "signIn": "Entrar",
+      "continueWithGoogle": "Continuar com Google",
+      "signingIn": "Entrando...",
+      "back": "Voltar",
+      "home": "Início"
+    },
+    "divider": {
+      "or": "ou"
+    },
+    "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente."
+  },
+  "verification": {
+    "codeResent": "Código reenviado para seu email!"
+  },
+  "profileCompletion": {
+    "success": "Perfil completado com sucesso!"
   },
   "signup": {
     "title": "Criar Conta",
@@ -829,8 +808,15 @@
       "submit": "Criar Conta",
       "submitting": "Criando...",
       "showPassword": "Mostrar senha",
-      "hidePassword": "Ocultar senha"
+      "hidePassword": "Ocultar senha",
+      "resetPassword": "Redefinir"
     },
+    "passwordReset": {
+      "title": "Definir Nova Senha",
+      "subtitle": "Digite sua nova senha abaixo",
+      "success": "Senha atualizada com sucesso!"
+    },
+    "verificationSent": "Código de verificação enviado para seu email!",
     "links": {
       "hasAccount": "Já tem uma conta?",
       "signIn": "Entrar"
@@ -1126,5 +1112,98 @@
     "loading": "Carregando...",
     "error": "Erro",
     "back": "Voltar"
+  },
+  "errors": {
+    "http": {
+      "401": "Não autorizado. Por favor, faça login novamente.",
+      "403": "Você não tem permissão para realizar esta ação.",
+      "404": "Recurso não encontrado.",
+      "500": "Erro interno do servidor. Por favor, tente novamente mais tarde."
+    },
+    "generic": {
+      "NETWORK_ERROR": "Erro de rede. Por favor, verifique sua conexão.",
+      "UNKNOWN_ERROR": "Ocorreu um erro inesperado."
+    },
+    "user": {
+      "INVALID_REQUEST": "Por favor, verifique todos os campos obrigatórios e tente novamente.",
+      "INVALID_EMAIL": "Por favor, insira um endereço de email válido (ex: usuario@exemplo.com).",
+      "INVALID_PHONE_NUMBER": "Por favor, insira um número de telefone válido com código do país (ex: +55 11 99999-9999 para Brasil).",
+      "INVALID_USERNAME": "O nome de usuário deve ter entre 2 e 50 caracteres e conter seu nome completo.",
+      "INVALID_GENDER": "Por favor, selecione uma opção de gênero válida.",
+      "INSTAGRAM_PROFILE_REQUIRED": "Nome de usuário do Instagram é obrigatório. Insira seu usuário sem o símbolo @ (ex: seuusuario).",
+      "INVALID_EVENT_ID": "Algo deu errado com a seleção do evento. Por favor, tente novamente ou entre em contato com o suporte.",
+      "INVALID_TICKET_PRICING_ID": "Algo deu errado com a seleção do ingresso. Por favor, tente novamente.",
+      "USER_NOT_FOUND": "Usuário não encontrado.",
+      "EVENT_NOT_FOUND": "Evento não encontrado. Ele pode ter sido removido ou não está mais disponível.",
+      "DUPLICATE_TICKET": "Você já possui um ingresso para este evento.",
+      "DUPLICATE_INVITE": "Você já possui um convite pendente para este evento.",
+      "INVITE_REJECTED": "Seu convite para este evento foi rejeitado anteriormente.",
+      "PAYMENT_FAILED": "Falha no processamento do pagamento. Por favor, verifique seus dados de pagamento e tente novamente.",
+      "INTERNAL_SERVER_ERROR": "Erro no servidor. Por favor, tente novamente mais tarde."
+    },
+    "coupon": {
+      "INVALID_REQUEST": "Não foi possível aplicar o cupom. Por favor, verifique o código e tente novamente.",
+      "INVALID_TICKET_PRICING_ID": "Algo deu errado com a seleção do ingresso. Por favor, tente novamente.",
+      "INVALID_EVENT_ID": "Algo deu errado com a seleção do evento. Por favor, tente novamente ou entre em contato com o suporte.",
+      "INVALID_COUPON_ID": "ID de cupom inválido",
+      "VALIDATION_FAILED": "Não foi possível validar o cupom. Por favor, tente novamente.",
+      "COUPON_NOT_FOUND": "Código de cupom não encontrado. Por favor, verifique o código e tente novamente.",
+      "REQUEST_TIMEOUT": "Tempo de espera esgotado. Por favor, tente novamente.",
+      "COUPON_INACTIVE": "Este cupom não está ativo.",
+      "COUPON_EXPIRED": "Este cupom expirou.",
+      "COUPON_INVALID_TICKET_TYPE": "Este cupom não é válido para o tipo de ingresso selecionado.",
+      "INVALID_PAGINATION": "Número de página ou limite inválido",
+      "INVALID_STATUS_FILTER": "Filtro de status inválido. Deve ser 'active', 'inactive' ou 'all'",
+      "FORBIDDEN": "Você não tem permissão para gerenciar cupons deste evento"
+    },
+    "event": {
+      "INVALID_REQUEST": "Não foi possível carregar os eventos. Por favor, tente novamente.",
+      "INVALID_PAGINATION": "Número de página inválido. Por favor, tente novamente.",
+      "INVALID_ACTIVE_FILTER": "Opção de filtro inválida. Por favor, tente novamente.",
+      "INTERNAL_SERVER_ERROR": "Erro no servidor. Por favor, tente novamente mais tarde."
+    },
+    "ticket": {
+      "MISSING_PAGINATION_PARAMS": "Parâmetro de página ou limite está faltando",
+      "INVALID_PAGE_NUMBER": "Número de página inválido",
+      "INVALID_LIMIT_NUMBER": "Número de limite inválido. Deve estar entre 1 e 100",
+      "INTERNAL_SERVER_ERROR": "Não foi possível carregar os ingressos. Por favor, tente novamente mais tarde"
+    },
+    "auth": {
+      "INVALID_REQUEST": "Não foi possível completar o login. Por favor, tente novamente.",
+      "MISSING_CODE": "Código de autenticação ausente. Por favor, tente fazer login novamente.",
+      "MISSING_CODE_VERIFIER": "Falha na verificação de autenticação. Por favor, tente fazer login novamente.",
+      "UNSUPPORTED_IDENTITY_PROVIDER": "Este método de login não é suportado. Por favor, use um método diferente.",
+      "AUTH_METHOD_PASSWORD": "Esta conta foi registrada com email e senha. Por favor, faça login com sua senha.",
+      "AUTH_METHOD_GOOGLE": "Esta conta foi registrada com Google. Por favor, faça login com Google.",
+      "AUTH_METHOD_FACEBOOK": "Esta conta foi registrada com Facebook. Por favor, faça login com Facebook.",
+      "AUTH_METHOD_APPLE": "Esta conta foi registrada com Apple. Por favor, faça login com Apple.",
+      "OAUTH_EXCHANGE_FAILED": "Não foi possível completar o login com este provedor. Por favor, tente novamente.",
+      "MISSING_REQUIRED_FIELDS": "Por favor, preencha todos os campos obrigatórios (email, nome de usuário e senha).",
+      "MISSING_VERIFY_FIELDS": "Por favor, forneça o email e o código de verificação.",
+      "MISSING_LOGIN_FIELDS": "Por favor, forneça o email e a senha.",
+      "WEAK_PASSWORD": "A senha deve ter pelo menos 8 caracteres e incluir: letra maiúscula, letra minúscula, número e caractere especial.",
+      "USER_ALREADY_EXISTS": "Já existe uma conta com este email. Por favor, faça login.",
+      "INVALID_CREDENTIALS": "Email ou senha inválidos. Por favor, tente novamente.",
+      "EMAIL_NOT_VERIFIED": "Por favor, verifique seu email antes de fazer login. Verifique sua caixa de entrada para o código de verificação.",
+      "PASSWORD_NOT_SET": "Por favor, cadastre-se primeiro para criar sua conta e definir uma senha.",
+      "MISSING_EMAIL": "Por favor, forneça seu endereço de email.",
+      "PASSWORD_RESET_RATE_LIMITED": "Por favor, aguarde {{minutes}} minutos antes de solicitar outra redefinição de senha.",
+      "TOO_MANY_PASSWORD_RESET_ATTEMPTS": "Muitas tentativas de redefinição de senha. Por favor, tente novamente em {{hours}} horas.",
+      "INVALID_RESET_TOKEN": "Link de redefinição de senha inválido",
+      "EXPIRED_RESET_TOKEN": "Link de redefinição de senha expirado. Solicite um novo",
+      "USED_RESET_TOKEN": "Este link de redefinição de senha já foi usado. Solicite um novo",
+      "MISSING_RESET_FIELDS": "Token de redefinição ou nova senha está faltando",
+      "EMAIL_ALREADY_VERIFIED": "Seu email já está verificado",
+      "TOO_MANY_REGENERATION_ATTEMPTS": "Muitas tentativas de reenvio de código. Tente novamente mais tarde",
+      "REGENERATION_RATE_LIMITED": "Aguarde {{minutes}} minutos antes de solicitar outro código",
+      "MISSING_REFRESH_TOKEN": "Sessão expirada. Por favor, faça login novamente.",
+      "INVALID_REFRESH_TOKEN": "Sua sessão expirou. Por favor, faça login novamente.",
+      "INVALID_VERIFICATION_CODE": "O código de verificação está incorreto. Por favor, verifique e tente novamente.",
+      "NO_VERIFICATION_RECORD": "Nenhuma verificação encontrada para este email. Por favor, cadastre-se primeiro.",
+      "VERIFICATION_EXPIRED": "Este código de verificação expirou. Por favor, solicite um novo.",
+      "VERIFICATION_ALREADY_USED": "Este código de verificação já foi usado.",
+      "TOO_MANY_VERIFICATION_ATTEMPTS": "Muitas tentativas de verificação. Por favor, solicite um novo código.",
+      "INTERNAL_SERVER_ERROR": "Erro no servidor. Por favor, tente novamente mais tarde."
+    }
   }
 }

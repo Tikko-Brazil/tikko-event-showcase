@@ -1,6 +1,7 @@
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,7 +12,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AuthGateway } from "@/lib/AuthGateway";
+import { useForgotPassword } from "@/api/auth/api";
+import { forgotPasswordErrorMessage } from "@/api/auth/errors";
+import { AppError } from "@/api/errors";
+import { toast } from "@/hooks/use-toast";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
 import SuccessSnackbar from "@/components/SuccessSnackbar";
 
@@ -25,12 +29,13 @@ interface ForgotPasswordProps {
 }
 
 const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNext, onBack }) => {
+  const { t } = useTranslation();
   const [errorMessage, setErrorMessage] = React.useState("");
   const [showError, setShowError] = React.useState(false);
   const [successMessage, setSuccessMessage] = React.useState("");
   const [showSuccess, setShowSuccess] = React.useState(false);
 
-  const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const { mutateAsync: forgotPassword } = useForgotPassword();
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
@@ -45,15 +50,14 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNext, onBack }) => {
           validationSchema={forgotPasswordSchema}
           onSubmit={async (values, { setSubmitting }) => {
             try {
-              await authGateway.forgotPassword({ email: values.email });
+              await forgotPassword({ email: values.email });
               setSuccessMessage(
-                "Código de redefinição enviado para seu email!"
+                t('forgotPassword.success')
               );
               setShowSuccess(true);
-              setTimeout(() => onNext(values.email), 2000);
-            } catch (error: any) {
-              setErrorMessage(error.message);
-              setShowError(true);
+            } catch (error) {
+              const message = forgotPasswordErrorMessage(error as AppError, t);
+              toast({ variant: "destructive", description: message });
             } finally {
               setSubmitting(false);
             }

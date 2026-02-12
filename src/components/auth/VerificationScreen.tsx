@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,9 +10,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AuthGateway } from "@/lib/AuthGateway";
-import ErrorSnackbar from "@/components/ErrorSnackbar";
-import SuccessSnackbar from "@/components/SuccessSnackbar";
+import { useVerify, useRegenerateCode } from "@/api/auth/api";
+import { verifyErrorMessage, regenerateCodeErrorMessage } from "@/api/auth/errors";
+import { AppError } from "@/api/errors";
+import { toast } from "@/hooks/use-toast";
 
 interface VerificationScreenProps {
   email: string;
@@ -30,16 +32,14 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
   description,
   isResetFlow = false,
 }) => {
+  const { t } = useTranslation();
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [showError, setShowError] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
 
-  const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const { mutateAsync: verify } = useVerify();
+  const { mutateAsync: regenerateCode } = useRegenerateCode();
 
   useEffect(() => {
     if (countdown > 0) {
@@ -95,7 +95,7 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
 
     setIsVerifying(true);
     try {
-      const response = await authGateway.verify({
+      const response = await verify({
         email,
         code: codeToVerify,
       });
@@ -104,9 +104,14 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
       localStorage.setItem("refreshToken", response.token_pair.refresh_token);
 
       onSuccess();
-    } catch (error: any) {
-      setErrorMessage(error.message);
-      setShowError(true);
+    } catch (error) {
+      const appError = error as AppError;
+      const message = verifyErrorMessage(appError, t);
+      toast({ variant: "destructive", description: message });
+      
+      if (appError.code === "TOO_MANY_VERIFICATION_ATTEMPTS") {
+        setTimeout(() => onBack(), 2000);
+      }
     } finally {
       setIsVerifying(false);
     }
@@ -114,16 +119,15 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
 
   const handleResendCode = async () => {
     try {
-      const response = await authGateway.regenerateCode({ email });
+      const response = await regenerateCode({ email });
       setCountdown(response.next_regenerate_in || 60);
       setCanResend(false);
       setCode(["", "", "", "", "", ""]);
-      setSuccessMessage("Código reenviado para seu email!");
-      setShowSuccess(true);
+      toast({ description: t("verification.codeResent") });
       document.getElementById("code-0")?.focus();
-    } catch (error: any) {
-      setErrorMessage(error.message);
-      setShowError(true);
+    } catch (error) {
+      const message = regenerateCodeErrorMessage(error as AppError, t);
+      toast({ variant: "destructive", description: message });
     }
   };
 
@@ -186,16 +190,6 @@ const VerificationScreen: React.FC<VerificationScreenProps> = ({
           </Button>
         </div>
       </CardContent>
-      <ErrorSnackbar
-        message={errorMessage}
-        visible={showError}
-        onDismiss={() => setShowError(false)}
-      />
-      <SuccessSnackbar
-        message={successMessage}
-        visible={showSuccess}
-        onDismiss={() => setShowSuccess(false)}
-      />
     </Card>
   );
 };

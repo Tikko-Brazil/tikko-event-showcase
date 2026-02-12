@@ -1,11 +1,10 @@
 import React, { useState, useRef } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { X, ArrowLeft, ArrowRight } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@/components/ui/visually-hidden";
 import { Button } from "@/components/ui/button";
 import { PriceSummary } from "./PriceSummary";
-import ErrorSnackbar from "./ErrorSnackbar";
 import { ProgressIndicator } from "./ProgressIndicator";
 import { TermsStep } from "./checkout-steps/TermsStep";
 import { UserInfoStep } from "./checkout-steps/UserInfoStep";
@@ -15,9 +14,10 @@ import { PaymentInfoStep } from "./checkout-steps/PaymentInfoStep";
 import { ConfirmationStep } from "./checkout-steps/ConfirmationStep";
 import { SuccessStep } from "./checkout-steps/SuccessStep";
 import { PixQRCodeStep } from "./checkout-steps/PixQRCodeStep";
-import { UserGateway } from "@/lib/UserGateway";
-
-const userGateway = new UserGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+import { useRegisterAndJoinEvent } from "@/api/user/api";
+import { registerAndJoinEventErrorMessage } from "@/api/user/errors";
+import { AppError } from "@/api/errors";
+import { toast } from "@/hooks/use-toast";
 
 interface CheckoutOverlayProps {
   isOpen: boolean;
@@ -27,6 +27,8 @@ interface CheckoutOverlayProps {
   eventId: number;
   ticketPricingId: number;
   autoAccept?: boolean;
+  initialCoupon?: string;
+  initialDiscount?: DiscountData;
 }
 
 export interface UserData {
@@ -54,6 +56,8 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   eventId,
   ticketPricingId,
   autoAccept = true,
+  initialCoupon,
+  initialDiscount,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [userData, setUserData] = useState<UserData>({
@@ -70,7 +74,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
     "cpf"
   );
   const [formValidationTrigger, setFormValidationTrigger] = useState(0);
-  const [discount, setDiscount] = useState<DiscountData | undefined>();
+  const [discount, setDiscount] = useState<DiscountData | undefined>(initialDiscount);
   const [paymentMethod, setPaymentMethod] = useState<"credit" | "pix" | "">("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -78,10 +82,18 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   const [paymentData, setPaymentData] = useState<any>(null);
   const [qrCode, setQrCode] = useState<string>("");
   const [paymentId, setPaymentId] = useState<string>("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [showError, setShowError] = useState(false);
   const creditPaymentRef = React.useRef<(() => void) | null>(null);
   const pixPaymentRef = React.useRef<(() => void) | null>(null);
+
+  const { t } = useTranslation();
+  const { mutateAsync, isPending } = useRegisterAndJoinEvent();
+
+  // Update discount when initialDiscount changes (e.g., when overlay reopens)
+  React.useEffect(() => {
+    if (isOpen) {
+      setDiscount(initialDiscount);
+    }
+  }, [isOpen, initialDiscount]);
 
   const totalSteps = 8;
 
@@ -89,108 +101,101 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   const finalPrice = discount ? ticketPrice - discount.amount : ticketPrice;
   const isFreeTicket = finalPrice <= 0;
 
-  // React Query mutation for registerAndJoinEvent
-  const registerMutation = useMutation({
-    mutationFn: (data: any) => userGateway.registerAndJoinEvent(data),
-    onSuccess: (result) => {
-      if (result.qr_code) {
-        // PIX payment - store QR code and payment_id, go to PIX step
-        setQrCode(result.qr_code);
-        setPaymentId(result.payment_id.toString());
-        setCurrentStep(8); // Go to PIX QR code step
-      } else {
-        // Credit card payment or free ticket
-        handleNext(); // Go to success step
-      }
-    },
-    onError: (error: any) => {
-      setErrorMessage(error.message || "Erro durante o registro");
-      setShowError(true);
-    },
-  });
-
-  const handleRegisterAndJoin = () => {
-
-    // Prepare payment data
-    let paymentInfo = undefined;
-    if (!isFreeTicket) {
-      if (paymentMethod === "credit" && paymentData?.cardInfo?.formData) {
-        paymentInfo = {
-          token: paymentData.cardInfo.formData.token,
-          description: "",
-          installments:
-            paymentData.cardInfo.formData.installments?.toString() || "1",
-          paymentMethodId:
-            paymentData.cardInfo.formData.payment_method_id || "credit_card",
-          issuerId: Number(paymentData.cardInfo.formData.issuer_id) || 0,
-          payer: {
-            email: paymentData.cardInfo.formData.payer?.email || userData.email,
-            identification: paymentData.cardInfo.formData.payer
-              ?.identification || {
-              type: "CPF",
-              number: userData.identification,
+  const handleRegisterAndJoin = async () => {
+    try {
+      // Prepare payment data
+      let paymentInfo = undefined;
+      if (!isFreeTicket) {
+        if (paymentMethod === "credit" && paymentData?.cardInfo?.formData) {
+          paymentInfo = {
+            token: paymentData.cardInfo.formData.token,
+            description: "",
+            installments:
+              paymentData.cardInfo.formData.installments?.toString() || "1",
+            paymentMethodId:
+              paymentData.cardInfo.formData.payment_method_id || "credit_card",
+            issuerId: Number(paymentData.cardInfo.formData.issuer_id) || 0,
+            payer: {
+              email: paymentData.cardInfo.formData.payer?.email || userData.email,
+              identification: paymentData.cardInfo.formData.payer
+                ?.identification || {
+                type: "CPF",
+                number: userData.identification,
+              },
             },
-          },
-        };
-      } else if (paymentMethod === "pix") {
-        paymentInfo = {
-          token: "",
-          description: "",
-          installments: "1",
-          paymentMethodId: "pix",
-          issuerId: 0,
+          };
+        } else if (paymentMethod === "pix") {
+          paymentInfo = {
+            token: "",
+            description: "",
+            installments: "1",
+            paymentMethodId: "pix",
+            issuerId: 0,
+            payer: {
+              email: paymentData?.pixInfo?.payerEmail || userData.email,
+              identification: {
+                type: "CPF",
+                number: userData.identification,
+              },
+            },
+          };
+        }
+      }
+
+      const result = await mutateAsync({
+        user: {
+          email: userData.email,
+          username: userData.fullName,
+          gender: identificationType === "cpf" ? "male" : "female",
+          birthday: userData.birthdate
+            ? new Date(
+              userData.birthdate.split("/").reverse().join("-")
+            ).toISOString()
+            : new Date().toISOString(),
+          phone_number: userData.phone.replace(/[()\s-]/g, ""),
+          location: "",
+          bio: "",
+          instagram_profile: userData.instagram,
+          identification_number: userData.identification
+        },
+        event_id: eventId,
+        ticket_pricing_id: ticketPricingId,
+        coupon: discount?.code || "",
+        payment: {
+          transaction_amount: isFreeTicket ? 0 : finalPrice,
+          token: paymentInfo?.token || "",
+          description: paymentInfo?.description || "Event ticket",
+          installments: Number(paymentInfo?.installments) || 1,
+          payment_method_id: isFreeTicket
+            ? "free"
+            : paymentInfo?.paymentMethodId || "",
+          issuer_id: paymentInfo?.issuerId || 0,
+          capture: true,
+          external_reference: "",
+          callback_url: "",
           payer: {
-            email: paymentData?.pixInfo?.payerEmail || userData.email,
+            email: userData.email,
+            first_name: userData.fullName.split(" ")[0] || "",
+            last_name: userData.fullName.split(" ").slice(1).join(" ") || "",
             identification: {
               type: "CPF",
               number: userData.identification,
             },
           },
-        };
-      }
-    }
-
-    // Call the API
-    registerMutation.mutate({
-      user: {
-        email: userData.email,
-        username: userData.fullName,
-        gender: identificationType === "cpf" ? "male" : "female",
-        birthday: userData.birthdate
-          ? new Date(
-            userData.birthdate.split("/").reverse().join("-")
-          ).toISOString()
-          : new Date().toISOString(),
-        phone_number: userData.phone.replace(/[()\s-]/g, ""),
-        location: "",
-        bio: "",
-        instagram_profile: userData.instagram,
-        identification_number: userData.identification
-      },
-      event_id: eventId,
-      ticket_pricing_id: ticketPricingId,
-      coupon: discount?.code || "",
-      payment: {
-        transaction_amount: isFreeTicket ? 0 : finalPrice,
-        token: paymentInfo?.token || "",
-        description: paymentInfo?.description || "Event ticket",
-        installments: Number(paymentInfo?.installments) || 1,
-        payment_method_id: isFreeTicket
-          ? "free"
-          : paymentInfo?.paymentMethodId || "",
-        issuer_id: paymentInfo?.issuerId || 0,
-        capture: true,
-        external_reference: "",
-        callback_url: "",
-        payer: paymentInfo?.payer || {
-          email: userData.email,
-          identification: {
-            type: "CPF",
-            number: userData.identification,
-          },
         },
-      },
-    });
+      });
+
+      if (result.qr_code) {
+        setQrCode(result.qr_code);
+        setPaymentId(result.payment_id.toString());
+        setCurrentStep(8);
+      } else {
+        handleNext();
+      }
+    } catch (error) {
+      const message = registerAndJoinEventErrorMessage(error as AppError, t);
+      toast({ variant: "destructive", description: message });
+    }
   };
 
   const handleNext = () => {
@@ -268,6 +273,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             eventId={eventId}
             ticketPricingId={ticketPricingId}
             onNext={handleNext}
+            initialCoupon={initialCoupon}
           />
         );
       case 4:
@@ -300,7 +306,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             discount={discount}
             paymentData={paymentData}
             onSubmit={handleRegisterAndJoin}
-            isSubmitting={registerMutation.isPending}
+            isSubmitting={isPending}
             onNext={handleNext}
           />
         );
@@ -374,7 +380,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
           onContinue: handleRegisterAndJoin,
           continueButtonText: "Confirmar e Finalizar Compra",
           isContinueDisabled: false,
-          isProcessing: registerMutation.isPending,
+          isProcessing: isPending,
         };
       default:
         return {};
@@ -383,11 +389,6 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
 
   return (
     <>
-      <ErrorSnackbar
-        message={errorMessage}
-        visible={showError}
-        onDismiss={() => setShowError(false)}
-      />
       <Dialog
         open={isOpen}
         onOpenChange={(open) => !open && handleDialogClose()}

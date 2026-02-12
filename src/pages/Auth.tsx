@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,7 +16,10 @@ import EmailSignup from "@/components/auth/EmailSignup";
 import EmailLogin from "@/components/auth/EmailLogin";
 import VerificationScreen from "@/components/auth/VerificationScreen";
 import ForgotPassword from "@/components/auth/ForgotPassword";
-import { AuthGateway } from "@/lib/AuthGateway";
+import { useExchange } from "@/api/auth/api";
+import { exchangeErrorMessage } from "@/api/auth/errors";
+import { AppError } from "@/api/errors";
+import { toast } from "@/hooks/use-toast";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
 import SuccessSnackbar from "@/components/SuccessSnackbar";
 
@@ -29,6 +33,7 @@ export type AuthScreen =
   | "new-password";
 
 const Auth = () => {
+  const { t } = useTranslation();
   const [currentScreen, setCurrentScreen] = useState<AuthScreen>("entry");
   const [userEmail, setUserEmail] = useState("");
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -38,14 +43,22 @@ const Auth = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [searchParams] = useSearchParams();
 
-  const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const { mutateAsync: exchange } = useExchange();
 
   useEffect(() => {
     const token = searchParams.get("token");
     if (token) {
       setCurrentScreen("new-password");
     }
-  }, [searchParams]);
+
+    const sessionExpired = searchParams.get("session_expired");
+    if (sessionExpired === "true") {
+      toast({
+        variant: "destructive",
+        description: t("auth.sessionExpired"),
+      });
+    }
+  }, [searchParams, t]);
 
   const generateCodeVerifier = () => {
     const array = new Uint8Array(32);
@@ -96,7 +109,7 @@ const Auth = () => {
     }`;
 
     try {
-      const data = await authGateway.exchange({
+      const data = await exchange({
         code,
         redirectUri,
         codeVerifier: codeVerifier || "",
@@ -114,10 +127,9 @@ const Auth = () => {
       } else {
         window.location.href = "/explore";
       }
-    } catch (error: any) {
-      console.error("OAuth exchange failed:", error);
-      setErrorMessage(`Authentication failed: ${error.message}`);
-      setShowError(true);
+    } catch (error) {
+      const message = exchangeErrorMessage(error as AppError, t);
+      toast({ variant: "destructive", description: message });
       setIsGoogleLoading(false);
     }
   };
@@ -169,9 +181,9 @@ const Auth = () => {
             <CardHeader className="text-center">
               <img src={logoLight} alt="Tikko" className="h-12 mx-auto mb-4" />
               <CardTitle className="text-2xl font-bold">
-                Welcome to Tikko
+                {t('auth.welcome.title')}
               </CardTitle>
-              <CardDescription>Your gateway to amazing events</CardDescription>
+              <CardDescription>{t('auth.welcome.subtitle')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Button
@@ -179,7 +191,7 @@ const Auth = () => {
                 className="w-full h-12 text-lg"
                 size="lg"
               >
-                Create Account
+                {t('auth.buttons.createAccount')}
               </Button>
               <Button
                 onClick={() => setCurrentScreen("login")}
@@ -187,13 +199,13 @@ const Auth = () => {
                 className="w-full h-12 text-lg"
                 size="lg"
               >
-                Sign In
+                {t('auth.buttons.signIn')}
               </Button>
 
               <div className="relative my-6">
                 <Separator />
                 <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-muted-foreground text-sm">
-                  or
+                  {t('auth.divider.or')}
                 </span>
               </div>
 
@@ -205,7 +217,7 @@ const Auth = () => {
                 disabled={isGoogleLoading}
               >
                 <Mail className="mr-2 h-5 w-5" />
-                {isGoogleLoading ? "Signing in..." : "Continue with Google"}
+                {isGoogleLoading ? t('auth.buttons.signingIn') : t('auth.buttons.continueWithGoogle')}
               </Button>
             </CardContent>
           </Card>
@@ -296,7 +308,7 @@ const Auth = () => {
               className="hover:bg-accent"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back
+              {t('auth.buttons.back')}
             </Button>
           ) : (
             <div></div>
@@ -304,7 +316,7 @@ const Auth = () => {
           <Button variant="ghost" asChild className="hover:bg-accent">
             <Link to="/">
               <Home className="mr-2 h-4 w-4" />
-              Home
+              {t('auth.buttons.home')}
             </Link>
           </Button>
         </div>

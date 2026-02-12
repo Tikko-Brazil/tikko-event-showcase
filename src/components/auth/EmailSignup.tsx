@@ -17,7 +17,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
-import { AuthGateway } from "@/lib/AuthGateway";
+import { useSignup, useResetPassword } from "@/api/auth/api";
+import { signupErrorMessage, resetPasswordErrorMessage } from "@/api/auth/errors";
+import { AppError } from "@/api/errors";
+import { toast } from "@/hooks/use-toast";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
 import SuccessSnackbar from "@/components/SuccessSnackbar";
 import { createCommonValidations, PHONE_MASK } from "@/lib/validationSchemas";
@@ -59,7 +62,8 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
   const [successMessage, setSuccessMessage] = React.useState("");
   const [showSuccess, setShowSuccess] = React.useState(false);
 
-  const authGateway = new AuthGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const { mutateAsync: signup } = useSignup();
+  const { mutateAsync: resetPassword } = useResetPassword();
 
   const commonValidations = createCommonValidations(t);
 
@@ -100,11 +104,11 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl font-bold">
-          {isPasswordReset ? "Definir Nova Senha" : t('signup.title')}
+          {isPasswordReset ? t('signup.passwordReset.title') : t('signup.title')}
         </CardTitle>
         <CardDescription>
           {isPasswordReset
-            ? "Digite sua nova senha abaixo"
+            ? t('signup.passwordReset.subtitle')
             : t('signup.subtitle')}
         </CardDescription>
       </CardHeader>
@@ -116,17 +120,17 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
             if (isPasswordReset) {
               try {
                 const resetData = values as any;
-                await authGateway.resetPassword({
+                await resetPassword({
                   token: resetToken || "",
                   password: resetData.password,
                 });
 
-                setSuccessMessage("Senha atualizada com sucesso!");
+                setSuccessMessage(t('signup.passwordReset.success'));
                 setShowSuccess(true);
                 setTimeout(() => onNext(), 2000);
-              } catch (error: any) {
-                setErrorMessage(error.message);
-                setShowError(true);
+              } catch (error) {
+                const message = resetPasswordErrorMessage(error as AppError, t);
+                toast({ variant: "destructive", description: message });
               } finally {
                 setSubmitting(false);
               }
@@ -135,25 +139,25 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
 
             try {
               const signupData = values as any;
-              await authGateway.signup({
+              await signup({
                 email: signupData.email,
                 username: signupData.fullName,
                 password: signupData.password,
                 gender: signupData.gender,
                 phone_number: signupData.phone,
-                location: "", // Add location field if needed
+                location: "",
                 bio: signupData.bio,
                 instagram_profile: signupData.instagram,
               });
 
               setSuccessMessage(
-                "Código de verificação enviado para seu email!"
+                t('signup.verificationSent')
               );
               setShowSuccess(true);
               setTimeout(() => onNext(signupData.email), 2000);
-            } catch (error: any) {
-              setErrorMessage(error.message);
-              setShowError(true);
+            } catch (error) {
+              const message = signupErrorMessage(error as AppError, t);
+              toast({ variant: "destructive", description: message });
             } finally {
               setSubmitting(false);
             }
@@ -451,6 +455,8 @@ const EmailSignup: React.FC<EmailSignupProps> = ({
               >
                 {isSubmitting
                   ? t("signup.buttons.submitting")
+                  : isPasswordReset
+                  ? t("signup.buttons.resetPassword")
                   : t("signup.buttons.submit")}
               </Button>
 

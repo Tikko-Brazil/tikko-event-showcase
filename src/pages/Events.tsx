@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,7 +21,9 @@ import {
   ArrowRight,
   Search,
 } from "lucide-react";
-import { EventGateway } from "@/lib/EventGateway";
+import { useGetEvents } from "@/api/event/api";
+import { getEventsErrorMessage } from "@/api/event/errors";
+import { AppError } from "@/api/errors";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
 import { formatEventDate, formatEventTime } from "@/lib/utils";
 import generateSlug from "@/helpers/generateSlug";
@@ -32,7 +34,6 @@ import logoLight from "@/assets/logoLight.png";
 import mark from "@/assets/mark.png";
 import LanguageSelector from "@/components/LanguageSelector";
 
-const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
 const geocodingGateway = new GeocodingGateway();
 
 const ITEMS_PER_PAGE = 9;
@@ -47,21 +48,13 @@ const Events = () => {
     data: events,
     isLoading: eventsLoading,
     error: eventsError,
-  } = useQuery({
-    queryKey: ["events", currentPage, searchQuery],
-    queryFn: () =>
-      eventGateway.getEvents({
-        page: currentPage,
-        limit: ITEMS_PER_PAGE,
-        search: searchQuery || undefined,
-        order_by_participants: true,
-        active: "true"
-      }),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
+  } = useGetEvents({
+    page: currentPage,
+    limit: ITEMS_PER_PAGE,
+    search: searchQuery || undefined,
+    order_by_participants: true,
+    active: "true",
+    only_ongoing: true,
   });
 
   // Fetch addresses for events with coordinates
@@ -216,7 +209,9 @@ const Events = () => {
           {eventsError && (
             <Alert>
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{t("home.events.error")}</AlertDescription>
+              <AlertDescription>
+                {getEventsErrorMessage(eventsError as AppError, t)}
+              </AlertDescription>
             </Alert>
           )}
 

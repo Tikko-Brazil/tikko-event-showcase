@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +40,7 @@ import LanguageSelector from "@/components/LanguageSelector";
 import SearchModal from "@/components/SearchModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate, useLocation } from "react-router-dom";
-import { UserGateway } from "@/lib/UserGateway";
+import { useGetDashboard } from "@/api/user/api";
 import generateSlug from "@/helpers/generateSlug";
 import logoLight from "@/assets/logoLight.png";
 
@@ -66,17 +65,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     navigate("/login");
   };
 
-  const userGateway = new UserGateway(import.meta.env.VITE_BACKEND_BASE_URL);
-
-  const { data: dashboardData } = useQuery({
-    queryKey: ["dashboard"],
-    queryFn: () => userGateway.getDashboard(),
-    staleTime: 24 * 60 * 60 * 1000, // 1 day
-    gcTime: 24 * 60 * 60 * 1000, // 1 day
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-  });
+  const { data: dashboardData } = useGetDashboard();
 
   const getInitials = (name: string) => {
     return name
@@ -147,7 +136,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                         </p>
                       </div>
                     </div>
-                    <Button
+                    {(false && <Button
                       variant="outline"
                       size="sm"
                       className="w-full"
@@ -155,7 +144,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     >
                       <User className="mr-2 h-4 w-4" />
                       {t("dashboard.menu.viewProfile")}
-                    </Button>
+                    </Button>)}
+
                   </div>
 
                   <div className="p-2">
@@ -301,7 +291,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                       </p>
                     </div>
                   </div>
-                  <Button
+                  {(false && <Button
                     variant="outline"
                     size="sm"
                     className="w-full"
@@ -309,7 +299,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   >
                     <User className="mr-2 h-4 w-4" />
                     {t("dashboard.menu.viewProfile")}
-                  </Button>
+                  </Button>)}
                 </div>
 
                 <div className="p-2">

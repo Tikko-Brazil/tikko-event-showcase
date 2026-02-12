@@ -85,11 +85,6 @@
         "conversionRate": "Conversion Rate",
         "averageAge": "Average Age"
       },
-      "stats": {
-        "conversionRate": "conversion rate",
-        "liquidRevenue": "liquid revenue",
-        "yearsOld": "years old"
-      },
       "recentActivity": {
         "title": "Recent Activity",
         "actions": {
@@ -188,8 +183,8 @@
           "title": "Total Revenue",
           "subtitle": "Revenue generated"
         },
-        "ticketsSold": {
-          "title": "Tickets Sold",
+        "ticketsIssued": {
+          "title": "Tickets Issued",
           "subtitle": "Total tickets sold"
         },
         "conversionRate": {
@@ -416,9 +411,17 @@
         "edit": "Edit",
         "delete": "Delete"
       },
+      "deleteConfirm": "Are you sure you want to delete this coupon?",
+      "deleteDialog": {
+        "title": "Delete Coupon",
+        "description": "Are you sure you want to delete this coupon? This action cannot be undone.",
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
       "createDialog": {
         "title": "Create New Coupon",
         "description": "Add a new coupon for your event",
+        "success": "Coupon created successfully",
         "fields": {
           "code": "Coupon Code",
           "codePlaceholder": "Enter coupon code",
@@ -438,12 +441,24 @@
       "editDialog": {
         "title": "Edit Coupon",
         "description": "Update coupon information",
+        "success": "Coupon updated successfully",
         "buttons": {
           "cancel": "Cancel",
           "save": "Save Changes"
         }
       },
-      "noCouponsFound": "No coupons found"
+      "noCouponsFound": "No coupons found",
+      "copiedToClipboard": "Coupon code copied to clipboard!",
+      "linkCopied": "Event link with coupon copied to clipboard!",
+      "linkCopyError": "Failed to copy link",
+      "share": {
+        "copyLink": "Copy link",
+        "useCode": "Use coupon code"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      }
     },
     "staff": {
       "title": "Event Staff",
@@ -705,57 +720,32 @@
       "description": "Are you sure you want to download this ticket as a PDF? You can print it or save it for offline access."
     }
   },
+  "forgotPassword": {
+    "success": "Password reset link sent to your email!"
+  },
   "auth": {
-    "errors": {
-      "exchange": {
-        "400": "Missing authorization code or code verifier",
-        "401": "Google authentication failed",
-        "500": "Server error during authentication"
-      },
-      "refresh": {
-        "400": "Missing refresh token",
-        "401": "Invalid or expired refresh token"
-      },
-      "signup": {
-        "400": "Invalid request or missing required fields",
-        "403": "Authentication method conflict (user already has account with different login type)",
-        "409": "User already exists with this email",
-        "422": "Password is too weak",
-        "500": "Server error during registration"
-      },
-      "verify": {
-        "400": "Invalid request or missing required fields",
-        "401": "Invalid verification code",
-        "404": "No verification record found",
-        "410": "Verification code expired or already used",
-        "429": "Too many verification attempts"
-      },
-      "regenerateCode": {
-        "400": "Missing email address",
-        "404": "User not found",
-        "409": "Email already verified",
-        "429": "Too many regeneration attempts or wait required"
-      },
-      "login": {
-        "400": "Invalid request or missing required fields",
-        "401": "Invalid credentials or email not verified",
-        "403": "Authentication method error"
-      },
-      "forgotPassword": {
-        "400": "Missing email address",
-        "409": "Cannot reset password for OAuth users",
-        "429": "Too many reset attempts or wait required",
-        "500": "Server error during password reset"
-      },
-      "resetPassword": {
-        "400": "Invalid request or missing required fields",
-        "404": "Invalid reset token or user not found",
-        "410": "Reset token expired or already used",
-        "422": "Password is too weak",
-        "500": "Server error during password reset"
-      },
-      "unknown": "Unknown error"
-    }
+    "welcome": {
+      "title": "Welcome to Tikko",
+      "subtitle": "Your gateway to amazing events"
+    },
+    "buttons": {
+      "createAccount": "Create Account",
+      "signIn": "Sign In",
+      "continueWithGoogle": "Continue with Google",
+      "signingIn": "Signing in...",
+      "back": "Back",
+      "home": "Home"
+    },
+    "divider": {
+      "or": "or"
+    },
+    "sessionExpired": "Your session has expired. Please sign in again."
+  },
+  "verification": {
+    "codeResent": "Verification code resent to your email!"
+  },
+  "profileCompletion": {
+    "success": "Profile completed successfully!"
   },
   "signup": {
     "title": "Create Account",
@@ -812,8 +802,15 @@
       "submit": "Create Account",
       "submitting": "Creating...",
       "showPassword": "Show password",
-      "hidePassword": "Hide password"
+      "hidePassword": "Hide password",
+      "resetPassword": "Reset Password"
     },
+    "passwordReset": {
+      "title": "Set New Password",
+      "subtitle": "Enter your new password below",
+      "success": "Password updated successfully!"
+    },
+    "verificationSent": "Verification code sent to your email!",
     "links": {
       "hasAccount": "Already have an account?",
       "signIn": "Sign In"
@@ -1109,5 +1106,98 @@
     "loading": "Loading...",
     "error": "Error",
     "back": "Back"
+  },
+  "errors": {
+    "http": {
+      "401": "Unauthorized. Please log in again.",
+      "403": "You don't have permission to perform this action.",
+      "404": "Resource not found.",
+      "500": "Internal server error. Please try again later."
+    },
+    "generic": {
+      "NETWORK_ERROR": "Network error. Please check your connection.",
+      "UNKNOWN_ERROR": "An unexpected error occurred."
+    },
+    "user": {
+      "INVALID_REQUEST": "Please check all required fields and try again.",
+      "INVALID_EMAIL": "Please enter a valid email address (e.g., user@example.com).",
+      "INVALID_PHONE_NUMBER": "Please enter a valid phone number with country code (e.g., +55 11 99999-9999 for Brazil).",
+      "INVALID_USERNAME": "Username must be between 2 and 50 characters and contain your full name.",
+      "INVALID_GENDER": "Please select a valid gender option.",
+      "INSTAGRAM_PROFILE_REQUIRED": "Instagram username is required. Enter your username without the @ symbol (e.g., yourusername).",
+      "INVALID_EVENT_ID": "Something went wrong with the event selection. Please try again or contact support.",
+      "INVALID_TICKET_PRICING_ID": "Something went wrong with the ticket selection. Please try again.",
+      "USER_NOT_FOUND": "User not found.",
+      "EVENT_NOT_FOUND": "Event not found. It may have been removed or is no longer available.",
+      "DUPLICATE_TICKET": "You already have a ticket for this event.",
+      "DUPLICATE_INVITE": "You already have a pending invite for this event.",
+      "INVITE_REJECTED": "Your invite for this event was previously rejected.",
+      "PAYMENT_FAILED": "Payment processing failed. Please check your payment details and try again.",
+      "INTERNAL_SERVER_ERROR": "Server error. Please try again later."
+    },
+    "coupon": {
+      "INVALID_REQUEST": "Unable to apply coupon. Please check the code and try again.",
+      "INVALID_TICKET_PRICING_ID": "Something went wrong with the ticket selection. Please try again.",
+      "INVALID_EVENT_ID": "Something went wrong with the event selection. Please try again or contact support.",
+      "INVALID_COUPON_ID": "Invalid coupon ID",
+      "VALIDATION_FAILED": "Unable to validate coupon. Please try again.",
+      "COUPON_NOT_FOUND": "Coupon code not found. Please check the code and try again.",
+      "REQUEST_TIMEOUT": "Request timed out. Please try again.",
+      "COUPON_INACTIVE": "This coupon is not active.",
+      "COUPON_EXPIRED": "This coupon has expired.",
+      "COUPON_INVALID_TICKET_TYPE": "This coupon is not valid for the selected ticket type.",
+      "INVALID_PAGINATION": "Invalid page or limit number",
+      "INVALID_STATUS_FILTER": "Invalid status filter. Must be 'active', 'inactive', or 'all'",
+      "FORBIDDEN": "You don't have permission to manage coupons for this event"
+    },
+    "event": {
+      "INVALID_REQUEST": "Unable to load events. Please try again.",
+      "INVALID_PAGINATION": "Invalid page number. Please try again.",
+      "INVALID_ACTIVE_FILTER": "Invalid filter option. Please try again.",
+      "INTERNAL_SERVER_ERROR": "Server error. Please try again later."
+    },
+    "ticket": {
+      "MISSING_PAGINATION_PARAMS": "Page or limit parameter is missing",
+      "INVALID_PAGE_NUMBER": "Invalid page number",
+      "INVALID_LIMIT_NUMBER": "Invalid limit number. Must be between 1 and 100",
+      "INTERNAL_SERVER_ERROR": "Unable to load tickets. Please try again later"
+    },
+    "auth": {
+      "INVALID_REQUEST": "Unable to complete sign in. Please try again.",
+      "MISSING_CODE": "Authentication code is missing. Please try signing in again.",
+      "MISSING_CODE_VERIFIER": "Authentication verification failed. Please try signing in again.",
+      "UNSUPPORTED_IDENTITY_PROVIDER": "This sign-in method is not supported. Please use a different method.",
+      "AUTH_METHOD_PASSWORD": "This account is registered with email and password. Please sign in with your password.",
+      "AUTH_METHOD_GOOGLE": "This account is registered with Google. Please sign in with Google.",
+      "AUTH_METHOD_FACEBOOK": "This account is registered with Facebook. Please sign in with Facebook.",
+      "AUTH_METHOD_APPLE": "This account is registered with Apple. Please sign in with Apple.",
+      "OAUTH_EXCHANGE_FAILED": "Unable to complete sign in with this provider. Please try again.",
+      "MISSING_REQUIRED_FIELDS": "Please fill in all required fields (email, username, and password).",
+      "MISSING_VERIFY_FIELDS": "Please provide both email and verification code.",
+      "MISSING_LOGIN_FIELDS": "Please provide both email and password.",
+      "WEAK_PASSWORD": "Password must be at least 8 characters and include: uppercase letter, lowercase letter, number, and special character.",
+      "USER_ALREADY_EXISTS": "An account with this email already exists. Please sign in instead.",
+      "INVALID_CREDENTIALS": "Invalid email or password. Please try again.",
+      "EMAIL_NOT_VERIFIED": "Please verify your email before signing in. Check your inbox for the verification code.",
+      "PASSWORD_NOT_SET": "Please sign up first to create your account and set a password.",
+      "MISSING_EMAIL": "Please provide your email address.",
+      "PASSWORD_RESET_RATE_LIMITED": "Please wait {{minutes}} minutes before requesting another password reset.",
+      "TOO_MANY_PASSWORD_RESET_ATTEMPTS": "Too many password reset attempts. Please try again in {{hours}} hours.",
+      "INVALID_RESET_TOKEN": "Invalid password reset link",
+      "EXPIRED_RESET_TOKEN": "Password reset link has expired. Please request a new one",
+      "USED_RESET_TOKEN": "This password reset link has already been used. Please request a new one",
+      "MISSING_RESET_FIELDS": "Password reset token or new password is missing",
+      "EMAIL_ALREADY_VERIFIED": "Your email is already verified",
+      "TOO_MANY_REGENERATION_ATTEMPTS": "Too many code regeneration attempts. Please try again later",
+      "REGENERATION_RATE_LIMITED": "Please wait {{minutes}} minutes before requesting another code",
+      "MISSING_REFRESH_TOKEN": "Session expired. Please sign in again.",
+      "INVALID_REFRESH_TOKEN": "Your session has expired. Please sign in again.",
+      "INVALID_VERIFICATION_CODE": "The verification code is incorrect. Please check and try again.",
+      "NO_VERIFICATION_RECORD": "No verification found for this email. Please sign up first.",
+      "VERIFICATION_EXPIRED": "This verification code has expired. Please request a new one.",
+      "VERIFICATION_ALREADY_USED": "This verification code has already been used.",
+      "TOO_MANY_VERIFICATION_ATTEMPTS": "Too many verification attempts. Please request a new code.",
+      "INTERNAL_SERVER_ERROR": "Server error. Please try again later."
+    }
   }
 }
