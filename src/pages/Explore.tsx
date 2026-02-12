@@ -16,6 +16,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { EventGateway } from "@/lib/EventGateway";
+import { useGetEvents } from "@/api/event/api";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
 import { formatEventDate, formatEventTime } from "@/lib/utils";
 import generateSlug from "@/helpers/generateSlug";
@@ -35,20 +36,12 @@ const Explore = () => {
     data: eventsData,
     isLoading: eventsLoading,
     error: eventsError,
-  } = useQuery({
-    queryKey: ["explore-events", currentPage],
-    queryFn: () =>
-      eventGateway.getEvents({
-        page: currentPage,
-        limit: itemsPerPage,
-        active: "true",
-        order_by_participants: true,
-      }),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
+  } = useGetEvents({
+    page: currentPage,
+    limit: itemsPerPage,
+    active: "true",
+    order_by_participants: true,
+    only_ongoing: true,
   });
 
   // Fetch addresses for events with coordinates

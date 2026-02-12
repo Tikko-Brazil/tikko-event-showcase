@@ -183,8 +183,8 @@
           "title": "Total Revenue",
           "subtitle": "Revenue generated"
         },
-        "ticketsSold": {
-          "title": "Tickets Sold",
+        "ticketsIssued": {
+          "title": "Tickets Issued",
           "subtitle": "Total tickets sold"
         },
         "conversionRate": {

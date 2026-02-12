@@ -7,6 +7,7 @@ import { debounce } from "lodash";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EventGateway } from "@/lib/EventGateway";
+import { useGetEvents } from "@/api/event/api";
 import generateSlug from "@/helpers/generateSlug";
 
 interface SearchModalProps {
@@ -119,16 +120,12 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, initialEvent
   ).current;
 
   // API search query
-  const { data: searchResults } = useQuery({
-    queryKey: ["searchEvents", debouncedSearchQuery],
-    queryFn: () =>
-      eventGateway.getEvents({
-        page: 1,
-        limit: 10,
-        search: debouncedSearchQuery,
-        active: "true",
-      }),
-    enabled: !!debouncedSearchQuery.trim(),
+  const { data: searchResults } = useGetEvents({
+    page: 1,
+    limit: 10,
+    search: debouncedSearchQuery || undefined,
+    active: "true",
+    only_ongoing: true,
   });
 
   useEffect(() => {

@@ -294,26 +294,6 @@ export class EventGateway {
     return this.handleResponse<Event>(response);
   }
 
-  async getEvents(params: GetEventsParams): Promise<PaginatedEventsResponse> {
-    const searchParams = new URLSearchParams({
-      page: params.page.toString(),
-      limit: params.limit.toString(),
-    });
-
-    if (params.active) {
-      searchParams.append("active", params.active);
-    }
-    if (params.search) {
-      searchParams.append("search", params.search);
-    }
-    if (params.order_by_participants !== undefined) {
-      searchParams.append("order_by_participants", params.order_by_participants.toString());
-    }
-
-    const response = await fetch(`${this.baseUrl}/public/event?${searchParams}`);
-    return this.handleResponse<PaginatedEventsResponse>(response);
-  }
-
   async getEventWithTicketPricing(id: number, coupon?: string): Promise<EventWithTicketPricing> {
     const url = new URL(`${this.baseUrl}/public/event/${id}/with-ticket-pricing`);
     if (coupon) {

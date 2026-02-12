@@ -79,7 +79,7 @@
     "overview": {
       "cards": {
         "totalTickets": "Total de Ingressos",
-        "soldTickets": "Ingressos Vendidos",
+        "issuedTickets": "Ingressos Emitidos",
         "revenue": "Receita",
         "attendees": "Participantes",
         "conversionRate": "Taxa de Conversão",
@@ -189,8 +189,8 @@
           "title": "Receita Total",
           "subtitle": "Receita gerada"
         },
-        "ticketsSold": {
-          "title": "Ingressos Vendidos",
+        "ticketsIssued": {
+          "title": "Ingressos Emitidos",
           "subtitle": "Total de ingressos vendidos"
         },
         "conversionRate": {

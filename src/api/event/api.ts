@@ -36,6 +36,7 @@ export interface GetEventsParams {
   active?: "true" | "false" | "all"
   search?: string
   order_by_participants?: boolean
+  only_ongoing?: boolean
   page: number
   limit: number
 }
@@ -58,6 +59,9 @@ export function useGetEvents(params: GetEventsParams) {
         }
         if (params.order_by_participants !== undefined) {
           searchParams.append("order_by_participants", params.order_by_participants.toString())
+        }
+        if (params.only_ongoing !== undefined) {
+          searchParams.append("only_ongoing", params.only_ongoing.toString())
         }
 
         const res = await api.get(`/public/event?${searchParams}`)

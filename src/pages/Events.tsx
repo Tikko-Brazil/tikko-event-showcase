@@ -53,7 +53,8 @@ const Events = () => {
     limit: ITEMS_PER_PAGE,
     search: searchQuery || undefined,
     order_by_participants: true,
-    active: "true"
+    active: "true",
+    only_ongoing: true,
   });
 
   // Fetch addresses for events with coordinates

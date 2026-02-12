@@ -120,7 +120,7 @@ export const EventOverview = ({ eventId }: EventOverviewProps) => {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <Ticket className="h-4 w-4" />
-              {t("eventManagement.overview.cards.soldTickets")}
+              {t("eventManagement.overview.cards.issuedTickets")}
             </CardTitle>
           </CardHeader>
           <CardContent>

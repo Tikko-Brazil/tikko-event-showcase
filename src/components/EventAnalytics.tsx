@@ -349,7 +349,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">{t("eventManagement.analytics.cards.ticketsSold.title")}</CardTitle>
+            <CardTitle className="text-sm">{t("eventManagement.analytics.cards.ticketsIssued.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
