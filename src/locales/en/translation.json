@@ -447,7 +447,18 @@
           "save": "Save Changes"
         }
       },
-      "noCouponsFound": "No coupons found"
+      "noCouponsFound": "No coupons found",
+      "copiedToClipboard": "Coupon code copied to clipboard!",
+      "linkCopied": "Event link with coupon copied to clipboard!",
+      "linkCopyError": "Failed to copy link",
+      "share": {
+        "copyLink": "Copy link",
+        "useCode": "Use coupon code"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      }
     },
     "staff": {
       "title": "Event Staff",

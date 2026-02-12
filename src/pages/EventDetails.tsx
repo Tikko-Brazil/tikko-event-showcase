@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   Calendar,
@@ -15,6 +15,7 @@ import {
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,8 @@ const geocodingGateway = new GeocodingGateway();
 
 export default function EventDetails() {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const couponFromUrl = searchParams.get("coupon");
   const eventId = slug ? getEventIdFromSlug(slug) : null;
   const [selectedTicket, setSelectedTicket] = useState<string>("");
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -52,8 +55,8 @@ export default function EventDetails() {
     isLoading: eventLoading,
     error: eventError,
   } = useQuery({
-    queryKey: ["event-with-pricing", eventId],
-    queryFn: () => eventGateway.getEventWithTicketPricing(Number(eventId)),
+    queryKey: ["event-with-pricing", eventId, couponFromUrl],
+    queryFn: () => eventGateway.getEventWithTicketPricing(Number(eventId), couponFromUrl || undefined),
     enabled: !!eventId,
   });
 
@@ -460,9 +463,16 @@ export default function EventDetails() {
           <div className="lg:col-span-1 order-1 lg:order-2">
             <Card className="bg-card shadow-lg lg:sticky lg:top-24">
               <CardHeader className="p-4 md:p-6">
-                <CardTitle className="text-lg md:text-xl">
-                  Obter ingressos
-                </CardTitle>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-lg md:text-xl">
+                    Obter ingressos
+                  </CardTitle>
+                  {ticket_pricing.some(t => t.coupon) && (
+                    <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-primary">
+                      Cupom: {ticket_pricing.find(t => t.coupon)?.coupon}
+                    </span>
+                  )}
+                </div>
                 <p className="text-muted-foreground text-sm">
                   Por favor, escolha o tipo de ingresso desejado:
                 </p>
@@ -510,9 +520,20 @@ export default function EventDetails() {
                             </Label>
                           </div>
                           <div className="text-right">
-                            <p className="font-bold text-base md:text-lg">
-                              {formatPrice(ticket.price)}
-                            </p>
+                            {ticket.new_price !== undefined ? (
+                              <div>
+                                <p className="text-xs text-muted-foreground line-through">
+                                  {formatPrice(ticket.price)}
+                                </p>
+                                <p className="font-bold text-base md:text-lg text-green-600">
+                                  {formatPrice(ticket.new_price)}
+                                </p>
+                              </div>
+                            ) : (
+                              <p className="font-bold text-base md:text-lg">
+                                {formatPrice(ticket.price)}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -601,6 +622,16 @@ export default function EventDetails() {
         eventId={event.id}
         ticketPricingId={selectedTicketData?.id || 0}
         autoAccept={event.auto_accept}
+        initialCoupon={selectedTicketData?.coupon || undefined}
+        initialDiscount={
+          selectedTicketData?.coupon && selectedTicketData?.discount !== undefined
+            ? {
+                code: selectedTicketData.coupon,
+                percentage: Math.round((selectedTicketData.discount / selectedTicketData.price) * 100),
+                amount: selectedTicketData.discount,
+              }
+            : undefined
+        }
       />
     </div>
   );

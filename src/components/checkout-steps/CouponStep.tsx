@@ -18,6 +18,7 @@ interface CouponStepProps {
   eventId: number;
   ticketPricingId: number;
   onNext: () => void;
+  initialCoupon?: string;
 }
 
 export const CouponStep: React.FC<CouponStepProps> = ({
@@ -27,11 +28,13 @@ export const CouponStep: React.FC<CouponStepProps> = ({
   eventId,
   ticketPricingId,
   onNext,
+  initialCoupon,
 }) => {
   const { t } = useTranslation();
-  const [couponCode, setCouponCode] = useState(discount?.code || "");
+  const [couponCode, setCouponCode] = useState(initialCoupon || discount?.code || "");
   const [error, setError] = useState("");
   const { mutateAsync, isPending } = useValidateCoupon();
+  const hasAutoApplied = React.useRef(false);
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) {
@@ -41,12 +44,15 @@ export const CouponStep: React.FC<CouponStepProps> = ({
 
     try {
       setError("");
-      const data = await mutateAsync({
+      const response = await mutateAsync({
         event_id: eventId,
         ticket_pricing_id: ticketPricingId,
         coupon: couponCode.toUpperCase(),
       });
 
+      // Handle wrapped response (in case of caching issues)
+      const data = 'data' in response ? response.data : response;
+      
       const discountAmount = data.original_price - data.final_price;
       const discountPercentage = Math.round((discountAmount / data.original_price) * 100);
       
@@ -61,6 +67,14 @@ export const CouponStep: React.FC<CouponStepProps> = ({
       onDiscountChange(undefined);
     }
   };
+
+  // Auto-apply coupon if initialCoupon is provided
+  React.useEffect(() => {
+    if (initialCoupon && !discount && !hasAutoApplied.current) {
+      hasAutoApplied.current = true;
+      applyCoupon();
+    }
+  }, [initialCoupon, discount]);
 
   const removeCoupon = () => {
     setCouponCode("");

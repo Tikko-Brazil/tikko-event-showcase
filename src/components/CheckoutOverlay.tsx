@@ -27,6 +27,8 @@ interface CheckoutOverlayProps {
   eventId: number;
   ticketPricingId: number;
   autoAccept?: boolean;
+  initialCoupon?: string;
+  initialDiscount?: DiscountData;
 }
 
 export interface UserData {
@@ -54,6 +56,8 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   eventId,
   ticketPricingId,
   autoAccept = true,
+  initialCoupon,
+  initialDiscount,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [userData, setUserData] = useState<UserData>({
@@ -70,7 +74,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
     "cpf"
   );
   const [formValidationTrigger, setFormValidationTrigger] = useState(0);
-  const [discount, setDiscount] = useState<DiscountData | undefined>();
+  const [discount, setDiscount] = useState<DiscountData | undefined>(initialDiscount);
   const [paymentMethod, setPaymentMethod] = useState<"credit" | "pix" | "">("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -83,6 +87,13 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
 
   const { t } = useTranslation();
   const { mutateAsync, isPending } = useRegisterAndJoinEvent();
+
+  // Update discount when initialDiscount changes (e.g., when overlay reopens)
+  React.useEffect(() => {
+    if (isOpen) {
+      setDiscount(initialDiscount);
+    }
+  }, [isOpen, initialDiscount]);
 
   const totalSteps = 8;
 
@@ -262,6 +273,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             eventId={eventId}
             ticketPricingId={ticketPricingId}
             onNext={handleNext}
+            initialCoupon={initialCoupon}
           />
         );
       case 4:

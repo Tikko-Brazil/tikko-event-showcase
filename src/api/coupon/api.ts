@@ -18,7 +18,7 @@ export function useValidateCoupon() {
     mutationFn: async (data: ValidateCouponInput) => {
       try {
         const res = await api.post("/public/coupon/price", data)
-        return res.data as ValidateCouponResponse
+        return res.data.data as ValidateCouponResponse
       } catch (error) {
         throw normalizeApiError(error)
       }

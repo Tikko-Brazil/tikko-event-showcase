@@ -72,6 +72,9 @@ interface TicketPricing {
   male_capacity: number;
   female_capacity: number;
   lot: number;
+  discount?: number;
+  new_price?: number;
+  coupon?: string;
 }
 
 interface CreateTicketPricingRequest {
@@ -311,10 +314,12 @@ export class EventGateway {
     return this.handleResponse<PaginatedEventsResponse>(response);
   }
 
-  async getEventWithTicketPricing(id: number): Promise<EventWithTicketPricing> {
-    const response = await fetch(
-      `${this.baseUrl}/public/event/${id}/with-ticket-pricing`
-    );
+  async getEventWithTicketPricing(id: number, coupon?: string): Promise<EventWithTicketPricing> {
+    const url = new URL(`${this.baseUrl}/public/event/${id}/with-ticket-pricing`);
+    if (coupon) {
+      url.searchParams.append('coupon', coupon);
+    }
+    const response = await fetch(url.toString());
     return this.handleResponse<EventWithTicketPricing>(response);
   }
 

@@ -453,7 +453,18 @@
           "save": "Salvar Alterações"
         }
       },
-      "noCouponsFound": "Nenhum cupom encontrado"
+      "noCouponsFound": "Nenhum cupom encontrado",
+      "copiedToClipboard": "Código do cupom copiado para a área de transferência!",
+      "linkCopied": "Link do evento com cupom copiado para a área de transferência!",
+      "linkCopyError": "Falha ao copiar link",
+      "share": {
+        "copyLink": "Copiar link",
+        "useCode": "Use o cupom"
+      },
+      "status": {
+        "active": "Ativo",
+        "inactive": "Inativo"
+      }
     },
     "staff": {
       "title": "Equipe do Evento",
