@@ -20,6 +20,23 @@ export interface Organization {
   logo: string
   created_at: string
   updated_at: string
+  created_by: number
+  is_active: boolean
+  organization_role: number
+}
+
+export interface GetOrganizationsResponse {
+  organizations: Organization[]
+  total: number
+  page: number
+  limit: number
+  total_pages: number
+  is_admin: boolean
+}
+
+export interface GetOrganizationsParams {
+  page?: number
+  limit?: number
 }
 
 export interface LogoUploadUrlResponse {
@@ -63,5 +80,41 @@ export function useGetLogoUploadUrl(params: GetLogoUploadUrlParams) {
       }
     },
     enabled: !!params.filename,
+  })
+}
+
+export function useGetOrganizations(params?: GetOrganizationsParams) {
+  const page = params?.page || 1
+  const limit = params?.limit || 10
+
+  return useQuery({
+    queryKey: ["organizations", page, limit],
+    queryFn: async () => {
+      try {
+        const searchParams = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+        })
+        const res = await apiAuth.get(`/private/organizations?${searchParams}`)
+        return res.data as GetOrganizationsResponse
+      } catch (error) {
+        throw normalizeApiError(error)
+      }
+    },
+  })
+}
+
+export function useGetOrganization(id: number) {
+  return useQuery({
+    queryKey: ["organization", id],
+    queryFn: async () => {
+      try {
+        const res = await apiAuth.get(`/private/organization/${id}`)
+        return res.data as Organization
+      } catch (error) {
+        throw normalizeApiError(error)
+      }
+    },
+    enabled: !!id,
   })
 }

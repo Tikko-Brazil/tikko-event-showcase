@@ -14,6 +14,7 @@ import MyEvents from "./pages/MyEvents";
 import MyTickets from "./pages/MyTickets";
 import Organizations from "./pages/Organizations";
 import OrganizationCreation from "./pages/OrganizationCreation";
+import OrganizationManagement from "./pages/OrganizationManagement";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import EditProfile from "./pages/EditProfile";
@@ -188,6 +189,14 @@ const App = () => (
                 element={
                   <PrivateRoute>
                     <OrganizationCreation />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/organization-management/:organizationId/*"
+                element={
+                  <PrivateRoute>
+                    <OrganizationManagement />
                   </PrivateRoute>
                 }
               />

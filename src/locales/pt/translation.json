@@ -1273,7 +1273,10 @@
       "alreadyExists": "Já existe uma organização com este nome",
       "internalError": "Falha ao criar organização. Por favor, tente novamente mais tarde",
       "filenameRequired": "Nome do arquivo é obrigatório",
-      "uploadUrlFailed": "Falha ao gerar URL de upload. Por favor, tente novamente"
+      "uploadUrlFailed": "Falha ao gerar URL de upload. Por favor, tente novamente",
+      "invalidPagination": "Parâmetros de paginação inválidos",
+      "forbidden": "Você não tem permissão para acessar esta organização",
+      "notFound": "Organização não encontrada"
     },
     "networkError": "Erro de rede. Por favor, verifique sua conexão e tente novamente.",
     "unknownError": "Ocorreu um erro inesperado. Por favor, tente novamente."

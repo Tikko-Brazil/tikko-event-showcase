@@ -1267,7 +1267,10 @@
       "alreadyExists": "An organization with this name already exists",
       "internalError": "Failed to create organization. Please try again later",
       "filenameRequired": "Filename is required",
-      "uploadUrlFailed": "Failed to generate upload URL. Please try again"
+      "uploadUrlFailed": "Failed to generate upload URL. Please try again",
+      "invalidPagination": "Invalid pagination parameters",
+      "forbidden": "You don't have permission to access this organization",
+      "notFound": "Organization not found"
     },
     "networkError": "Network error. Please check your connection and try again.",
     "unknownError": "An unexpected error occurred. Please try again."
