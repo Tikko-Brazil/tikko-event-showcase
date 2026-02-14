@@ -45,6 +45,17 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import logoLight from "@/assets/logoLight.png";
 import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
+import { useGetOrganizations } from "@/api/organization/api";
+import { useCreateEvent } from "@/api/event/api";
+import { createEventErrorMessage } from "@/api/event/errors";
+import { AppError } from "@/api/errors";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Interfaces
 interface TicketPricing {
@@ -67,11 +78,15 @@ interface FormValues {
   longitude: number | null;
   locationDisplayName: string;
   approvalRequired: boolean;
+  organizationId: number | null;
   ticketPricings: TicketPricing[];
 }
 
 // Validation schema function
 const createEventCreationSchema = (t: any) => Yup.object().shape({
+  organizationId: Yup.number()
+    .required(t("eventCreation.validation.organizationRequired"))
+    .nullable(),
   name: Yup.string()
     .required(t("eventCreation.validation.eventNameRequired"))
     .min(3, t("eventCreation.validation.eventNameMin"))
@@ -229,6 +244,10 @@ const EventCreation = () => {
   // Create validation schema with translations
   const validationSchema = createEventCreationSchema(t);
 
+  // Fetch organizations
+  const { data: organizationsResponse } = useGetOrganizations({ page: 1, limit: 100 });
+  const organizations = organizationsResponse?.organizations || [];
+
   // Gateways
   const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
   const geocodingGateway = new GeocodingGateway();
@@ -248,6 +267,7 @@ const EventCreation = () => {
     longitude: null,
     locationDisplayName: "",
     approvalRequired: false,
+    organizationId: organizations[0]?.id || null,
     ticketPricings: [],
   };
 
@@ -285,6 +305,9 @@ const EventCreation = () => {
   });
 
   // Create event mutation
+  // Create event mutation
+  const { mutateAsync: createEvent, isPending: isCreatingEvent } = useCreateEvent();
+
   const createEventMutation = useMutation({
     mutationFn: async (values: FormValues) => {
       const eventData = {
@@ -293,6 +316,7 @@ const EventCreation = () => {
           description: values.description,
           start_date: combineDateTime(values.startDate, values.startTime),
           end_date: combineDateTime(values.endDate, values.endTime),
+          organization_id: values.organizationId!,
           address_name: values.locationName,
           longitude: values.longitude!,
           latitude: values.latitude!,
@@ -312,7 +336,7 @@ const EventCreation = () => {
         })),
       };
 
-      return eventGateway.createEvent(eventData);
+      return createEvent(eventData);
     },
     onSuccess: () => {
       setShowSuccess(true);
@@ -321,9 +345,8 @@ const EventCreation = () => {
       }, 2000);
     },
     onError: (error: any) => {
-      setErrorMessage(
-        error.message || t("eventCreation.messages.createError")
-      );
+      const message = createEventErrorMessage(error as AppError, t);
+      setErrorMessage(message);
       setShowError(true);
     },
   });
@@ -419,6 +442,7 @@ const EventCreation = () => {
             initialValues={initialValues}
             validationSchema={validationSchema}
             onSubmit={(values) => createEventMutation.mutate(values)}
+            enableReinitialize
           >
             {({
               values,
@@ -441,6 +465,34 @@ const EventCreation = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    {/* Organization Selection */}
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="organizationId"
+                        className="text-sm font-medium text-foreground"
+                      >
+                        {t("eventCreation.fields.organization.label")} *
+                      </Label>
+                      <Select
+                        value={values.organizationId?.toString() || ""}
+                        onValueChange={(value) => setFieldValue("organizationId", parseInt(value))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={t("eventCreation.fields.organization.placeholder")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {organizations.map((org) => (
+                            <SelectItem key={org.id} value={org.id.toString()}>
+                              {org.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {errors.organizationId && touched.organizationId && (
+                        <p className="text-sm text-red-500">{errors.organizationId}</p>
+                      )}
+                    </div>
+
                     {/* Event Name */}
                     <div className="space-y-2">
                       <Label

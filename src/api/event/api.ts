@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query"
-import { api, normalizeApiError } from "../client"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { api, apiAuth, normalizeApiError } from "../client"
 
 export interface Event {
   id: number
@@ -75,5 +75,65 @@ export function useGetEvents(params: GetEventsParams) {
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
+  })
+}
+
+export interface TicketPricing {
+  ticket_type: string
+  gender: "male" | "female"
+  price: number
+  start_date: string
+  end_date: string
+  active: boolean
+}
+
+export interface CreateEventInput {
+  event: {
+    name: string
+    description: string
+    start_date: string
+    end_date: string
+    organization_id: number
+    address_name: string
+    longitude: number
+    latitude: number
+    address_complement?: string
+    is_private: boolean
+    auto_accept: boolean
+    is_active: boolean
+    image?: string
+  }
+  ticket_pricing: TicketPricing[]
+}
+
+export interface Event {
+  id: number
+  name: string
+  description: string
+  start_date: string
+  end_date: string
+  organization_id: number
+  address_name: string
+  longitude: number
+  latitude: number
+  address_complement: string
+  is_private: boolean
+  auto_accept: boolean
+  is_active: boolean
+  image: string
+  created_at: string
+  updated_at: string
+}
+
+export function useCreateEvent() {
+  return useMutation({
+    mutationFn: async (data: CreateEventInput) => {
+      try {
+        const res = await apiAuth.post("/private/event", data)
+        return res.data as Event
+      } catch (error) {
+        throw normalizeApiError(error)
+      }
+    },
   })
 }

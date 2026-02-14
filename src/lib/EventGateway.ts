@@ -124,6 +124,10 @@ interface UpdateEventRequest {
 interface EventWithTicketPricing {
   event: Event;
   ticket_pricing: TicketPricing[];
+  organization?: {
+    name: string;
+    logo: string;
+  };
 }
 
 interface CreateEventResponse {

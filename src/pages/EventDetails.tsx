@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   Calendar,
   Clock,
@@ -41,6 +42,7 @@ const geocodingGateway = new GeocodingGateway();
 export default function EventDetails() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation();
   const couponFromUrl = searchParams.get("coupon");
   const eventId = slug ? getEventIdFromSlug(slug) : null;
   const [selectedTicket, setSelectedTicket] = useState<string>("");
@@ -344,6 +346,19 @@ export default function EventDetails() {
                     {formatTime(event.start_date, event.end_date)}
                   </span>
                 </div>
+                {eventData.organization && (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-sm text-white/70">{t("eventDetails.organizedBy")}</span>
+                    {eventData.organization.logo && (
+                      <img 
+                        src={eventData.organization.logo} 
+                        alt={eventData.organization.name}
+                        className="w-5 h-5 rounded object-cover"
+                      />
+                    )}
+                    <span className="text-sm font-medium">{eventData.organization.name}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -382,6 +397,19 @@ export default function EventDetails() {
                   {formatTime(event.start_date, event.end_date)}
                 </span>
               </div>
+              {eventData.organization && (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-muted-foreground">{t("eventDetails.organizedBy")}</span>
+                  {eventData.organization.logo && (
+                    <img 
+                      src={eventData.organization.logo} 
+                      alt={eventData.organization.name}
+                      className="w-6 h-6 rounded object-cover"
+                    />
+                  )}
+                  <span className="text-base font-medium">{eventData.organization.name}</span>
+                </div>
+              )}
             </div>
 
             {/* Location Card - Desktop Only */}

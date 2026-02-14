@@ -198,31 +198,30 @@ export default function OrganizationCreation() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex h-14 items-center justify-between px-4">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => navigate("/organizations")}
+              className="hover:bg-accent"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {t("organizationCreation.header.back")}
+              <ArrowLeft className="h-5 w-5" />
             </Button>
-            {!isMobile && <img src={logoLight} alt="Tikko" className="h-8" />}
+            {!isMobile && (
+              <div className="flex items-center gap-3">
+                <img src={logoLight} alt="Logo" className="h-8" />
+                <div className="h-6 w-px bg-border" />
+                <h1 className="text-xl font-bold">{t("organizationCreation.header.title")}</h1>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="container max-w-4xl mx-auto p-4 md:p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold">{t("organizationCreation.header.title")}</h1>
-          <p className="text-muted-foreground mt-1">
-            {t("organizationCreation.header.subtitle")}
-          </p>
-        </div>
-
         <Formik
           initialValues={initialValues}
           validationSchema={createOrganizationSchema(t)}

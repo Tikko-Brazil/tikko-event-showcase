@@ -908,6 +908,9 @@
       "confirm": "Close Account"
     }
   },
+  "eventDetails": {
+    "organizedBy": "Organized by"
+  },
   "eventCreation": {
     "header": {
       "title": "Create Event",
@@ -924,6 +927,10 @@
       }
     },
     "fields": {
+      "organization": {
+        "label": "Organization",
+        "placeholder": "Select an organization"
+      },
       "eventName": {
         "label": "Event Name",
         "placeholder": "Enter event name"
@@ -979,6 +986,7 @@
       "creating": "Creating Event..."
     },
     "validation": {
+      "organizationRequired": "Please select an organization",
       "eventNameRequired": "Event name is required",
       "eventNameMin": "Name must be at least 3 characters",
       "eventNameMax": "Name must be at most 100 characters",
@@ -1271,6 +1279,21 @@
       "invalidPagination": "Invalid pagination parameters",
       "forbidden": "You don't have permission to access this organization",
       "notFound": "Organization not found"
+    },
+    "event": {
+      "invalidRequest": "Invalid request data",
+      "nameRequired": "Event name is required",
+      "startDateRequired": "Event start date is required",
+      "ticketPricingRequired": "At least one ticket type is required",
+      "ticketTypeRequired": "Ticket type is required",
+      "ticketDatesRequired": "Ticket dates are required",
+      "organizationIdRequired": "Organization is required",
+      "unauthorized": "You must be logged in to create an event",
+      "adminOnly": "Only administrators can create events",
+      "notOrganizationMember": "You are not a member of this organization",
+      "insufficientPermissions": "You don't have permission to create events in this organization",
+      "userNotFound": "User not found",
+      "internalError": "Failed to create event. Please try again later"
     },
     "networkError": "Network error. Please check your connection and try again.",
     "unknownError": "An unexpected error occurred. Please try again."
