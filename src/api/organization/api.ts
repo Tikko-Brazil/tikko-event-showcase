@@ -10,6 +10,15 @@ export interface CreateOrganizationInput {
   logo?: string
 }
 
+export interface UpdateOrganizationInput {
+  name?: string
+  latitude?: number
+  longitude?: number
+  address_name?: string
+  address_complement?: string
+  logo?: string
+}
+
 export interface Organization {
   id: number
   name: string
@@ -116,5 +125,18 @@ export function useGetOrganization(id: number) {
       }
     },
     enabled: !!id,
+  })
+}
+
+export function useUpdateOrganization(id: number) {
+  return useMutation({
+    mutationFn: async (data: UpdateOrganizationInput) => {
+      try {
+        const res = await apiAuth.put(`/private/organization/${id}`, data)
+        return res.data as Organization
+      } catch (error) {
+        throw normalizeApiError(error)
+      }
+    },
   })
 }

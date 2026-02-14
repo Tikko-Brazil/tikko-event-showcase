@@ -7,6 +7,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import logoLight from "@/assets/logoLight.png";
 import { useGetOrganization } from "@/api/organization/api";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
+import { OrganizationEditForm } from "@/components/OrganizationEditForm";
+import { useQueryClient } from "@tanstack/react-query";
 
 const geocodingGateway = new GeocodingGateway();
 
@@ -16,11 +18,19 @@ const OrganizationManagement = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
+  const queryClient = useQueryClient();
 
   // Get section from URL, default to 'edit'
   const urlSection = location.pathname.split('/').pop();
   const [activeSection, setActiveSection] = useState(urlSection === organizationId ? "edit" : urlSection || "edit");
   const [mobileOverlay, setMobileOverlay] = useState<string | null>(null);
+
+  // Sync mobile overlay with URL on mobile
+  React.useEffect(() => {
+    if (isMobile && urlSection && urlSection !== organizationId) {
+      setMobileOverlay(urlSection);
+    }
+  }, [isMobile, urlSection, organizationId]);
   const [reverseGeocodedAddress, setReverseGeocodedAddress] = useState<string>("");
 
   // Redirect to /edit if on base URL (desktop only)
@@ -62,6 +72,14 @@ const OrganizationManagement = () => {
 
     switch (currentSection) {
       case "edit":
+        return organization ? (
+          <OrganizationEditForm 
+            organization={organization}
+            onSuccess={() => {
+              queryClient.invalidateQueries({ queryKey: ["organization", Number(organizationId)] });
+            }}
+          />
+        ) : null;
       case "members":
       case "events":
       case "payment":
@@ -181,7 +199,10 @@ if (isMobile) {
             return (
               <button
                 key={section.id}
-                onClick={() => setMobileOverlay(section.id)}
+                onClick={() => {
+                  setMobileOverlay(section.id);
+                  navigate(`/organization-management/${organizationId}/${section.id}`);
+                }}
                 className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-card hover:bg-accent/50 transition-colors"
               >
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">

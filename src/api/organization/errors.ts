@@ -94,3 +94,30 @@ export function getOrganizationErrorMessage(error: AppError, t: TFunction): stri
       return t("api.errors.unknownError")
   }
 }
+
+export function updateOrganizationErrorMessage(error: AppError, t: TFunction): string {
+  const code = error.code
+
+  switch (code) {
+    case "INVALID_REQUEST":
+      return t("api.errors.organization.invalidRequest")
+    case "UNAUTHORIZED":
+      return t("api.errors.organization.unauthorized")
+    case "ADMIN_ONLY":
+      return t("api.errors.organization.adminOnly")
+    case "FORBIDDEN":
+      return t("api.errors.organization.forbidden")
+    case "NOT_FOUND":
+      return t("api.errors.organization.notFound")
+    case "USER_NOT_FOUND":
+      return t("api.errors.organization.userNotFound")
+    case "ORGANIZATION_ALREADY_EXISTS":
+      return t("api.errors.organization.alreadyExists")
+    case "INTERNAL_SERVER_ERROR":
+      return t("api.errors.organization.internalError")
+    case "NETWORK_ERROR":
+      return t("api.errors.networkError")
+    default:
+      return t("api.errors.unknownError")
+  }
+}
