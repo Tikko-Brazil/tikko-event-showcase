@@ -5,7 +5,8 @@
       "explore": "Explorar",
       "myEvents": "Meus Eventos",
       "myTickets": "Ingressos",
-      "profile": "Perfil"
+      "profile": "Perfil",
+      "organizations": "Organizações"
     },
     "menu": {
       "viewProfile": "Ver Perfil",
@@ -1018,6 +1019,63 @@
       "uploadError": "Erro ao fazer upload da imagem"
     }
   },
+  "organizationCreation": {
+    "header": {
+      "back": "Voltar",
+      "title": "Criar Organização",
+      "subtitle": "Preencha os detalhes para criar uma nova organização"
+    },
+    "sections": {
+      "basicInfo": {
+        "title": "Informações Básicas"
+      },
+      "location": {
+        "title": "Localização"
+      }
+    },
+    "fields": {
+      "name": {
+        "label": "Nome da Organização",
+        "placeholder": "Digite o nome da organização",
+        "required": "Nome da organização é obrigatório",
+        "minLength": "O nome deve ter pelo menos 3 caracteres",
+        "maxLength": "O nome deve ter no máximo 100 caracteres"
+      },
+      "logo": {
+        "label": "Logo da Organização",
+        "uploadText": "Clique para fazer upload do logo",
+        "preview": "Pré-visualização do logo"
+      },
+      "locationName": {
+        "label": "Nome do Local",
+        "placeholder": "ex: Escritório Principal, Sede",
+        "required": "Nome do local é obrigatório",
+        "minLength": "O nome do local deve ter pelo menos 3 caracteres",
+        "maxLength": "O nome do local deve ter no máximo 100 caracteres"
+      },
+      "address": {
+        "label": "Endereço",
+        "placeholder": "Buscar endereço",
+        "required": "Endereço é obrigatório",
+        "minLength": "O endereço deve ter pelo menos 3 caracteres",
+        "selectLocation": "Por favor, selecione um local do mapa"
+      },
+      "addressComplement": {
+        "label": "Complemento do Endereço",
+        "placeholder": "Sala, andar, etc."
+      },
+      "selected": "Selecionado: {{location}}"
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "create": "Criar Organização",
+      "creating": "Criando..."
+    },
+    "messages": {
+      "success": "Organização criada com sucesso!",
+      "uploadError": "Falha ao fazer upload da imagem"
+    }
+  },
   "about": {
     "header": {
       "backToHome": "Voltar ao Início"
@@ -1204,6 +1262,20 @@
       "VERIFICATION_ALREADY_USED": "Este código de verificação já foi usado.",
       "TOO_MANY_VERIFICATION_ATTEMPTS": "Muitas tentativas de verificação. Por favor, solicite um novo código.",
       "INTERNAL_SERVER_ERROR": "Erro no servidor. Por favor, tente novamente mais tarde."
-    }
+    },
+    "organization": {
+      "invalidRequest": "Dados da requisição inválidos",
+      "nameRequired": "Nome da organização é obrigatório",
+      "validationFailed": "Nome da organização deve ter entre 3 e 100 caracteres",
+      "unauthorized": "Você precisa estar logado para criar uma organização",
+      "adminOnly": "Apenas administradores podem criar organizações",
+      "userNotFound": "Usuário não encontrado",
+      "alreadyExists": "Já existe uma organização com este nome",
+      "internalError": "Falha ao criar organização. Por favor, tente novamente mais tarde",
+      "filenameRequired": "Nome do arquivo é obrigatório",
+      "uploadUrlFailed": "Falha ao gerar URL de upload. Por favor, tente novamente"
+    },
+    "networkError": "Erro de rede. Por favor, verifique sua conexão e tente novamente.",
+    "unknownError": "Ocorreu um erro inesperado. Por favor, tente novamente."
   }
 }

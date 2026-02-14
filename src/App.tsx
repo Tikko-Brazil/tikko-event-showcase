@@ -12,6 +12,8 @@ import Feed from "./pages/Feed";
 import Explore from "./pages/Explore";
 import MyEvents from "./pages/MyEvents";
 import MyTickets from "./pages/MyTickets";
+import Organizations from "./pages/Organizations";
+import OrganizationCreation from "./pages/OrganizationCreation";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import EditProfile from "./pages/EditProfile";
@@ -113,6 +115,14 @@ const App = () => (
                 }
               />
               <Route
+                path="/organizations"
+                element={
+                  <PrivateRoute>
+                    <Organizations />
+                  </PrivateRoute>
+                }
+              />
+              <Route
                 path="/profile"
                 element={
                   <PrivateRoute>
@@ -170,6 +180,14 @@ const App = () => (
                 element={
                   <PrivateRoute>
                     <EventCreation />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/create-organization"
+                element={
+                  <PrivateRoute>
+                    <OrganizationCreation />
                   </PrivateRoute>
                 }
               />

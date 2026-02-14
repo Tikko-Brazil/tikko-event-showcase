@@ -5,8 +5,8 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  // If private routes are disabled, allow access without authentication
-  if (!import.meta.env.VITE_ENABLE_PRIVATE_ROUTES) {
+  // If private routes are explicitly disabled, allow access without authentication
+  if (import.meta.env.VITE_ENABLE_PRIVATE_ROUTES === 'false') {
     return <>{children}</>;
   }
 
