@@ -15,6 +15,10 @@ import MyTickets from "./pages/MyTickets";
 import Organizations from "./pages/Organizations";
 import OrganizationCreation from "./pages/OrganizationCreation";
 import OrganizationManagement from "./pages/OrganizationManagement";
+import OrganizationManagementLayout from "./components/OrganizationManagementLayout";
+import OrganizationManagementRedirect from "./components/OrganizationManagementRedirect";
+import OrganizationEditPage from "./pages/organization-management/EditPage";
+import PaymentPage from "./pages/organization-management/PaymentPage";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import EditProfile from "./pages/EditProfile";
@@ -192,14 +196,22 @@ const App = () => (
                   </PrivateRoute>
                 }
               />
+              {/* Organization management routes */}
               <Route
-                path="/organization-management/:organizationId/*"
+                path="/organization-management/:organizationId"
                 element={
                   <PrivateRoute>
-                    <OrganizationManagement />
+                    <OrganizationManagementLayout />
                   </PrivateRoute>
                 }
-              />
+              >
+                <Route index element={<OrganizationManagementRedirect />} />
+                <Route path="edit" element={<OrganizationEditPage />} />
+                <Route path="members" element={<div className="text-center py-12"><p className="text-muted-foreground">Coming soon</p></div>} />
+                <Route path="events" element={<div className="text-center py-12"><p className="text-muted-foreground">Coming soon</p></div>} />
+                <Route path="payment" element={<PaymentPage />} />
+                <Route path="meta-pixel" element={<div className="text-center py-12"><p className="text-muted-foreground">Coming soon</p></div>} />
+              </Route>
               <Route path="/event/:slug" element={<EventDetails />} />
               <Route path="/about" element={<AboutUs />} />
               <Route path="/contact" element={<Contact />} />

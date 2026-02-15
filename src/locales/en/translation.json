@@ -1078,6 +1078,13 @@
       "uploadError": "Failed to upload image"
     }
   },
+  "organizationManagement": {
+    "payment": {
+      "title": "Payment Settings",
+      "description": "Connect your Mercado Pago account to receive payments for your events.",
+      "connectMercadoPago": "Connect Mercado Pago"
+    }
+  },
   "about": {
     "header": {
       "backToHome": "Back to Home"
@@ -1294,6 +1301,19 @@
       "insufficientPermissions": "You don't have permission to create events in this organization",
       "userNotFound": "User not found",
       "internalError": "Failed to create event. Please try again later"
+    },
+    "payment": {
+      "INVALID_ORGANIZATION_ID": "Invalid organization ID",
+      "INVALID_AUTH_CODE": "Missing authorization code",
+      "INVALID_STATE_PARAMETER": "Missing or invalid state parameter",
+      "UNAUTHORIZED": "You must be logged in",
+      "ADMIN_ONLY": "Only administrators can configure payment settings",
+      "NOT_ORGANIZATION_MEMBER": "You are not a member of this organization",
+      "INSUFFICIENT_ORG_PERMISSIONS": "You don't have permission to configure payment settings",
+      "USER_NOT_FOUND": "User not found",
+      "INTERNAL_SERVER_ERROR": "Failed to connect with Mercado Pago. Please try again later",
+      "MERCADO_PAGO_AUTH_FAILED": "Mercado Pago authorization failed. Please try again",
+      "MERCADO_PAGO_TOKEN_SAVE_FAILED": "Failed to save payment credentials. Please try again"
     },
     "networkError": "Network error. Please check your connection and try again.",
     "unknownError": "An unexpected error occurred. Please try again."

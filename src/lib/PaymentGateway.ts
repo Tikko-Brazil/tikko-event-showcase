@@ -14,10 +14,6 @@ interface PaymentStatusResponse {
   paid: boolean;
 }
 
-interface MercadoPagoOAuthResponse {
-  auth_url: string;
-}
-
 export class PaymentGateway {
   private baseUrl: string;
   private fetchWithAuth: ReturnType<typeof createFetchWithAuth>;
@@ -72,23 +68,6 @@ export class PaymentGateway {
         method: "GET",
       }
     );
-
-    if (!response.ok) {
-      this.handleError(response.status);
-    }
-
-    return response.json();
-  }
-
-  async getMercadoPagoOAuth(state?: string): Promise<MercadoPagoOAuthResponse> {
-    const url = new URL(`${this.baseUrl}/private/mercado-pago/oauth`);
-    if (state) {
-      url.searchParams.append('state', state);
-    }
-
-    const response = await this.fetchWithAuth(url.toString(), {
-      method: "GET",
-    });
 
     if (!response.ok) {
       this.handleError(response.status);

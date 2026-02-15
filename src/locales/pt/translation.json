@@ -1084,6 +1084,13 @@
       "uploadError": "Falha ao fazer upload da imagem"
     }
   },
+  "organizationManagement": {
+    "payment": {
+      "title": "Configurações de Pagamento",
+      "description": "Conecte sua conta do Mercado Pago para receber pagamentos dos seus eventos.",
+      "connectMercadoPago": "Conectar Mercado Pago"
+    }
+  },
   "about": {
     "header": {
       "backToHome": "Voltar ao Início"
@@ -1300,6 +1307,19 @@
       "insufficientPermissions": "Você não tem permissão para criar eventos nesta organização",
       "userNotFound": "Usuário não encontrado",
       "internalError": "Falha ao criar evento. Por favor, tente novamente mais tarde"
+    },
+    "payment": {
+      "INVALID_ORGANIZATION_ID": "ID da organização inválido",
+      "INVALID_AUTH_CODE": "Código de autorização ausente",
+      "INVALID_STATE_PARAMETER": "Parâmetro de estado ausente ou inválido",
+      "UNAUTHORIZED": "Você precisa estar logado",
+      "ADMIN_ONLY": "Apenas administradores podem configurar pagamentos",
+      "NOT_ORGANIZATION_MEMBER": "Você não é membro desta organização",
+      "INSUFFICIENT_ORG_PERMISSIONS": "Você não tem permissão para configurar pagamentos",
+      "USER_NOT_FOUND": "Usuário não encontrado",
+      "INTERNAL_SERVER_ERROR": "Falha ao conectar com Mercado Pago. Por favor, tente novamente mais tarde",
+      "MERCADO_PAGO_AUTH_FAILED": "Autorização do Mercado Pago falhou. Por favor, tente novamente",
+      "MERCADO_PAGO_TOKEN_SAVE_FAILED": "Falha ao salvar credenciais de pagamento. Por favor, tente novamente"
     },
     "networkError": "Erro de rede. Por favor, verifique sua conexão e tente novamente.",
     "unknownError": "Ocorreu um erro inesperado. Por favor, tente novamente."
