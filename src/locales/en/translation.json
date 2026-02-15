@@ -1082,7 +1082,14 @@
     "payment": {
       "title": "Payment Settings",
       "description": "Connect your Mercado Pago account to receive payments for your events.",
-      "connectMercadoPago": "Connect Mercado Pago"
+      "status": "Status",
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "connectMercadoPago": "Connect Mercado Pago",
+      "disconnectMercadoPago": "Disconnect Mercado Pago",
+      "connecting": "Connecting...",
+      "disconnecting": "Disconnecting...",
+      "disconnectSuccess": "Mercado Pago disconnected successfully"
     }
   },
   "about": {

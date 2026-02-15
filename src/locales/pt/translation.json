@@ -1088,7 +1088,14 @@
     "payment": {
       "title": "Configurações de Pagamento",
       "description": "Conecte sua conta do Mercado Pago para receber pagamentos dos seus eventos.",
-      "connectMercadoPago": "Conectar Mercado Pago"
+      "status": "Status",
+      "connected": "Conectado",
+      "disconnected": "Desconectado",
+      "connectMercadoPago": "Conectar Mercado Pago",
+      "disconnectMercadoPago": "Desconectar Mercado Pago",
+      "connecting": "Conectando...",
+      "disconnecting": "Desconectando...",
+      "disconnectSuccess": "Mercado Pago desconectado com sucesso"
     }
   },
   "about": {
