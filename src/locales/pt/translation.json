@@ -5,7 +5,8 @@
       "explore": "Explorar",
       "myEvents": "Meus Eventos",
       "myTickets": "Ingressos",
-      "profile": "Perfil"
+      "profile": "Perfil",
+      "organizations": "Organizações"
     },
     "menu": {
       "viewProfile": "Ver Perfil",
@@ -913,6 +914,9 @@
       "confirm": "Encerrar Conta"
     }
   },
+  "eventDetails": {
+    "organizedBy": "Organizado por"
+  },
   "eventCreation": {
     "header": {
       "title": "Criar Evento",
@@ -929,6 +933,10 @@
       }
     },
     "fields": {
+      "organization": {
+        "label": "Organização",
+        "placeholder": "Selecione uma organização"
+      },
       "eventName": {
         "label": "Nome do Evento",
         "placeholder": "Digite o nome do evento"
@@ -984,6 +992,7 @@
       "creating": "Criando Evento..."
     },
     "validation": {
+      "organizationRequired": "Por favor, selecione uma organização",
       "eventNameRequired": "Nome do evento é obrigatório",
       "eventNameMin": "Nome deve ter pelo menos 3 caracteres",
       "eventNameMax": "Nome deve ter no máximo 100 caracteres",
@@ -1016,6 +1025,70 @@
       "createSuccess": "Evento criado com sucesso!",
       "createError": "Erro ao criar evento. Tente novamente.",
       "uploadError": "Erro ao fazer upload da imagem"
+    }
+  },
+  "organizationCreation": {
+    "header": {
+      "back": "Voltar",
+      "title": "Criar Organização",
+      "subtitle": "Preencha os detalhes para criar uma nova organização"
+    },
+    "sections": {
+      "basicInfo": {
+        "title": "Informações Básicas"
+      },
+      "location": {
+        "title": "Localização"
+      }
+    },
+    "fields": {
+      "name": {
+        "label": "Nome da Organização",
+        "placeholder": "Digite o nome da organização",
+        "required": "Nome da organização é obrigatório",
+        "minLength": "O nome deve ter pelo menos 3 caracteres",
+        "maxLength": "O nome deve ter no máximo 100 caracteres"
+      },
+      "logo": {
+        "label": "Logo da Organização",
+        "uploadText": "Clique para fazer upload do logo",
+        "preview": "Pré-visualização do logo"
+      },
+      "locationName": {
+        "label": "Nome do Local",
+        "placeholder": "ex: Escritório Principal, Sede",
+        "required": "Nome do local é obrigatório",
+        "minLength": "O nome do local deve ter pelo menos 3 caracteres",
+        "maxLength": "O nome do local deve ter no máximo 100 caracteres"
+      },
+      "address": {
+        "label": "Endereço",
+        "placeholder": "Buscar endereço",
+        "required": "Endereço é obrigatório",
+        "minLength": "O endereço deve ter pelo menos 3 caracteres",
+        "selectLocation": "Por favor, selecione um local do mapa"
+      },
+      "addressComplement": {
+        "label": "Complemento do Endereço",
+        "placeholder": "Sala, andar, etc."
+      },
+      "selected": "Selecionado: {{location}}"
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "create": "Criar Organização",
+      "creating": "Criando..."
+    },
+    "messages": {
+      "success": "Organização criada com sucesso!",
+      "uploadError": "Falha ao fazer upload da imagem"
+    }
+  },
+  "organizationManagement": {
+    "payment": {
+      "title": "Configurações de Pagamento",
+      "description": "Conecte sua conta do Mercado Pago para receber pagamentos dos seus eventos.",
+      "connectMercadoPago": "Conectar Mercado Pago"
     }
   },
   "about": {
@@ -1204,6 +1277,51 @@
       "VERIFICATION_ALREADY_USED": "Este código de verificação já foi usado.",
       "TOO_MANY_VERIFICATION_ATTEMPTS": "Muitas tentativas de verificação. Por favor, solicite um novo código.",
       "INTERNAL_SERVER_ERROR": "Erro no servidor. Por favor, tente novamente mais tarde."
-    }
+    },
+    "organization": {
+      "invalidRequest": "Dados da requisição inválidos",
+      "nameRequired": "Nome da organização é obrigatório",
+      "validationFailed": "Nome da organização deve ter entre 3 e 100 caracteres",
+      "unauthorized": "Você precisa estar logado para criar uma organização",
+      "adminOnly": "Apenas administradores podem criar organizações",
+      "userNotFound": "Usuário não encontrado",
+      "alreadyExists": "Já existe uma organização com este nome",
+      "internalError": "Falha ao criar organização. Por favor, tente novamente mais tarde",
+      "filenameRequired": "Nome do arquivo é obrigatório",
+      "uploadUrlFailed": "Falha ao gerar URL de upload. Por favor, tente novamente",
+      "invalidPagination": "Parâmetros de paginação inválidos",
+      "forbidden": "Você não tem permissão para acessar esta organização",
+      "notFound": "Organização não encontrada"
+    },
+    "event": {
+      "invalidRequest": "Dados da requisição inválidos",
+      "nameRequired": "Nome do evento é obrigatório",
+      "startDateRequired": "Data de início do evento é obrigatória",
+      "ticketPricingRequired": "Pelo menos um tipo de ingresso é obrigatório",
+      "ticketTypeRequired": "Tipo de ingresso é obrigatório",
+      "ticketDatesRequired": "Datas do ingresso são obrigatórias",
+      "organizationIdRequired": "Organização é obrigatória",
+      "unauthorized": "Você precisa estar logado para criar um evento",
+      "adminOnly": "Apenas administradores podem criar eventos",
+      "notOrganizationMember": "Você não é membro desta organização",
+      "insufficientPermissions": "Você não tem permissão para criar eventos nesta organização",
+      "userNotFound": "Usuário não encontrado",
+      "internalError": "Falha ao criar evento. Por favor, tente novamente mais tarde"
+    },
+    "payment": {
+      "INVALID_ORGANIZATION_ID": "ID da organização inválido",
+      "INVALID_AUTH_CODE": "Código de autorização ausente",
+      "INVALID_STATE_PARAMETER": "Parâmetro de estado ausente ou inválido",
+      "UNAUTHORIZED": "Você precisa estar logado",
+      "ADMIN_ONLY": "Apenas administradores podem configurar pagamentos",
+      "NOT_ORGANIZATION_MEMBER": "Você não é membro desta organização",
+      "INSUFFICIENT_ORG_PERMISSIONS": "Você não tem permissão para configurar pagamentos",
+      "USER_NOT_FOUND": "Usuário não encontrado",
+      "INTERNAL_SERVER_ERROR": "Falha ao conectar com Mercado Pago. Por favor, tente novamente mais tarde",
+      "MERCADO_PAGO_AUTH_FAILED": "Autorização do Mercado Pago falhou. Por favor, tente novamente",
+      "MERCADO_PAGO_TOKEN_SAVE_FAILED": "Falha ao salvar credenciais de pagamento. Por favor, tente novamente"
+    },
+    "networkError": "Erro de rede. Por favor, verifique sua conexão e tente novamente.",
+    "unknownError": "Ocorreu um erro inesperado. Por favor, tente novamente."
   }
 }

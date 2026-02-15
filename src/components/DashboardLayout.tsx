@@ -35,6 +35,7 @@ import {
   HelpCircle,
   LogOut,
   ChevronDown,
+  Building2,
 } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 import SearchModal from "@/components/SearchModal";
@@ -83,6 +84,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     { id: "my-tickets", label: t("dashboard.tabs.myTickets"), icon: Ticket, path: "/my-tickets" },
     // { id: "profile", label: t("dashboard.tabs.profile"), icon: User, path: "/profile" },
   ];
+
+  // Add Organizations tab for admin users
+  const allTabs = dashboardData?.user?.is_admin
+    ? [...tabs, { id: "organizations", label: t("dashboard.tabs.organizations"), icon: Building2, path: "/organizations" }]
+    : tabs;
 
   const currentPath = location.pathname;
 
@@ -185,7 +191,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         {/* Mobile Bottom Navigation */}
         <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="flex items-center justify-around h-16">
-            {tabs.map((tab) => {
+            {allTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = currentPath === tab.path;
               return (
@@ -337,7 +343,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         {/* Desktop Sidebar */}
         <aside className="w-64 border-r bg-card/50 backdrop-blur-sm">
           <nav className="p-4 space-y-2">
-            {tabs.map((tab) => {
+            {allTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = currentPath === tab.path;
               return (

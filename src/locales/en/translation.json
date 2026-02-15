@@ -5,7 +5,8 @@
       "explore": "Explore",
       "myEvents": "My Events",
       "myTickets": "My Tickets",
-      "profile": "Profile"
+      "profile": "Profile",
+      "organizations": "Organizations"
     },
     "menu": {
       "viewProfile": "View Profile",
@@ -907,6 +908,9 @@
       "confirm": "Close Account"
     }
   },
+  "eventDetails": {
+    "organizedBy": "Organized by"
+  },
   "eventCreation": {
     "header": {
       "title": "Create Event",
@@ -923,6 +927,10 @@
       }
     },
     "fields": {
+      "organization": {
+        "label": "Organization",
+        "placeholder": "Select an organization"
+      },
       "eventName": {
         "label": "Event Name",
         "placeholder": "Enter event name"
@@ -978,6 +986,7 @@
       "creating": "Creating Event..."
     },
     "validation": {
+      "organizationRequired": "Please select an organization",
       "eventNameRequired": "Event name is required",
       "eventNameMin": "Name must be at least 3 characters",
       "eventNameMax": "Name must be at most 100 characters",
@@ -1010,6 +1019,70 @@
       "createSuccess": "Event created successfully!",
       "createError": "Error creating event. Please try again.",
       "uploadError": "Error uploading image"
+    }
+  },
+  "organizationCreation": {
+    "header": {
+      "back": "Back",
+      "title": "Create Organization",
+      "subtitle": "Fill in the details to create a new organization"
+    },
+    "sections": {
+      "basicInfo": {
+        "title": "Basic Information"
+      },
+      "location": {
+        "title": "Location"
+      }
+    },
+    "fields": {
+      "name": {
+        "label": "Organization Name",
+        "placeholder": "Enter organization name",
+        "required": "Organization name is required",
+        "minLength": "Name must be at least 3 characters",
+        "maxLength": "Name must be at most 100 characters"
+      },
+      "logo": {
+        "label": "Organization Logo",
+        "uploadText": "Click to upload logo",
+        "preview": "Logo preview"
+      },
+      "locationName": {
+        "label": "Location Name",
+        "placeholder": "e.g., Main Office, Headquarters",
+        "required": "Location name is required",
+        "minLength": "Location name must be at least 3 characters",
+        "maxLength": "Location name must be at most 100 characters"
+      },
+      "address": {
+        "label": "Address",
+        "placeholder": "Search for address",
+        "required": "Address is required",
+        "minLength": "Address must be at least 3 characters",
+        "selectLocation": "Please select a location from the map"
+      },
+      "addressComplement": {
+        "label": "Address Complement",
+        "placeholder": "Suite, floor, etc."
+      },
+      "selected": "Selected: {{location}}"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "create": "Create Organization",
+      "creating": "Creating..."
+    },
+    "messages": {
+      "success": "Organization created successfully!",
+      "uploadError": "Failed to upload image"
+    }
+  },
+  "organizationManagement": {
+    "payment": {
+      "title": "Payment Settings",
+      "description": "Connect your Mercado Pago account to receive payments for your events.",
+      "connectMercadoPago": "Connect Mercado Pago"
     }
   },
   "about": {
@@ -1198,6 +1271,51 @@
       "VERIFICATION_ALREADY_USED": "This verification code has already been used.",
       "TOO_MANY_VERIFICATION_ATTEMPTS": "Too many verification attempts. Please request a new code.",
       "INTERNAL_SERVER_ERROR": "Server error. Please try again later."
-    }
+    },
+    "organization": {
+      "invalidRequest": "Invalid request data",
+      "nameRequired": "Organization name is required",
+      "validationFailed": "Organization name must be between 3 and 100 characters",
+      "unauthorized": "You must be logged in to create an organization",
+      "adminOnly": "Only administrators can create organizations",
+      "userNotFound": "User not found",
+      "alreadyExists": "An organization with this name already exists",
+      "internalError": "Failed to create organization. Please try again later",
+      "filenameRequired": "Filename is required",
+      "uploadUrlFailed": "Failed to generate upload URL. Please try again",
+      "invalidPagination": "Invalid pagination parameters",
+      "forbidden": "You don't have permission to access this organization",
+      "notFound": "Organization not found"
+    },
+    "event": {
+      "invalidRequest": "Invalid request data",
+      "nameRequired": "Event name is required",
+      "startDateRequired": "Event start date is required",
+      "ticketPricingRequired": "At least one ticket type is required",
+      "ticketTypeRequired": "Ticket type is required",
+      "ticketDatesRequired": "Ticket dates are required",
+      "organizationIdRequired": "Organization is required",
+      "unauthorized": "You must be logged in to create an event",
+      "adminOnly": "Only administrators can create events",
+      "notOrganizationMember": "You are not a member of this organization",
+      "insufficientPermissions": "You don't have permission to create events in this organization",
+      "userNotFound": "User not found",
+      "internalError": "Failed to create event. Please try again later"
+    },
+    "payment": {
+      "INVALID_ORGANIZATION_ID": "Invalid organization ID",
+      "INVALID_AUTH_CODE": "Missing authorization code",
+      "INVALID_STATE_PARAMETER": "Missing or invalid state parameter",
+      "UNAUTHORIZED": "You must be logged in",
+      "ADMIN_ONLY": "Only administrators can configure payment settings",
+      "NOT_ORGANIZATION_MEMBER": "You are not a member of this organization",
+      "INSUFFICIENT_ORG_PERMISSIONS": "You don't have permission to configure payment settings",
+      "USER_NOT_FOUND": "User not found",
+      "INTERNAL_SERVER_ERROR": "Failed to connect with Mercado Pago. Please try again later",
+      "MERCADO_PAGO_AUTH_FAILED": "Mercado Pago authorization failed. Please try again",
+      "MERCADO_PAGO_TOKEN_SAVE_FAILED": "Failed to save payment credentials. Please try again"
+    },
+    "networkError": "Network error. Please check your connection and try again.",
+    "unknownError": "An unexpected error occurred. Please try again."
   }
 }
