@@ -467,17 +467,19 @@
         "placeholder": "Search staff...",
         "filters": {
           "all": "All",
-          "host": "Host",
-          "manager": "Manager",
+          "guest": "Guest",
+          "validator": "Validator",
           "coordinator": "Coordinator",
-          "validator": "Validator"
+          "manager": "Manager",
+          "host": "Host"
         }
       },
       "roles": {
-        "host": "Host",
-        "manager": "Manager",
+        "guest": "Guest",
+        "validator": "Validator",
         "coordinator": "Coordinator",
-        "validator": "Validator"
+        "manager": "Manager",
+        "host": "Host"
       },
       "actions": {
         "addStaff": "Add Staff",
@@ -1395,6 +1397,17 @@
       "MEMBER_NOT_FOUND": "Member not found in organization",
       "CONFLICT": "User is already a member of this organization",
       "INTERNAL_SERVER_ERROR": "Failed to load members. Please try again later"
+    },
+    "staff": {
+      "INVALID_REQUEST": "Invalid event ID or pagination parameters",
+      "UPDATE_INVALID_REQUEST": "Invalid event ID, user ID, or role",
+      "ADD_INVALID_REQUEST": "Invalid email or role",
+      "REMOVE_INVALID_REQUEST": "Invalid event ID or user ID",
+      "REMOVE_INSUFFICIENT_PERMISSIONS": "You cannot remove this staff member. Only Host can remove Managers, and Host cannot be removed",
+      "USER_NOT_FOUND": "User with this email not found",
+      "UNAUTHORIZED": "You must be logged in",
+      "INSUFFICIENT_EVENT_PERMISSIONS": "You don't have permission to manage this event",
+      "INTERNAL_SERVER_ERROR": "Failed to load staff. Please try again later"
     },
     "networkError": "Network error. Please check your connection and try again.",
     "unknownError": "An unexpected error occurred. Please try again."

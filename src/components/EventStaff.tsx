@@ -39,7 +39,11 @@ import { Label } from "@/components/ui/label";
 import { UserPlus, Pencil, Trash2, Shield, Crown } from "lucide-react";
 import { SearchAndFilter } from "./SearchAndFilter";
 import { Pagination } from "./Pagination";
-import { EventGateway } from "@/lib/EventGateway";
+import { useGetEventStaff, useUpdateStaffRole, useAddEventStaff, useRemoveEventStaff } from "@/api/staff/api";
+import { updateStaffRoleErrorMessage, addEventStaffErrorMessage, removeEventStaffErrorMessage } from "@/api/staff/errors";
+import { normalizeApiError } from "@/api/client";
+import { useToast } from "@/hooks/use-toast";
+import { createCommonValidations } from "@/lib/validationSchemas";
 import SuccessSnackbar from "./SuccessSnackbar";
 import ErrorSnackbar from "./ErrorSnackbar";
 
@@ -59,7 +63,7 @@ interface StaffMember {
   gender: string;
   location: string;
   instagram_profile: string;
-  role: string;
+  role: string | number;
 }
 
 interface EventStaffProps {
@@ -82,17 +86,19 @@ const getRoleIcon = (role: string | number) => {
 
 const getRoleLabel = (role: string | number, t: any) => {
   const roleStr = role.toString();
-  const roleKeys = {
-    "4": "host",
-    "3": "manager",
-    "2": "coordinator",
+  const roleKeys: Record<string, string> = {
+    "0": "guest",
     "1": "validator",
-    host: "host",
-    manager: "manager",
-    coordinator: "coordinator",
+    "2": "coordinator",
+    "3": "manager",
+    "4": "host",
+    guest: "guest",
     validator: "validator",
+    coordinator: "coordinator",
+    manager: "manager",
+    host: "host",
   };
-  const roleKey = roleKeys[roleStr as keyof typeof roleKeys];
+  const roleKey = roleKeys[roleStr];
   return roleKey ? t(`eventManagement.staff.roles.${roleKey}`) : roleStr;
 };
 
@@ -112,6 +118,7 @@ const getRoleBadgeVariant = (role: string | number) => {
 
 export const EventStaff = ({ eventId }: EventStaffProps) => {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [staffSearch, setStaffSearch] = useState("");
   const [staffFilter, setStaffFilter] = useState("all");
   const [staffPage, setStaffPage] = useState(1);
@@ -128,9 +135,11 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
   // Edit staff dialog state
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null);
 
+  // Remove staff state
+  const [removingStaff, setRemovingStaff] = useState<StaffMember | null>(null);
+
   const staffPerPage = 6;
 
-  const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
   const queryClient = useQueryClient();
 
   // Debounced search function
@@ -149,29 +158,14 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
   // Reset page when filter or search changes
   React.useEffect(() => {
     setStaffPage(1);
-  }, [staffFilter, staffSearch]);
+  }, [staffFilter, debouncedSearch]);
 
-  // Fetch staff using React Query with pagination
-  const {
-    data: staffData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["event-staff", eventId, staffPage, staffFilter, debouncedSearch],
-    queryFn: () =>
-      eventGateway.getEventStaff(
-        eventId,
-        staffPage,
-        staffPerPage,
-        staffFilter === "all" ? undefined : staffFilter,
-        debouncedSearch || undefined
-      ),
-    enabled: !!eventId,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
+  // Fetch staff using new API hook
+  const { data: staffData, isLoading } = useGetEventStaff(eventId, {
+    role: staffFilter,
+    search: debouncedSearch,
+    page: staffPage,
+    limit: staffPerPage,
   });
 
   const staff = staffData?.staff || [];
@@ -190,49 +184,12 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
   const to = Math.min(from + staff.length, totalStaff);
 
   // Add staff mutation
-  const addStaffMutation = useMutation({
-    mutationFn: (data: { email: string; role: string }) =>
-      eventGateway.addStaffMember(eventId, data),
-    onSuccess: () => {
-      setSuccessMessage(t("eventManagement.staff.messages.success.added"));
-      setShowSuccessSnackbar(true);
-      setIsAddDialogOpen(false);
-      addStaffFormik.resetForm();
-      queryClient.invalidateQueries({ queryKey: ["event-staff", eventId] });
-    },
-    onError: (error: any) => {
-      let errorMessage = t("eventManagement.staff.messages.errors.addFailed");
-      
-      if (error.status) {
-        switch (error.status) {
-          case 400:
-            errorMessage = t("eventManagement.staff.messages.errors.badRequest");
-            break;
-          case 401:
-            errorMessage = t("eventManagement.staff.messages.errors.unauthorized");
-            break;
-          case 403:
-            errorMessage = t("eventManagement.staff.messages.errors.forbidden");
-            break;
-          case 404:
-            errorMessage = t("eventManagement.staff.messages.errors.userNotFound");
-            break;
-          case 500:
-            errorMessage = t("eventManagement.staff.messages.errors.serverError");
-            break;
-        }
-      }
-      
-      setErrorMessage(errorMessage);
-      setShowErrorSnackbar(true);
-    },
-  });
+  const addStaffMutation = useAddEventStaff(eventId);
 
   // Add staff form validation
+  const commonValidations = createCommonValidations(t);
   const addStaffSchema = Yup.object().shape({
-    email: Yup.string()
-      .required("Email is required")
-      .email("Invalid email format"),
+    email: commonValidations.email,
     role: Yup.string()
       .required("Role is required")
       .oneOf(["validator", "coordinator", "manager"], "Invalid role selected"),
@@ -245,50 +202,37 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
     },
     validationSchema: addStaffSchema,
     onSubmit: (values) => {
-      addStaffMutation.mutate({
-        email: values.email,
-        role: values.role,
-      });
+      addStaffMutation.mutate(
+        {
+          email: values.email,
+          role: values.role,
+        },
+        {
+          onSuccess: () => {
+            setSuccessMessage(t("eventManagement.staff.messages.success.added"));
+            setShowSuccessSnackbar(true);
+            setIsAddDialogOpen(false);
+            addStaffFormik.resetForm();
+            queryClient.invalidateQueries({ queryKey: ["event-staff", eventId] });
+          },
+          onError: (error) => {
+            const appError = normalizeApiError(error);
+            toast({
+              variant: "destructive",
+              title: t("common.error"),
+              description: addEventStaffErrorMessage(appError, t),
+            });
+          },
+        }
+      );
     },
   });
 
   // Update staff mutation
-  const updateStaffMutation = useMutation({
-    mutationFn: (data: { userId: number; role: string }) =>
-      eventGateway.updateStaffRole(eventId, data.userId, { role: data.role }),
-    onSuccess: () => {
-      setSuccessMessage(t("eventManagement.staff.messages.success.updated"));
-      setShowSuccessSnackbar(true);
-      setEditingStaff(null);
-      queryClient.invalidateQueries({ queryKey: ["event-staff", eventId] });
-    },
-    onError: (error: any) => {
-      let errorMessage = t("eventManagement.staff.messages.errors.updateFailed");
-      
-      if (error.status) {
-        switch (error.status) {
-          case 400:
-            errorMessage = t("eventManagement.staff.messages.errors.badRequest");
-            break;
-          case 401:
-            errorMessage = t("eventManagement.staff.messages.errors.unauthorized");
-            break;
-          case 403:
-            errorMessage = t("eventManagement.staff.messages.errors.forbidden");
-            break;
-          case 404:
-            errorMessage = t("eventManagement.staff.messages.errors.userNotFound");
-            break;
-          case 500:
-            errorMessage = t("eventManagement.staff.messages.errors.serverError");
-            break;
-        }
-      }
-      
-      setErrorMessage(errorMessage);
-      setShowErrorSnackbar(true);
-    },
-  });
+  const updateStaffMutation = useUpdateStaffRole(
+    eventId,
+    editingStaff?.id || 0
+  );
 
   // Update staff form validation
   const updateStaffSchema = Yup.object().shape({
@@ -304,20 +248,49 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
     validationSchema: updateStaffSchema,
     onSubmit: (values) => {
       if (!editingStaff) return;
-      updateStaffMutation.mutate({
-        userId: editingStaff.id,
-        role: values.role,
-      });
+      updateStaffMutation.mutate(
+        { role: values.role },
+        {
+          onSuccess: () => {
+            setSuccessMessage(t("eventManagement.staff.messages.success.updated"));
+            setShowSuccessSnackbar(true);
+            setEditingStaff(null);
+            updateStaffFormik.resetForm();
+            queryClient.invalidateQueries({ queryKey: ["event-staff", eventId] });
+          },
+          onError: (error) => {
+            const appError = normalizeApiError(error);
+            toast({
+              variant: "destructive",
+              title: t("common.error"),
+              description: updateStaffRoleErrorMessage(appError, t),
+            });
+          },
+        }
+      );
     },
   });
 
-  const removeStaffMutation = {
-    mutate: (staffId: number) => {
-      console.warn("Remove staff not implemented in EventGateway yet", staffId);
-      setSuccessMessage("Staff member removed successfully");
-      setShowSuccessSnackbar(true);
-    },
-    isPending: false,
+  // Remove staff mutation
+  const removeStaffMutation = useRemoveEventStaff(eventId);
+
+  const handleRemoveStaff = (userId: number) => {
+    removeStaffMutation.mutate(userId, {
+      onSuccess: () => {
+        setSuccessMessage(t("eventManagement.staff.messages.success.removed"));
+        setShowSuccessSnackbar(true);
+        setRemovingStaff(null);
+        queryClient.invalidateQueries({ queryKey: ["event-staff", eventId] });
+      },
+      onError: (error) => {
+        const appError = normalizeApiError(error);
+        toast({
+          variant: "destructive",
+          title: t("common.error"),
+          description: removeEventStaffErrorMessage(appError, t),
+        });
+      },
+    });
   };
 
   const filterOptions = [
@@ -332,14 +305,6 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-muted-foreground">Loading staff...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-destructive">Failed to load staff</div>
       </div>
     );
   }
@@ -502,132 +467,140 @@ export const EventStaff = ({ eventId }: EventStaffProps) => {
                 </div>
 
                 <div className="mt-4 pt-4 border-t flex gap-2">
-                  {/* Hide Edit and Remove buttons for Host users */}
-                  {member.role.toString() !== "4" && (
-                    <>
-                      <Dialog
-                        open={editingStaff?.id === member.id}
-                        onOpenChange={(open) => {
-                          if (open) {
-                            setEditingStaff(member);
-                            // Convert numeric role to string role for form
-                            const roleStr = member.role.toString();
-                            const roleMap = {
-                              "1": "validator",
-                              "2": "coordinator",
-                              "3": "manager",
-                              "4": "host"
-                            };
-                            const formRole = roleMap[roleStr as keyof typeof roleMap] || roleStr;
-                            updateStaffFormik.setValues({
-                              role: formRole,
-                            });
-                          } else {
-                            setEditingStaff(null);
-                            updateStaffFormik.resetForm();
-                          }
-                        }}
+                  {/* Disable Edit and Remove buttons for Host users */}
+                  <Dialog
+                    open={editingStaff?.id === member.id}
+                    onOpenChange={(open) => {
+                      if (open && member.role.toString() !== "4") {
+                        setEditingStaff(member);
+                        // Convert numeric role to string role for form
+                        const roleStr = member.role.toString();
+                        const roleMap = {
+                          "1": "validator",
+                          "2": "coordinator",
+                          "3": "manager",
+                          "4": "host"
+                        };
+                        const formRole = roleMap[roleStr as keyof typeof roleMap] || roleStr;
+                        updateStaffFormik.setValues({
+                          role: formRole,
+                        });
+                      } else {
+                        setEditingStaff(null);
+                        updateStaffFormik.resetForm();
+                      }
+                    }}
+                  >
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        disabled={member.role.toString() === "4"}
                       >
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="flex-1">
-                            <Pencil className="h-4 w-4 mr-2" />
-                            {t("eventManagement.staff.actions.edit")}
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>{t("eventManagement.staff.editDialog.title")}</DialogTitle>
-                            <DialogDescription>
-                              {t("eventManagement.staff.editDialog.description")}
-                            </DialogDescription>
-                          </DialogHeader>
-                          <form
-                            onSubmit={updateStaffFormik.handleSubmit}
-                            className="space-y-4 py-4"
+                        <Pencil className="h-4 w-4 mr-2" />
+                        {t("eventManagement.staff.actions.edit")}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>{t("eventManagement.staff.editDialog.title")}</DialogTitle>
+                        <DialogDescription>
+                          {t("eventManagement.staff.editDialog.description")}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form
+                        onSubmit={updateStaffFormik.handleSubmit}
+                        className="space-y-4 py-4"
+                      >
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-role">{t("eventManagement.staff.addDialog.fields.role")}</Label>
+                          <Select
+                            value={updateStaffFormik.values.role}
+                            onValueChange={(value) =>
+                              updateStaffFormik.setFieldValue("role", value)
+                            }
                           >
-                            <div className="space-y-2">
-                              <Label htmlFor="edit-role">{t("eventManagement.staff.addDialog.fields.role")}</Label>
-                              <Select
-                                value={updateStaffFormik.values.role}
-                                onValueChange={(value) =>
-                                  updateStaffFormik.setFieldValue("role", value)
-                                }
-                              >
-                                <SelectTrigger id="edit-role">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="manager">{t("eventManagement.staff.roles.manager")}</SelectItem>
-                                  <SelectItem value="coordinator">
-                                    {t("eventManagement.staff.roles.coordinator")}
-                                  </SelectItem>
-                                  <SelectItem value="validator">
-                                    {t("eventManagement.staff.roles.validator")}
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                              {updateStaffFormik.touched.role &&
-                                updateStaffFormik.errors.role && (
-                                  <p className="text-sm text-red-500">
-                                    {updateStaffFormik.errors.role}
-                                  </p>
-                                )}
-                            </div>
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setEditingStaff(null)}
-                              >
-                                {t("eventManagement.staff.editDialog.buttons.cancel")}
-                              </Button>
-                              <Button
-                                type="submit"
-                                disabled={updateStaffMutation.isPending}
-                              >
-                                {updateStaffMutation.isPending
-                                  ? "Updating..."
-                                  : t("eventManagement.staff.editDialog.buttons.save")}
-                              </Button>
-                            </div>
-                          </form>
-                        </DialogContent>
-                      </Dialog>
-
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                            <SelectTrigger id="edit-role">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="manager">{t("eventManagement.staff.roles.manager")}</SelectItem>
+                              <SelectItem value="coordinator">
+                                {t("eventManagement.staff.roles.coordinator")}
+                              </SelectItem>
+                              <SelectItem value="validator">
+                                {t("eventManagement.staff.roles.validator")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {updateStaffFormik.touched.role &&
+                            updateStaffFormik.errors.role && (
+                              <p className="text-sm text-red-500">
+                                {updateStaffFormik.errors.role}
+                              </p>
+                            )}
+                        </div>
+                        <div className="flex justify-end gap-2">
                           <Button
-                            variant="destructive"
-                            size="sm"
-                            className="flex-1"
+                            type="button"
+                            variant="outline"
+                            onClick={() => setEditingStaff(null)}
                           >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            {t("eventManagement.staff.actions.remove")}
+                            {t("eventManagement.staff.editDialog.buttons.cancel")}
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>{t("eventManagement.staff.removeDialog.title")}</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              {t("eventManagement.staff.removeDialog.description")}
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>{t("eventManagement.staff.removeDialog.buttons.cancel")}</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              onClick={() => removeStaffMutation.mutate(member.id)}
-                              disabled={removeStaffMutation.isPending}
-                            >
-                              {removeStaffMutation.isPending
-                                ? "Removing..."
-                                : t("eventManagement.staff.removeDialog.buttons.remove")}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </>
-                  )}
+                          <Button
+                            type="submit"
+                            disabled={updateStaffMutation.isPending}
+                          >
+                            {updateStaffMutation.isPending
+                              ? "Updating..."
+                              : t("eventManagement.staff.editDialog.buttons.save")}
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+
+                  <AlertDialog
+                    open={removingStaff?.id === member.id}
+                    onOpenChange={(open) => {
+                      if (open) {
+                        setRemovingStaff(member);
+                      } else {
+                        setRemovingStaff(null);
+                      }
+                    }}
+                  >
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        className="flex-1"
+                        disabled={member.role.toString() === "4"}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        {t("eventManagement.staff.actions.remove")}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>{t("eventManagement.staff.removeDialog.title")}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {t("eventManagement.staff.removeDialog.description")}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>{t("eventManagement.staff.removeDialog.buttons.cancel")}</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          onClick={() => removingStaff && handleRemoveStaff(removingStaff.id)}
+                        >
+                          {t("eventManagement.staff.removeDialog.buttons.remove")}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>

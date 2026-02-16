@@ -388,7 +388,7 @@ export const OrganizationMembers = ({ organizationId }: OrganizationMembersProps
                     <Dialog
                       open={editingMember?.id === member.id}
                       onOpenChange={(open) => {
-                        if (open) {
+                        if (open && member.organization_role !== 3) {
                           setEditingMember(member);
                           updateMemberFormik.setValues({
                             role: member.organization_role,
@@ -400,7 +400,12 @@ export const OrganizationMembers = ({ organizationId }: OrganizationMembersProps
                       }}
                     >
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="flex-1">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          disabled={member.organization_role === 3}
+                        >
                           <Pencil className="h-4 w-4 mr-2" />
                           {t("common.edit")}
                         </Button>
@@ -463,7 +468,12 @@ export const OrganizationMembers = ({ organizationId }: OrganizationMembersProps
                     </Dialog>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm" className="flex-1">
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          className="flex-1"
+                          disabled={member.organization_role === 3}
+                        >
                           <Trash2 className="h-4 w-4 mr-2" />
                           {t("common.remove")}
                         </Button>
