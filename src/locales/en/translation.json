@@ -1090,6 +1090,62 @@
       "connecting": "Connecting...",
       "disconnecting": "Disconnecting...",
       "disconnectSuccess": "Mercado Pago disconnected successfully"
+    },
+    "members": {
+      "title": "Members",
+      "addButton": "Add Member",
+      "searchPlaceholder": "Search by name or email...",
+      "filterLabel": "Role",
+      "noMembers": "No members found",
+      "filters": {
+        "all": "All",
+        "member": "Member",
+        "coordinator": "Coordinator",
+        "manager": "Manager",
+        "owner": "Owner"
+      },
+      "roles": {
+        "member": "Member",
+        "coordinator": "Coordinator",
+        "manager": "Manager",
+        "owner": "Owner"
+      },
+      "addDialog": {
+        "title": "Add Member",
+        "description": "Add a new member to the organization by email.",
+        "fields": {
+          "email": "Email",
+          "emailPlaceholder": "member@example.com",
+          "role": "Role"
+        },
+        "buttons": {
+          "add": "Add Member",
+          "adding": "Adding..."
+        }
+      },
+      "editDialog": {
+        "title": "Edit Member Role",
+        "description": "Change the role for this member.",
+        "fields": {
+          "role": "Role"
+        },
+        "buttons": {
+          "save": "Save Changes",
+          "saving": "Saving..."
+        }
+      },
+      "removeDialog": {
+        "title": "Remove Member",
+        "description": "Are you sure you want to remove this member from the organization? This action cannot be undone.",
+        "buttons": {
+          "remove": "Remove"
+        }
+      },
+      "messages": {
+        "addSuccess": "Member added successfully",
+        "updateSuccess": "Member role updated successfully",
+        "removeSuccess": "Member removed successfully"
+      }
     }
   },
   "about": {
@@ -1185,7 +1241,10 @@
     "confirm": "Confirm",
     "loading": "Loading...",
     "error": "Error",
-    "back": "Back"
+    "success": "Success",
+    "back": "Back",
+    "edit": "Edit",
+    "remove": "Remove"
   },
   "errors": {
     "http": {
@@ -1321,6 +1380,21 @@
       "INTERNAL_SERVER_ERROR": "Failed to connect with Mercado Pago. Please try again later",
       "MERCADO_PAGO_AUTH_FAILED": "Mercado Pago authorization failed. Please try again",
       "MERCADO_PAGO_TOKEN_SAVE_FAILED": "Failed to save payment credentials. Please try again"
+    },
+    "members": {
+      "INVALID_ORGANIZATION_ID": "Invalid organization ID",
+      "INVALID_REQUEST": "Invalid page or limit parameters",
+      "ADD_INVALID_REQUEST": "Invalid email or role",
+      "UPDATE_INVALID_REQUEST": "Invalid user ID or role",
+      "REMOVE_INVALID_REQUEST": "Invalid user ID",
+      "UNAUTHORIZED": "You must be logged in",
+      "ADMIN_ONLY": "Only administrators can view members",
+      "INSUFFICIENT_ORG_PERMISSIONS": "You don't have permission to add members",
+      "NOT_ORGANIZATION_MEMBER": "You are not a member of this organization",
+      "USER_NOT_FOUND": "User with this email not found",
+      "MEMBER_NOT_FOUND": "Member not found in organization",
+      "CONFLICT": "User is already a member of this organization",
+      "INTERNAL_SERVER_ERROR": "Failed to load members. Please try again later"
     },
     "networkError": "Network error. Please check your connection and try again.",
     "unknownError": "An unexpected error occurred. Please try again."

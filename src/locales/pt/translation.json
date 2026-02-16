@@ -1096,6 +1096,62 @@
       "connecting": "Conectando...",
       "disconnecting": "Desconectando...",
       "disconnectSuccess": "Mercado Pago desconectado com sucesso"
+    },
+    "members": {
+      "title": "Membros",
+      "addButton": "Adicionar Membro",
+      "searchPlaceholder": "Buscar por nome ou email...",
+      "filterLabel": "Função",
+      "noMembers": "Nenhum membro encontrado",
+      "filters": {
+        "all": "Todos",
+        "member": "Membro",
+        "coordinator": "Coordenador",
+        "manager": "Gerente",
+        "owner": "Proprietário"
+      },
+      "roles": {
+        "member": "Membro",
+        "coordinator": "Coordenador",
+        "manager": "Gerente",
+        "owner": "Proprietário"
+      },
+      "addDialog": {
+        "title": "Adicionar Membro",
+        "description": "Adicione um novo membro à organização por email.",
+        "fields": {
+          "email": "Email",
+          "emailPlaceholder": "membro@exemplo.com",
+          "role": "Função"
+        },
+        "buttons": {
+          "add": "Adicionar Membro",
+          "adding": "Adicionando..."
+        }
+      },
+      "editDialog": {
+        "title": "Editar Função do Membro",
+        "description": "Altere a função deste membro.",
+        "fields": {
+          "role": "Função"
+        },
+        "buttons": {
+          "save": "Salvar Alterações",
+          "saving": "Salvando..."
+        }
+      },
+      "removeDialog": {
+        "title": "Remover Membro",
+        "description": "Tem certeza de que deseja remover este membro da organização? Esta ação não pode ser desfeita.",
+        "buttons": {
+          "remove": "Remover"
+        }
+      },
+      "messages": {
+        "addSuccess": "Membro adicionado com sucesso",
+        "updateSuccess": "Função do membro atualizada com sucesso",
+        "removeSuccess": "Membro removido com sucesso"
+      }
     }
   },
   "about": {
@@ -1191,7 +1247,10 @@
     "confirm": "Confirmar",
     "loading": "Carregando...",
     "error": "Erro",
-    "back": "Voltar"
+    "success": "Sucesso",
+    "back": "Voltar",
+    "edit": "Editar",
+    "remove": "Remover"
   },
   "errors": {
     "http": {
@@ -1327,6 +1386,21 @@
       "INTERNAL_SERVER_ERROR": "Falha ao conectar com Mercado Pago. Por favor, tente novamente mais tarde",
       "MERCADO_PAGO_AUTH_FAILED": "Autorização do Mercado Pago falhou. Por favor, tente novamente",
       "MERCADO_PAGO_TOKEN_SAVE_FAILED": "Falha ao salvar credenciais de pagamento. Por favor, tente novamente"
+    },
+    "members": {
+      "INVALID_ORGANIZATION_ID": "ID da organização inválido",
+      "INVALID_REQUEST": "Parâmetros de página ou limite inválidos",
+      "ADD_INVALID_REQUEST": "Email ou função inválidos",
+      "UPDATE_INVALID_REQUEST": "ID do usuário ou função inválidos",
+      "REMOVE_INVALID_REQUEST": "ID do usuário inválido",
+      "UNAUTHORIZED": "Você precisa estar logado",
+      "ADMIN_ONLY": "Apenas administradores podem visualizar membros",
+      "INSUFFICIENT_ORG_PERMISSIONS": "Você não tem permissão para adicionar membros",
+      "NOT_ORGANIZATION_MEMBER": "Você não é membro desta organização",
+      "USER_NOT_FOUND": "Usuário com este email não encontrado",
+      "MEMBER_NOT_FOUND": "Membro não encontrado na organização",
+      "CONFLICT": "Usuário já é membro desta organização",
+      "INTERNAL_SERVER_ERROR": "Falha ao carregar membros. Por favor, tente novamente mais tarde"
     },
     "networkError": "Erro de rede. Por favor, verifique sua conexão e tente novamente.",
     "unknownError": "Ocorreu um erro inesperado. Por favor, tente novamente."
