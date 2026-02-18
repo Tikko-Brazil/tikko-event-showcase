@@ -83,7 +83,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, initialEvent
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
 
-  const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 
   const handleEventClick = (event: Event) => {
     const slug = generateSlug(event.name, event.id);

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { EventEditForm } from "@/components/EventEditForm";
 import { EventGateway } from "@/lib/EventGateway";
 
-const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 
 export const EditPage = () => {
   const { eventId } = useParams();

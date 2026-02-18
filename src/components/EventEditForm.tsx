@@ -41,7 +41,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 const geocodingGateway = new GeocodingGateway();
 
 interface Event {
@@ -260,12 +260,12 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
         auto_accept: values.autoAccept,
         is_active: values.isActive,
       };
-      
+
       // Only include image if it was changed
       if (imageChanged && imageKey) {
         updateData.image = imageKey;
       }
-      
+
       return eventGateway.updateEvent(event.id, updateData);
     },
     onSuccess: () => {

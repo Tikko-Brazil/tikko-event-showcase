@@ -51,7 +51,7 @@ const TicketDetails = ({
   const [showDownloadDialog, setShowDownloadDialog] = useState(false);
 
   const ticketGateway = new TicketGateway(
-    import.meta.env.VITE_BACKEND_BASE_URL
+    import.meta.env.VITE_API_BASE_URL
   );
 
   const { data: userTicketsResponse, isLoading } = useQuery({

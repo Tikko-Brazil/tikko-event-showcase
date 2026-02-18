@@ -35,10 +35,10 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
   const [errorMessage, setErrorMessage] = React.useState("");
 
   const inviteGateway = new InviteGateway(
-    import.meta.env.VITE_BACKEND_BASE_URL
+    import.meta.env.VITE_API_BASE_URL
   );
   const ticketPricingGateway = new TicketPricingGateway(
-    import.meta.env.VITE_BACKEND_BASE_URL
+    import.meta.env.VITE_API_BASE_URL
   );
   const queryClient = useQueryClient();
 

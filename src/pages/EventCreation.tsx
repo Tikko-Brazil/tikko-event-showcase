@@ -249,7 +249,7 @@ const EventCreation = () => {
   const organizations = organizationsResponse?.organizations || [];
 
   // Gateways
-  const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
   const geocodingGateway = new GeocodingGateway();
 
   // Initial form values

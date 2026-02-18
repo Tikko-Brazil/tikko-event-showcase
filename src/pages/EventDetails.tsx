@@ -37,7 +37,7 @@ import getEventIdFromSlug from "@/helpers/getEventIdFromSlug";
 import heroImage from "@/assets/hero-event-image.jpg";
 import { usePostHog } from '@posthog/react'
 
-const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 const geocodingGateway = new GeocodingGateway();
 
 export default function EventDetails() {
@@ -348,8 +348,8 @@ export default function EventDetails() {
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-sm text-white/70">{t("eventDetails.organizedBy")}</span>
                     {eventData.organization.logo && (
-                      <img 
-                        src={eventData.organization.logo} 
+                      <img
+                        src={eventData.organization.logo}
                         alt={eventData.organization.name}
                         className="w-5 h-5 rounded object-cover"
                       />
@@ -399,8 +399,8 @@ export default function EventDetails() {
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-muted-foreground">{t("eventDetails.organizedBy")}</span>
                   {eventData.organization.logo && (
-                    <img 
-                      src={eventData.organization.logo} 
+                    <img
+                      src={eventData.organization.logo}
                       alt={eventData.organization.name}
                       className="w-6 h-6 rounded object-cover"
                     />
@@ -652,10 +652,10 @@ export default function EventDetails() {
         initialDiscount={
           selectedTicketData?.coupon && selectedTicketData?.discount !== undefined
             ? {
-                code: selectedTicketData.coupon,
-                percentage: Math.round((selectedTicketData.discount / selectedTicketData.price) * 100),
-                amount: selectedTicketData.discount,
-              }
+              code: selectedTicketData.coupon,
+              percentage: Math.round((selectedTicketData.discount / selectedTicketData.price) * 100),
+              amount: selectedTicketData.discount,
+            }
             : undefined
         }
       />

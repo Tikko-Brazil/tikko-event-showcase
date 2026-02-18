@@ -45,7 +45,7 @@ export const ValidatePage = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
-  const ticketGateway = new TicketGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const ticketGateway = new TicketGateway(import.meta.env.VITE_API_BASE_URL);
 
   // Fetch ticket data when scanned
   const { data: ticketData, isLoading: isLoadingTicket, error: ticketError } = useQuery({

@@ -35,7 +35,7 @@ import mark from "@/assets/mark.png";
 import LanguageSelector from "@/components/LanguageSelector";
 import heroEventImage from "@/assets/hero-event-image.jpg";
 
-const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 const geocodingGateway = new GeocodingGateway();
 
 const EnhancedIndex = () => {
