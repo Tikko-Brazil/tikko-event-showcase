@@ -31,7 +31,7 @@ interface EventStatsOverview {
   }[];
 }
 
-const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 
 export const EventOverview = ({ eventId }: EventOverviewProps) => {
   const { t, i18n } = useTranslation();
@@ -75,8 +75,8 @@ export const EventOverview = ({ eventId }: EventOverviewProps) => {
           ? "1 minuto atrás"
           : `${minutes} minutos atrás`
         : minutes === 1
-        ? "1 minute ago"
-        : `${minutes} minutes ago`;
+          ? "1 minute ago"
+          : `${minutes} minutes ago`;
     } else if (seconds < 86400) {
       const hours = Math.floor(seconds / 3600);
       return i18n.language === "pt"
@@ -84,8 +84,8 @@ export const EventOverview = ({ eventId }: EventOverviewProps) => {
           ? "1 hora atrás"
           : `${hours} horas atrás`
         : hours === 1
-        ? "1 hour ago"
-        : `${hours} hours ago`;
+          ? "1 hour ago"
+          : `${hours} hours ago`;
     } else {
       const days = Math.floor(seconds / 86400);
       return i18n.language === "pt"
@@ -93,8 +93,8 @@ export const EventOverview = ({ eventId }: EventOverviewProps) => {
           ? "1 dia atrás"
           : `${days} dias atrás`
         : days === 1
-        ? "1 day ago"
-        : `${days} days ago`;
+          ? "1 day ago"
+          : `${days} days ago`;
     }
   };
 

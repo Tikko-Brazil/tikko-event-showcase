@@ -38,7 +38,7 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+  const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 
   // Helper function to format numbers according to current locale
   const formatNumber = (value: number, options?: Intl.NumberFormatOptions) => {

@@ -23,7 +23,7 @@ import generateSlug from "@/helpers/generateSlug";
 import DashboardLayout from "@/components/DashboardLayout";
 import heroEventImage from "@/assets/hero-event-image.jpg";
 
-const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 const geocodingGateway = new GeocodingGateway();
 
 const Explore = () => {

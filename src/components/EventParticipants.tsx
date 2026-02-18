@@ -55,10 +55,10 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
   const participantsPerPage = 6;
 
   const inviteGateway = new InviteGateway(
-    import.meta.env.VITE_BACKEND_BASE_URL
+    import.meta.env.VITE_API_BASE_URL
   );
   const paymentGateway = new PaymentGateway(
-    import.meta.env.VITE_BACKEND_BASE_URL
+    import.meta.env.VITE_API_BASE_URL
   );
   const queryClient = useQueryClient();
 

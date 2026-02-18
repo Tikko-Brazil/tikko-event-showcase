@@ -4,7 +4,7 @@ import { EventCoupons } from "@/components/EventCoupons";
 import { EventGateway } from "@/lib/EventGateway";
 import generateSlug from "@/helpers/generateSlug";
 
-const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
+const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 
 export const CouponsPage = () => {
   const { eventId } = useParams();

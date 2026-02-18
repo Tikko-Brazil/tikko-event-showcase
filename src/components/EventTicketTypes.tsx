@@ -72,7 +72,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
 
   const itemsPerPage = 8;
   const ticketPricingGateway = new TicketPricingGateway(
-    import.meta.env.VITE_BACKEND_BASE_URL
+    import.meta.env.VITE_API_BASE_URL
   );
   const queryClient = useQueryClient();
 

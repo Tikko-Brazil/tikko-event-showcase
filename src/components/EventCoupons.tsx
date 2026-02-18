@@ -116,7 +116,7 @@ export const EventCoupons = ({ eventId, eventSlug }: EventCouponsProps) => {
   };
 
   const ticketPricingGateway = new TicketPricingGateway(
-    import.meta.env.VITE_BACKEND_BASE_URL
+    import.meta.env.VITE_API_BASE_URL
   );
 
   const handleCreateCoupon = async (values: any) => {
