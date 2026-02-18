@@ -29,6 +29,7 @@ import {
   Mail,
   Phone,
 } from "lucide-react";
+import { formatCurrency as formatCurrencyHelper } from "@/helpers/currency";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TicketGateway } from "@/lib/TicketGateway";
 import { toast } from "sonner";
@@ -112,9 +113,9 @@ const TicketDetails = ({
     return value.toLocaleString(locale, options);
   };
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (cents: number) => {
     const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
-    return formatNumber(value, { style: 'currency', currency: locale === 'pt-BR' ? 'BRL' : 'USD' });
+    return formatCurrencyHelper(cents, locale);
   };
 
   const handleDownloadPDF = () => {

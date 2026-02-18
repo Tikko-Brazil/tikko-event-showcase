@@ -53,13 +53,14 @@ export const CouponStep: React.FC<CouponStepProps> = ({
       // Handle wrapped response (in case of caching issues)
       const data = 'data' in response ? response.data : response;
       
+      // Backend returns prices in cents
       const discountAmount = data.original_price - data.final_price;
       const discountPercentage = Math.round((discountAmount / data.original_price) * 100);
       
       onDiscountChange({
         code: couponCode.toUpperCase(),
         percentage: discountPercentage,
-        amount: discountAmount,
+        amount: discountAmount, // In cents
       });
     } catch (err) {
       const message = validateCouponErrorMessage(err as AppError, t);

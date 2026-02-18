@@ -659,6 +659,9 @@
       "specialChar": "A senha deve conter pelo menos um caractere especial (Ex: !@#$%^&*()_+)",
       "noMatch": "As senhas não conferem"
     },
+    "price": {
+      "minValue": "O preço deve ser maior que 0"
+    },
     "birthdate": {
       "required": "Data de nascimento é obrigatória",
       "minAge": "Você deve ter pelo menos 18 anos"

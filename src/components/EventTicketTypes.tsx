@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { debounce } from "lodash";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import InputMask from "react-input-mask";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import { Plus, Pencil, Trash2, TrendingUp } from "lucide-react";
 import { SearchAndFilter } from "./SearchAndFilter";
 import { Pagination } from "./Pagination";
 import { TicketPricingGateway } from "@/lib/TicketPricingGateway";
+import { toCents, fromCents, formatCurrency } from "@/helpers/currency";
 import SuccessSnackbar from "./SuccessSnackbar";
 import ErrorSnackbar from "./ErrorSnackbar";
 
@@ -48,6 +50,19 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAdvanceLotDialogOpen, setIsAdvanceLotDialogOpen] = useState(false);
   const [editingTicket, setEditingTicket] = useState<any>(null);
+
+  // Helper functions for price formatting
+  const formatPrice = (value: string): string => {
+    const numbers = value.replace(/\D/g, "");
+    if (!numbers) return "";
+    const cents = parseInt(numbers, 10);
+    return (cents / 100).toFixed(2).replace(".", ",");
+  };
+
+  const parsePrice = (value: string): number => {
+    const numbers = value.replace(/\D/g, "");
+    return numbers ? parseInt(numbers, 10) / 100 : 0;
+  };
   const [advancingTicket, setAdvancingTicket] = useState<any>(null);
   const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
   const [showErrorSnackbar, setShowErrorSnackbar] = useState(false);
@@ -67,40 +82,42 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
     return value.toLocaleString(locale, options);
   };
 
-  // Helper function to format currency
-  const formatCurrency = (value: number) => {
-    const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
-    const currency = i18n.language === 'pt' ? 'BRL' : 'USD';
-    return value.toLocaleString(locale, {
-      style: 'currency',
-      currency: currency,
-    });
-  };
-
   // Validation schema for create
   const createValidationSchema = Yup.object({
-    ticket_type: Yup.string().required("Ticket type is required"),
-    gender: Yup.string().required("Gender is required"),
-    price: Yup.number()
-      .required("Price is required")
-      .min(0, "Price must be greater than or equal to 0"),
+    ticket_type: Yup.string().required(t("validation.required")),
+    gender: Yup.string().required(t("validation.required")),
+    price: Yup.string()
+      .required(t("validation.required"))
+      .test("is-valid-price", t("validation.price.minValue"), (value) => {
+        if (!value) return false;
+        const numValue = parsePrice(value);
+        return numValue > 0;
+      }),
   });
 
   // Validation schema for edit (includes active field)
   const editValidationSchema = Yup.object({
-    ticket_type: Yup.string().required("Ticket type is required"),
-    gender: Yup.string().required("Gender is required"),
-    price: Yup.number()
-      .required("Price is required")
-      .min(0, "Price must be greater than or equal to 0"),
+    ticket_type: Yup.string().required(t("validation.required")),
+    gender: Yup.string().required(t("validation.required")),
+    price: Yup.string()
+      .required(t("validation.required"))
+      .test("is-valid-price", t("validation.price.minValue"), (value) => {
+        if (!value) return false;
+        const numValue = parsePrice(value);
+        return numValue > 0;
+      }),
     active: Yup.boolean().required(),
   });
 
   // Validation schema for advance lot
   const advanceLotValidationSchema = Yup.object({
-    new_price: Yup.number()
-      .required("New price is required")
-      .min(0, "Price must be greater than or equal to 0"),
+    new_price: Yup.string()
+      .required(t("validation.required"))
+      .test("is-valid-price", t("validation.price.minValue"), (value) => {
+        if (!value) return false;
+        const numValue = parsePrice(value);
+        return numValue > 0;
+      }),
   });
 
   // Debounced search function
@@ -172,7 +189,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
         event_id: eventId,
         ticket_type: values.ticket_type,
         gender: values.gender,
-        price: values.price,
+        price: toCents(values.price),
       };
       return ticketPricingGateway.createTicketPricing(ticketData);
     },
@@ -196,7 +213,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
       const ticketData = {
         ticket_type: values.ticket_type,
         gender: values.gender,
-        price: values.price,
+        price: toCents(values.price),
         active: values.active,
       };
       return ticketPricingGateway.updateTicketPricing(editingTicket.id, ticketData);
@@ -220,7 +237,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
       return ticketPricingGateway.advanceLot({
         event_id: eventId,
         ticket_id: advancingTicket.id,
-        new_price: values.new_price,
+        new_price: toCents(values.new_price),
       });
     },
     onSuccess: () => {
@@ -295,7 +312,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
               onSubmit={(values) => {
                 createTicketPricingMutation.mutate({
                   ...values,
-                  price: parseFloat(values.price),
+                  price: parsePrice(values.price),
                 });
               }}
             >
@@ -351,14 +368,24 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                   </div>
                   <div>
                     <Label htmlFor="price">{t("eventManagement.ticketTypes.createDialog.fields.price")}</Label>
-                    <Field
-                      as={Input}
-                      id="price"
-                      name="price"
-                      type="number"
-                      step="0.01"
-                      placeholder={t("eventManagement.ticketTypes.createDialog.fields.pricePlaceholder")}
-                    />
+                    <Field name="price">
+                      {({ field, form }: any) => (
+                        <div className="relative">
+                          <span className="absolute left-3 top-2.5 text-sm text-muted-foreground">R$</span>
+                          <Input
+                            {...field}
+                            id="price"
+                            placeholder="0,00"
+                            className="pl-10"
+                            value={field.value ? formatPrice(field.value) : ""}
+                            onChange={(e) => {
+                              const formatted = formatPrice(e.target.value);
+                              form.setFieldValue("price", formatted);
+                            }}
+                          />
+                        </div>
+                      )}
+                    </Field>
                     <ErrorMessage
                       name="price"
                       component="div"
@@ -446,7 +473,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">{t("eventManagement.ticketTypes.labels.price")}</span>
                   <span className="text-lg font-bold">
-                    {formatCurrency(ticketType.price)}
+                    {formatCurrency(ticketType.price, i18n.language === 'pt' ? 'pt-BR' : 'en-US')}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -514,14 +541,14 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
               initialValues={{
                 ticket_type: editingTicket.ticket_type,
                 gender: editingTicket.gender,
-                price: editingTicket.price.toString(),
+                price: fromCents(editingTicket.price).toFixed(2).replace(".", ","),
                 active: editingTicket.active,
               }}
               validationSchema={editValidationSchema}
               onSubmit={(values) => {
                 updateTicketPricingMutation.mutate({
                   ...values,
-                  price: parseFloat(values.price),
+                  price: parsePrice(values.price),
                 });
               }}
             >
@@ -573,14 +600,24 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                   </div>
                   <div>
                     <Label htmlFor="edit_price">{t("eventManagement.ticketTypes.createDialog.fields.price")}</Label>
-                    <Field
-                      as={Input}
-                      id="edit_price"
-                      name="price"
-                      type="number"
-                      step="0.01"
-                      placeholder={t("eventManagement.ticketTypes.createDialog.fields.pricePlaceholder")}
-                    />
+                    <Field name="price">
+                      {({ field, form }: any) => (
+                        <div className="relative">
+                          <span className="absolute left-3 top-2.5 text-sm text-muted-foreground">R$</span>
+                          <Input
+                            {...field}
+                            id="edit_price"
+                            placeholder="0,00"
+                            className="pl-10"
+                            value={field.value ? formatPrice(field.value) : ""}
+                            onChange={(e) => {
+                              const formatted = formatPrice(e.target.value);
+                              form.setFieldValue("price", formatted);
+                            }}
+                          />
+                        </div>
+                      )}
+                    </Field>
                     <ErrorMessage
                       name="price"
                       component="div"
@@ -640,7 +677,7 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
               validationSchema={advanceLotValidationSchema}
               onSubmit={(values) => {
                 advanceLotMutation.mutate({
-                  new_price: parseFloat(values.new_price),
+                  new_price: parsePrice(values.new_price),
                 });
               }}
             >
@@ -648,14 +685,24 @@ export const EventTicketTypes = ({ eventId }: EventTicketTypesProps) => {
                 <Form className="space-y-4">
                   <div>
                     <Label htmlFor="new_price">{t("eventManagement.ticketTypes.advanceLotDialog.fields.newPrice")}</Label>
-                    <Field
-                      as={Input}
-                      id="new_price"
-                      name="new_price"
-                      type="number"
-                      step="0.01"
-                      placeholder={t("eventManagement.ticketTypes.advanceLotDialog.fields.newPricePlaceholder")}
-                    />
+                    <Field name="new_price">
+                      {({ field, form }: any) => (
+                        <div className="relative">
+                          <span className="absolute left-3 top-2.5 text-sm text-muted-foreground">R$</span>
+                          <Input
+                            {...field}
+                            id="new_price"
+                            placeholder="0,00"
+                            className="pl-10"
+                            value={field.value ? formatPrice(field.value) : ""}
+                            onChange={(e) => {
+                              const formatted = formatPrice(e.target.value);
+                              form.setFieldValue("new_price", formatted);
+                            }}
+                          />
+                        </div>
+                      )}
+                    </Field>
                     <ErrorMessage
                       name="new_price"
                       component="div"

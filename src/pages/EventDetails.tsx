@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { formatCurrency } from "@/helpers/currency";
 import { CheckoutOverlay } from "@/components/CheckoutOverlay";
 import { EventGateway } from "@/lib/EventGateway";
 import { GeocodingGateway } from "@/lib/GeocodingGateway";
@@ -103,11 +104,8 @@ export default function EventDetails() {
     return lot === 0 ? "Pré-venda" : `Lote ${lot}`;
   };
 
-  const formatPrice = (price: number) => {
-    return price.toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
+  const formatPrice = (cents: number) => {
+    return formatCurrency(cents, "pt-BR");
   };
 
   const getEventAddress = () => {

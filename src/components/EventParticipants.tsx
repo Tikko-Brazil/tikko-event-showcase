@@ -22,6 +22,7 @@ import { SearchAndFilter } from "./SearchAndFilter";
 import { Pagination } from "./Pagination";
 import { InviteGateway, InviteStatus } from "@/lib/InviteGateway";
 import { PaymentGateway } from "@/lib/PaymentGateway";
+import { formatCurrency } from "@/helpers/currency";
 import SuccessSnackbar from "./SuccessSnackbar";
 import ErrorSnackbar from "./ErrorSnackbar";
 
@@ -65,16 +66,6 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
   const formatNumber = (value: number, options?: Intl.NumberFormatOptions) => {
     const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
     return value.toLocaleString(locale, options);
-  };
-
-  // Helper function to format currency
-  const formatCurrency = (value: number) => {
-    const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
-    const currency = i18n.language === "pt" ? "BRL" : "USD";
-    return value.toLocaleString(locale, {
-      style: "currency",
-      currency: currency,
-    });
   };
 
   // Debounced search function
@@ -276,7 +267,8 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                     <span className="font-medium">
                       {formatCurrency(
                         invite.payment_details.authorized_amount ||
-                        invite.ticket_pricing.price
+                        invite.ticket_pricing.price,
+                        i18n.language === "pt" ? "pt-BR" : "en-US"
                       )}
                     </span>
                   </div>

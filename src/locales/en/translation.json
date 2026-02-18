@@ -653,6 +653,9 @@
       "specialChar": "Password must contain at least one special character (e.g., !@#$%^&*()_+)",
       "noMatch": "Passwords do not match"
     },
+    "price": {
+      "minValue": "Price must be greater than 0"
+    },
     "birthdate": {
       "required": "Birthdate is required",
       "minAge": "You must be at least 18 years old"

@@ -134,11 +134,22 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
     isActive: Yup.boolean(),
   });
 
+  // Extract S3 key from signed URL
+  const extractS3Key = (url: string | null): string | null => {
+    if (!url) return null;
+    try {
+      const urlObj = new URL(url);
+      const pathname = urlObj.pathname;
+      return pathname.startsWith('/') ? pathname.substring(1) : pathname;
+    } catch {
+      return null;
+    }
+  };
+
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(event.image || "");
-  const [imageKey, setImageKey] = useState<string | undefined>(
-    event.image || undefined
-  );
+  const [imageKey, setImageKey] = useState<string | null>(extractS3Key(event.image));
+  const [imageChanged, setImageChanged] = useState(false);
   const [isImageUploading, setIsImageUploading] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
@@ -180,6 +191,7 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
     },
     onSuccess: (key) => {
       setImageKey(key);
+      setImageChanged(true);
       setIsImageUploading(false);
     },
     onError: (error: any) => {
@@ -235,10 +247,9 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
 
   const updateEventMutation = useMutation({
     mutationFn: async (values: FormValues) => {
-      const updateData = {
+      const updateData: any = {
         name: values.name,
         description: values.description,
-        image: imageKey || "",
         start_date: `${values.startDate}T${values.startTime}:00Z`,
         end_date: `${values.endDate}T${values.endTime}:00Z`,
         address_name: values.locationName,
@@ -249,6 +260,12 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
         auto_accept: values.autoAccept,
         is_active: values.isActive,
       };
+      
+      // Only include image if it was changed
+      if (imageChanged && imageKey) {
+        updateData.image = imageKey;
+      }
+      
       return eventGateway.updateEvent(event.id, updateData);
     },
     onSuccess: () => {

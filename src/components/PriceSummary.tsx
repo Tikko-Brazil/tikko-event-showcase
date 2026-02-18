@@ -2,6 +2,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { fromCents } from "@/helpers/currency";
 
 interface PriceSummaryProps {
   ticketPrice: number;
@@ -29,11 +30,13 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
   isContinueDisabled = false,
   isProcessing = false,
 }) => {
-  const discountAmount = discount?.amount || 0;
-  const ticketPriceAfterDiscount = Math.max(0, ticketPrice - discountAmount);
+  // Convert prices from cents to decimal for calculations
+  const ticketPriceDecimal = fromCents(ticketPrice);
+  const discountAmountDecimal = discount?.amount ? fromCents(discount.amount) : 0;
+  const ticketPriceAfterDiscount = Math.max(0, ticketPriceDecimal - discountAmountDecimal);
   const serviceFee = ticketPriceAfterDiscount * 0.1;
-  const subtotal = ticketPrice + serviceFee;
-  const total = subtotal - discountAmount;
+  const subtotal = ticketPriceDecimal + serviceFee;
+  const total = subtotal - discountAmountDecimal;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -52,7 +55,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
                 {ticketType}
               </span>
               <span className="text-sm font-medium">
-                {formatCurrency(ticketPrice)}
+                {formatCurrency(ticketPriceDecimal)}
               </span>
             </div>
 
@@ -60,7 +63,7 @@ export const PriceSummary: React.FC<PriceSummaryProps> = ({
               <div className="flex justify-between items-center text-green-600">
                 <span className="text-sm">Desconto ({discount.code})</span>
                 <span className="text-sm font-medium">
-                  -{formatCurrency(discountAmount)}
+                  -{formatCurrency(discountAmountDecimal)}
                 </span>
               </div>
             )}

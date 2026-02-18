@@ -21,6 +21,7 @@ import {
 import { CheckCircle2, X, UserPlus, Search } from "lucide-react";
 import { Pagination } from "./Pagination";
 import { InviteGateway, InviteStatus } from "@/lib/InviteGateway";
+import { fromCents, formatCurrency } from "@/helpers/currency";
 import SuccessSnackbar from "./SuccessSnackbar";
 import ErrorSnackbar from "./ErrorSnackbar";
 
@@ -40,7 +41,7 @@ const formatTicketName = (ticket: any) => {
 };
 
 export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [requestSearch, setRequestSearch] = useState("");
   const [requestPage, setRequestPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -266,10 +267,10 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
                     {t("eventManagement.joinRequests.fields.paidValue")}:
                   </span>
                   <span className="font-medium">
-                    {new Intl.NumberFormat("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    }).format(request.payment_details.authorized_amount)}
+                    {formatCurrency(
+                      request.payment_details.authorized_amount,
+                      i18n.language === 'pt' ? 'pt-BR' : 'en-US'
+                    )}
                   </span>
                 </div>
 

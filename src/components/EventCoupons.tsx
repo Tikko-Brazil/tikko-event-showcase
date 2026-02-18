@@ -4,6 +4,7 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { debounce } from "lodash";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import { toCents, fromCents, formatCurrency } from "@/helpers/currency";
 import {
   Card,
   CardContent,
@@ -109,13 +110,9 @@ export const EventCoupons = ({ eventId, eventSlug }: EventCouponsProps) => {
   };
 
   // Helper function to format currency
-  const formatCurrency = (value: number) => {
+  const formatCurrencyLocal = (cents: number) => {
     const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
-    const currency = i18n.language === 'pt' ? 'BRL' : 'USD';
-    return value.toLocaleString(locale, {
-      style: 'currency',
-      currency: currency,
-    });
+    return formatCurrency(cents, locale);
   };
 
   const ticketPricingGateway = new TicketPricingGateway(
@@ -128,7 +125,7 @@ export const EventCoupons = ({ eventId, eventSlug }: EventCouponsProps) => {
         event_id: eventId,
         code: values.code,
         discount_type: values.type,
-        discount_value: values.value,
+        discount_value: values.type === 'fixed' ? toCents(values.value) : values.value,
         max_usage: values.maxUsage,
         is_active: values.isActive,
         ticket_pricing_ids: values.isTicketSpecific
@@ -716,7 +713,7 @@ export const EventCoupons = ({ eventId, eventSlug }: EventCouponsProps) => {
                     <span className="text-lg font-bold">
                       {coupon.discount_type === "percentage"
                         ? `${coupon.discount_value}%`
-                        : formatCurrency(coupon.discount_value)}
+                        : formatCurrencyLocal(coupon.discount_value)}
                     </span>
                   </div>
                   <div className="mt-2">

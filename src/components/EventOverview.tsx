@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { EventGateway } from "@/lib/EventGateway";
+import { formatCurrency as formatCurrencyHelper } from "@/helpers/currency";
 import {
   Users,
   DollarSign,
@@ -50,13 +51,9 @@ export const EventOverview = ({ eventId }: EventOverviewProps) => {
     return num.toLocaleString(locale);
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (cents: number) => {
     const locale = i18n.language === "pt" ? "pt-BR" : "en-US";
-    const currency = i18n.language === "pt" ? "BRL" : "USD";
-    return amount.toLocaleString(locale, {
-      style: "currency",
-      currency: currency,
-    });
+    return formatCurrencyHelper(cents, locale);
   };
 
   const getActionText = (actionCode: number) => {

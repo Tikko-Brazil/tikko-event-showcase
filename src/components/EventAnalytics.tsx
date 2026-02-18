@@ -25,6 +25,7 @@ import {
   Legend,
 } from "recharts";
 import { EventGateway } from "@/lib/EventGateway";
+import { formatCurrency as formatCurrencyHelper } from "@/helpers/currency";
 
 interface EventAnalyticsProps {
   eventId: number;
@@ -45,16 +46,10 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
     return value.toLocaleString(locale, options);
   };
 
-  // Helper function to format currency
-  const formatCurrency = (value: number) => {
+  // Helper function to format currency (converts from cents)
+  const formatCurrency = (cents: number) => {
     const locale = i18n.language === 'pt' ? 'pt-BR' : 'en-US';
-    const currency = i18n.language === 'pt' ? 'BRL' : 'USD';
-    return value.toLocaleString(locale, {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    return formatCurrencyHelper(cents, locale);
   };
 
   // Convert time window to days

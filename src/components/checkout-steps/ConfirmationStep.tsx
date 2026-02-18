@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { UserData, DiscountData } from "../CheckoutOverlay";
+import { formatCurrency as formatCurrencyHelper, fromCents } from "@/helpers/currency";
 import ErrorSnackbar from "@/components/ErrorSnackbar";
 import {
   CreditCard,
@@ -39,11 +40,14 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   onNext,
 }) => {
   const [error, setError] = useState<string | null>(null);
-  const discountAmount = discount?.amount || 0;
-  const ticketPriceAfterDiscount = Math.max(0, ticketPrice - discountAmount);
+  
+  // Convert prices from cents to decimal for calculations
+  const ticketPriceDecimal = fromCents(ticketPrice);
+  const discountAmountDecimal = discount?.amount ? fromCents(discount.amount) : 0;
+  const ticketPriceAfterDiscount = Math.max(0, ticketPriceDecimal - discountAmountDecimal);
   const serviceFee = ticketPriceAfterDiscount * 0.1;
-  const subtotal = ticketPrice + serviceFee;
-  const total = subtotal - discountAmount;
+  const subtotal = ticketPriceDecimal + serviceFee;
+  const total = subtotal - discountAmountDecimal;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -77,14 +81,14 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Valor:</span>
                 <span className="font-medium">
-                  {formatCurrency(ticketPrice)}
+                  {formatCurrency(ticketPriceDecimal)}
                 </span>
               </div>
               {discount && (
                 <div className="flex justify-between text-green-600">
                   <span>Desconto ({discount.code}):</span>
                   <span className="font-medium">
-                    -{formatCurrency(discountAmount)}
+                    -{formatCurrency(discountAmountDecimal)}
                   </span>
                 </div>
               )}
