@@ -1304,7 +1304,12 @@
       "INVALID_REQUEST": "Não foi possível carregar os eventos. Por favor, tente novamente.",
       "INVALID_PAGINATION": "Número de página inválido. Por favor, tente novamente.",
       "INVALID_ACTIVE_FILTER": "Opção de filtro inválida. Por favor, tente novamente.",
-      "INTERNAL_SERVER_ERROR": "Erro no servidor. Por favor, tente novamente mais tarde."
+      "INTERNAL_SERVER_ERROR": "Erro no servidor. Por favor, tente novamente mais tarde.",
+      "getUserEvents": {
+        "invalidRequest": "Falha ao processar parâmetros. Por favor, tente novamente.",
+        "invalidPagination": "Página ou limite deve ser pelo menos 1.",
+        "invalidActiveFilter": "Filtro ativo deve ser 'true', 'false' ou 'all'."
+      }
     },
     "ticket": {
       "MISSING_PAGINATION_PARAMS": "Parâmetro de página ou limite está faltando",

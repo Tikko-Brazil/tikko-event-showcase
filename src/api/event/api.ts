@@ -24,12 +24,29 @@ export interface Event {
   participant_count: number
 }
 
+export interface UserEventRelation {
+  event: Event
+  role: string
+  has_sold_tickets: boolean
+  is_admin: boolean
+}
+
 export interface PaginatedEventsResponse {
   events: Event[]
   total: number
   page: number
   limit: number
   total_pages: number
+  is_admin?: boolean
+}
+
+export interface UserEventsResponse {
+  events: UserEventRelation[]
+  total: number
+  page: number
+  limit: number
+  total_pages: number
+  is_admin: boolean
 }
 
 export interface GetEventsParams {
@@ -137,3 +154,42 @@ export function useCreateEvent() {
     },
   })
 }
+
+export interface GetUserEventsParams {
+  page: number
+  limit: number
+  active?: "true" | "false" | "all"
+  search?: string
+  order_by?: string
+  order?: "asc" | "desc"
+}
+
+export function useGetUserEvents(params: GetUserEventsParams) {
+  return useQuery({
+    queryKey: ["user-events", params],
+    queryFn: async () => {
+      try {
+        const searchParams = new URLSearchParams({
+          page: params.page.toString(),
+          limit: params.limit.toString(),
+        })
+
+        if (params.active) searchParams.append("active", params.active)
+        if (params.search) searchParams.append("search", params.search)
+        if (params.order_by) searchParams.append("order_by", params.order_by)
+        if (params.order) searchParams.append("order", params.order)
+
+        const res = await apiAuth.get(`/private/event/user?${searchParams}`)
+        return res.data as UserEventsResponse
+      } catch (error) {
+        throw normalizeApiError(error)
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  })
+}
+

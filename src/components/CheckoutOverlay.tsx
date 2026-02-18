@@ -78,6 +78,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   const [paymentMethod, setPaymentMethod] = useState<"credit" | "pix" | "">("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [validateAndContinueUserInfo, setValidateAndContinueUserInfo] = useState<(() => Promise<boolean>) | null>(null);
   const [isUserInfoValid, setIsUserInfoValid] = useState(false);
   const [paymentData, setPaymentData] = useState<any>(null);
   const [qrCode, setQrCode] = useState<string>("");
@@ -262,6 +263,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             onValidationChange={(isValid) => {
               setIsUserInfoValid(isValid);
             }}
+            onValidateAndContinue={setValidateAndContinueUserInfo}
           />
         );
       case 3:
@@ -338,9 +340,13 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         };
       case 2:
         return {
-          onContinue: handleNext,
+          onContinue: async () => {
+            if (validateAndContinueUserInfo) {
+              await validateAndContinueUserInfo();
+            }
+          },
           continueButtonText: "Continuar",
-          isContinueDisabled: !isUserInfoValid,
+          isContinueDisabled: false, // Always enabled
         };
       case 3:
         return {

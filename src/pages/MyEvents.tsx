@@ -1,12 +1,14 @@
 import React, { useState, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { debounce } from "lodash";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, Edit, Loader2 } from "lucide-react";
-import { EventGateway } from "@/lib/EventGateway";
+import { useGetUserEvents } from "@/api/event/api";
+import { getUserEventsErrorMessage } from "@/api/event/errors";
+import { normalizeApiError } from "@/api/client";
+import { useToast } from "@/hooks/use-toast";
 import { formatEventDate, formatEventTime } from "@/lib/utils";
 import { parseISO } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +20,7 @@ import { Pagination } from "@/components/Pagination";
 const MyEvents = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchValue, setSearchValue] = useState("");
   const [debouncedSearchValue, setDebouncedSearchValue] = useState("");
@@ -38,23 +41,24 @@ const MyEvents = () => {
     debouncedSearch(value);
   };
 
-  const eventGateway = new EventGateway(import.meta.env.VITE_BACKEND_BASE_URL);
-
-  const { data: userEventsResponse, isLoading: isLoadingUserEvents } = useQuery({
-    queryKey: ["userEvents", currentPage, debouncedSearchValue, filterValue],
-    queryFn: () =>
-      eventGateway.getUserEvents({
-        page: currentPage,
-        limit: itemsPerPage,
-        active: filterValue as "true" | "false" | "all",
-        search: debouncedSearchValue || undefined,
-      }),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
+  const { data: userEventsResponse, isLoading: isLoadingUserEvents, error } = useGetUserEvents({
+    page: currentPage,
+    limit: itemsPerPage,
+    active: filterValue as "true" | "false" | "all",
+    search: debouncedSearchValue || undefined,
   });
+
+  // Show error toast if query fails
+  React.useEffect(() => {
+    if (error) {
+      const appError = normalizeApiError(error);
+      toast({
+        variant: "destructive",
+        title: t("common.error"),
+        description: getUserEventsErrorMessage(appError, t),
+      });
+    }
+  }, [error, t, toast]);
 
   const filterOptions = [
     { value: "all", label: t("eventManagement.ticketTypes.search.filters.all") },
