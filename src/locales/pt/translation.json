@@ -160,7 +160,12 @@
       "buttons": {
         "saveChanges": "Salvar Alterações",
         "cancel": "Cancelar",
-        "selectImage": "Selecionar imagem"
+        "selectImage": "Selecionar imagem",
+        "selectAdditionalImage": "Selecionar Imagem Adicional"
+      },
+      "labels": {
+        "addAdditionalImages": "Adicionar imagens adicionais",
+        "additionalImage": "Imagem Adicional"
       },
       "validation": {
         "nameRequired": "Nome do evento é obrigatório",
