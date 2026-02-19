@@ -10,8 +10,8 @@ export const CouponsPage = () => {
   const { eventId } = useParams();
 
   const { data: eventData, isLoading, error } = useQuery({
-    queryKey: ["event", eventId],
-    queryFn: () => eventGateway.getEvent(parseInt(eventId!)),
+    queryKey: ["event-info", eventId],
+    queryFn: () => eventGateway.getEventInfo(parseInt(eventId!)),
     enabled: !!eventId,
   });
 
