@@ -9,13 +9,21 @@ const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 export const CouponsPage = () => {
   const { eventId } = useParams();
 
-  const { data: eventData } = useQuery({
-    queryKey: ["event", eventId],
-    queryFn: () => eventGateway.getEvent(parseInt(eventId!)),
+  const { data: eventData, isLoading, error } = useQuery({
+    queryKey: ["event-info", eventId],
+    queryFn: () => eventGateway.getEventInfo(parseInt(eventId!)),
     enabled: !!eventId,
   });
 
-  const eventSlug = eventData ? generateSlug(eventData.name, eventData.id) : undefined;
+  if (isLoading || !eventData) {
+    return <div className="flex items-center justify-center p-8">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="flex items-center justify-center p-8">Error loading event</div>;
+  }
+
+  const eventSlug = generateSlug(eventData.name, eventData.id);
 
   return <EventCoupons eventId={parseInt(eventId!)} eventSlug={eventSlug} />;
 };

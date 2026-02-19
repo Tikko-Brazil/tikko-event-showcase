@@ -36,11 +36,19 @@ function getEventIdFromSlug(slug: string): string | null {
 
 async function getEvent(id: number): Promise<Event | null> {
   try {
+    console.log(`[Middleware] Fetching event with ID: ${id}`);
     const response = await fetch(`${BACKEND_BASE_URL}/public/event/${id}`);
     if (!response.ok) {
+      console.error(`[Middleware] Failed to fetch event ${id}: ${response.status}`);
       return null;
     }
-    return await response.json();
+    const data = await response.json();
+    console.log(`[Middleware] Event data received:`, JSON.stringify(data, null, 2));
+    
+    // API returns wrapped response with event property
+    const event = data.event || data;
+    console.log(`[Middleware] Extracted event:`, JSON.stringify(event, null, 2));
+    return event;
   } catch (error) {
     console.error("Error fetching event:", error);
     return null;
@@ -98,12 +106,17 @@ export default async function middleware(request: Request) {
   }
   const event = await getEvent(eventId);
   if (!event) {
+    console.error(`[Middleware] Event not found for ID: ${eventId}`);
     return next({
       request: {
         headers: new Headers(request.headers),
       },
     });
   }
+  
+  console.log(`[Middleware] Building OG tags for event: ${event.name || 'UNDEFINED_NAME'}`);
+  console.log(`[Middleware] Event properties - name: ${event.name}, description: ${event.description}, image: ${event.image}`);
+  
   const ogImage = event.image;
   const html = `
     <!DOCTYPE html>
