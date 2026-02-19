@@ -42,8 +42,12 @@ async function getEvent(id: number): Promise<Event | null> {
       console.error(`[Middleware] Failed to fetch event ${id}: ${response.status}`);
       return null;
     }
-    const event = await response.json();
-    console.log(`[Middleware] Event data received:`, JSON.stringify(event, null, 2));
+    const data = await response.json();
+    console.log(`[Middleware] Event data received:`, JSON.stringify(data, null, 2));
+    
+    // API returns wrapped response with event property
+    const event = data.event || data;
+    console.log(`[Middleware] Extracted event:`, JSON.stringify(event, null, 2));
     return event;
   } catch (error) {
     console.error("Error fetching event:", error);
