@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { EventGateway } from "@/lib/EventGateway";
 import { formatCurrency as formatCurrencyHelper } from "@/helpers/currency";
 import {
@@ -35,6 +36,7 @@ const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 
 export const EventOverview = ({ eventId }: EventOverviewProps) => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
 
   const {
     data: statsData,
@@ -211,19 +213,19 @@ export const EventOverview = ({ eventId }: EventOverviewProps) => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button variant="outline" className="w-full justify-start">
+            <Button variant="outline" className="w-full justify-start" onClick={() => navigate(`/event-management/${eventId}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />
               {t("eventManagement.overview.quickActions.editEvent")}
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button variant="outline" className="w-full justify-start" onClick={() => navigate(`/event-management/${eventId}/participants`)}>
               <Users className="mr-2 h-4 w-4" />
               {t("eventManagement.overview.quickActions.viewParticipantList")}
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button variant="outline" className="w-full justify-start" onClick={() => navigate(`/event-management/${eventId}/coupons`)}>
               <Gift className="mr-2 h-4 w-4" />
               {t("eventManagement.overview.quickActions.createDiscountCode")}
             </Button>
-            <Button variant="outline" className="w-full justify-start">
+            <Button variant="outline" className="w-full justify-start" onClick={() => navigate(`/event-management/${eventId}/validate`)}>
               <CheckCircle2 className="mr-2 h-4 w-4" />
               {t("eventManagement.overview.quickActions.validateTickets")}
             </Button>

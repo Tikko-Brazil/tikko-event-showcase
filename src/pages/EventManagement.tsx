@@ -34,6 +34,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import logoLight from "@/assets/logoLight.png";
 
 import { EventGateway } from "@/lib/EventGateway";
+import { formatEventTime } from "@/lib/utils";
 
 const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 
@@ -70,16 +71,11 @@ const EventManagement = () => {
   };
 
   const formatTime = (startDate: string, endDate: string) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    return `${start.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })} - ${end.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
+    const startTime = formatEventTime(startDate);
+    const endTime = formatEventTime(endDate);
+    return `${startTime} - ${endTime}`;
   };
+
   const [activeSection, setActiveSection] = useState("overview");
   const [mobileOverlay, setMobileOverlay] = useState<string | null>(null);
 
@@ -278,7 +274,6 @@ const EventManagement = () => {
         {/* Event Header */}
         <EventInfoHeader
           status="upcoming"
-          id={event.id}
           title={event.name}
           date={formatDate(event.start_date)}
           time={formatTime(event.start_date, event.end_date)}
@@ -369,7 +364,6 @@ const EventManagement = () => {
           {/* Event Info */}
           <EventInfoHeader
             status="upcoming"
-            id={event.id}
             title={event.name}
             date={formatDate(event.start_date)}
             time={formatTime(event.start_date, event.end_date)}

@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 
 interface EventInfoHeaderProps {
   status: string;
-  id: number;
   title: string;
   date: string;
   time?: string;
@@ -13,7 +12,6 @@ interface EventInfoHeaderProps {
 
 export const EventInfoHeader = ({
   status,
-  id,
   title,
   date,
   time,
@@ -25,10 +23,6 @@ export const EventInfoHeader = ({
     <div className="p-4 border-b">
       <div className="flex items-center gap-3 mb-3 md:gap-2 md:mb-2">
         <Badge variant="outline">{t(`eventManagement.tags.${status}`)}</Badge>
-        <span className="text-sm text-muted-foreground md:text-xs">
-          <span className="md:hidden">Event ID: {id}</span>
-          <span className="hidden md:inline">ID: {id}</span>
-        </span>
       </div>
       <h1 className="text-xl font-bold mb-2 md:text-base md:font-semibold">
         {title}

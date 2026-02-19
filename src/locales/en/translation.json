@@ -44,7 +44,12 @@
       "title": "Suggestions for You"
     },
     "search": {
-      "placeholder": "Search events..."
+      "placeholder": "Search events...",
+      "searchResults": "Search Results",
+      "popularEvents": "Popular Events",
+      "noResults": "No events found for",
+      "pressEscToClose": "Press ESC to close",
+      "enterToSelect": "Enter to select"
     }
   },
   "eventManagement": {
@@ -80,6 +85,7 @@
     "overview": {
       "cards": {
         "totalTickets": "Total Tickets",
+        "issuedTickets": "Issued Tickets",
         "soldTickets": "Sold Tickets",
         "revenue": "Revenue",
         "attendees": "Attendees",

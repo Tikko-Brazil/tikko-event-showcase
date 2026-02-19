@@ -23,6 +23,7 @@ import {
 import { useIsMobile } from "@/hooks/use-mobile";
 import logoLight from "@/assets/logoLight.png";
 import { EventGateway } from "@/lib/EventGateway";
+import { formatEventTime } from "@/lib/utils";
 
 const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 
@@ -73,15 +74,15 @@ export const EventManagementLayout = () => {
   };
 
   const formatTime = (startDate: string, endDate: string) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    return `${start.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })} - ${end.toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    })}`;
+    const startTime = formatEventTime(startDate);
+    const endTime = formatEventTime(endDate);
+    return `${startTime} - ${endTime}`;
+  };
+
+  const getEventStatus = (endDate: string) => {
+    const now = new Date();
+    const eventEnd = new Date(endDate);
+    return eventEnd < now ? "past" : "upcoming";
   };
 
   const managementSections = [
@@ -196,8 +197,7 @@ export const EventManagementLayout = () => {
 
         {/* Event Header */}
         <EventInfoHeader
-          status="upcoming"
-          id={event.id}
+          status={getEventStatus(event.end_date)}
           title={event.name}
           date={formatDate(event.start_date)}
           time={formatTime(event.start_date, event.end_date)}
@@ -243,7 +243,7 @@ export const EventManagementLayout = () => {
             </Button>
             <img src={logoLight} alt="Tikko" className="h-8" />
           </div>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => navigate(`/event-management/${eventId}/participants`)}>
             <Users className="h-4 w-4 mr-2" />
             {t("eventManagement.buttons.viewParticipantList")}
           </Button>
@@ -255,8 +255,7 @@ export const EventManagementLayout = () => {
         <aside className="w-64 border-r bg-card/50 backdrop-blur-sm">
           {/* Event Info */}
           <EventInfoHeader
-            status="upcoming"
-            id={event.id}
+            status={getEventStatus(event.end_date)}
             title={event.name}
             date={formatDate(event.start_date)}
             time={formatTime(event.start_date, event.end_date)}

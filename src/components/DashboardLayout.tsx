@@ -111,9 +111,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               <Button variant="ghost" size="sm" onClick={() => setIsSearchOpen(true)}>
                 <Search className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="sm">
-                <Bell className="h-5 w-5" />
-              </Button>
+              {false && (
+                <Button variant="ghost" size="sm">
+                  <Bell className="h-5 w-5" />
+                </Button>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="rounded-full gap-1 pr-2">
@@ -162,10 +164,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                       <Settings className="mr-3 h-4 w-4" />
                       <span>{t("dashboard.menu.settings")}</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer rounded-md px-3 py-2">
+                    {false && (<DropdownMenuItem className="cursor-pointer rounded-md px-3 py-2">
                       <HelpCircle className="mr-3 h-4 w-4" />
                       <span>{t("dashboard.menu.help")}</span>
-                    </DropdownMenuItem>
+                    </DropdownMenuItem>)}
                   </div>
 
                   <DropdownMenuSeparator />
@@ -266,9 +268,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm">
-              <Bell className="h-5 w-5" />
-            </Button>
+            {false && (
+              <Button variant="ghost" size="sm">
+                <Bell className="h-5 w-5" />
+              </Button>
+            )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="rounded-full gap-1 pr-2">
@@ -316,10 +320,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                     <Settings className="mr-3 h-4 w-4" />
                     <span>{t("dashboard.menu.settings")}</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer rounded-md px-3 py-2">
+                  {false && (<DropdownMenuItem className="cursor-pointer rounded-md px-3 py-2">
                     <HelpCircle className="mr-3 h-4 w-4" />
                     <span>{t("dashboard.menu.help")}</span>
-                  </DropdownMenuItem>
+                  </DropdownMenuItem>)}
                 </div>
 
                 <DropdownMenuSeparator />

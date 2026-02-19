@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { EventGateway } from "@/lib/EventGateway";
 import { useGetEvents } from "@/api/event/api";
 import generateSlug from "@/helpers/generateSlug";
+import { formatEventTime } from "@/lib/utils";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -92,11 +93,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, initialEvent
   };
 
   const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString(i18n.language === "pt" ? "pt-BR" : "en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return formatEventTime(dateString);
   };
 
   const formatDate = (dateString: string) => {
@@ -224,7 +221,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, initialEvent
             {displayedEvents.length > 0 ? (
               <div className="p-2">
                 <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {searchQuery ? "Search Results" : "Popular Events"}
+                  {searchQuery ? t("dashboard.search.searchResults") : t("dashboard.search.popularEvents")}
                 </div>
                 <div className="space-y-1">
                   {displayedEvents.map((event) => (
@@ -263,7 +260,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, initialEvent
                   <Search className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  No events found for "{searchQuery}"
+                  {t("dashboard.search.noResults")} "{searchQuery}"
                 </p>
               </div>
             )}
@@ -272,8 +269,8 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, initialEvent
           {/* Footer hint */}
           <div className="px-4 py-3 border-t border-border bg-muted/50">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>Press ESC to close</span>
-              <span>Enter to select</span>
+              <span>{t("dashboard.search.pressEscToClose")}</span>
+              <span>{t("dashboard.search.enterToSelect")}</span>
             </div>
           </div>
         </div>
