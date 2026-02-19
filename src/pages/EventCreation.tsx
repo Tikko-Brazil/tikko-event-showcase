@@ -7,6 +7,7 @@ import { useMutation } from "@tanstack/react-query";
 import { v4 as uuidv4 } from "uuid";
 import { debounce } from "lodash";
 import InputMask from "react-input-mask";
+import { toCents } from "@/helpers/currency";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -144,10 +145,12 @@ const createEventCreationSchema = (t: any) => Yup.object().shape({
         gender: Yup.string().required(t("eventCreation.validation.genderRequired")),
         price: Yup.string()
           .required(t("eventCreation.validation.priceRequired"))
-          .matches(
-            /^\d+$/,
-            t("eventCreation.validation.priceFormat")
-          ),
+          .test("is-valid-price", t("validation.price.minValue"), (value) => {
+            if (!value) return false;
+            const numbers = value.replace(/\D/g, "");
+            const cents = numbers ? parseInt(numbers, 10) : 0;
+            return cents > 0;
+          }),
       })
     )
     .min(1, t("eventCreation.validation.ticketTypesRequired")),
@@ -240,6 +243,20 @@ const EventCreation = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showError, setShowError] = useState(false);
+  const [newTicketPrice, setNewTicketPrice] = useState("");
+
+  // Helper functions for price formatting
+  const formatPrice = (value: string): string => {
+    const numbers = value.replace(/\D/g, "");
+    if (!numbers) return "";
+    const cents = parseInt(numbers, 10);
+    return (cents / 100).toFixed(2).replace(".", ",");
+  };
+
+  const parsePrice = (value: string): number => {
+    const numbers = value.replace(/\D/g, "");
+    return numbers ? parseInt(numbers, 10) / 100 : 0;
+  };
 
   // Create validation schema with translations
   const validationSchema = createEventCreationSchema(t);
@@ -329,7 +346,7 @@ const EventCreation = () => {
         ticket_pricing: values.ticketPricings.map((tp) => ({
           ticket_type: tp.ticketType,
           gender: tp.gender,
-          price: parseInt(tp.price),
+          price: toCents(parsePrice(tp.price)),
           start_date: combineDateTime(values.startDate, values.startTime),
           end_date: combineDateTime(values.endDate, values.endTime),
           active: true,
@@ -974,11 +991,19 @@ const EventCreation = () => {
                                 </div>
                               </div>
 
-                              <Input
-                                type="number"
-                                placeholder={t("eventCreation.ticketTypes.price")}
-                                id="newTicketPrice"
-                              />
+                              <div className="relative">
+                                <span className="absolute left-3 top-2.5 text-sm text-muted-foreground">R$</span>
+                                <Input
+                                  placeholder="0,00"
+                                  className="pl-10"
+                                  id="newTicketPrice"
+                                  value={newTicketPrice ? formatPrice(newTicketPrice) : ""}
+                                  onChange={(e) => {
+                                    const formatted = formatPrice(e.target.value);
+                                    setNewTicketPrice(formatted);
+                                  }}
+                                />
+                              </div>
                             </div>
 
                             <Button
@@ -990,19 +1015,16 @@ const EventCreation = () => {
                                 const genderInput = document.querySelector(
                                   'input[name="newGender"]:checked'
                                 ) as HTMLInputElement;
-                                const priceInput = document.getElementById(
-                                  "newTicketPrice"
-                                ) as HTMLInputElement;
 
                                 if (
                                   nameInput?.value &&
                                   genderInput?.value &&
-                                  priceInput?.value
+                                  newTicketPrice
                                 ) {
                                   const newTicket = {
                                     ticketType: nameInput.value,
                                     gender: genderInput.value,
-                                    price: priceInput.value,
+                                    price: newTicketPrice,
                                   };
 
                                   // Use setFieldValue to ensure proper form state update
@@ -1013,7 +1035,7 @@ const EventCreation = () => {
 
                                   // Clear inputs
                                   nameInput.value = "";
-                                  priceInput.value = "";
+                                  setNewTicketPrice("");
                                   const radios = document.querySelectorAll(
                                     'input[name="newGender"]'
                                   ) as NodeListOf<HTMLInputElement>;
