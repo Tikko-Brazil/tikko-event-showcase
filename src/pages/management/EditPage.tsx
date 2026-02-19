@@ -21,5 +21,5 @@ export const EditPage = () => {
 
   if (!eventData) return <div>Loading...</div>;
 
-  return <EventEditForm event={eventData.event} />;
+  return <EventEditForm event={eventData.event} additionalImages={eventData.additional_images} />;
 };

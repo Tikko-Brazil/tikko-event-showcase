@@ -59,6 +59,7 @@ interface Event {
   is_private: boolean;
   auto_accept: boolean;
   is_active: boolean;
+  additional_images?: string[];
 }
 
 interface FormValues {
@@ -79,9 +80,17 @@ interface FormValues {
 
 interface EventEditFormProps {
   event: Event;
+  additionalImages?: Array<{
+    id: number;
+    event_id: number;
+    image_key: string;
+    image_url: string;
+    display_order: number;
+    created_at: string;
+  }>;
 }
 
-export const EventEditForm = ({ event }: EventEditFormProps) => {
+export const EventEditForm = ({ event, additionalImages }: EventEditFormProps) => {
   const { t } = useTranslation();
 
   const commonValidations = createCommonValidations(t);
@@ -151,6 +160,11 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
   const [imageKey, setImageKey] = useState<string | null>(extractS3Key(event.image));
   const [imageChanged, setImageChanged] = useState(false);
   const [isImageUploading, setIsImageUploading] = useState(false);
+  const [addAdditionalImage, setAddAdditionalImage] = useState(false);
+  const [selectedAdditionalImage, setSelectedAdditionalImage] = useState<File | null>(null);
+  const [additionalImagePreview, setAdditionalImagePreview] = useState<string>("");
+  const [additionalImageKey, setAdditionalImageKey] = useState<string | null>(null);
+  const [isAdditionalImageUploading, setIsAdditionalImageUploading] = useState(false);
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
   const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
@@ -158,6 +172,15 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Initialize additional image if exists
+  React.useEffect(() => {
+    if (additionalImages && additionalImages.length > 0) {
+      setAddAdditionalImage(true);
+      setAdditionalImagePreview(additionalImages[0].image_url);
+      setAdditionalImageKey(additionalImages[0].image_key);
+    }
+  }, [additionalImages]);
 
   // Fetch address from coordinates
   const { data: addressData, isLoading: addressLoading } = useQuery({
@@ -198,6 +221,36 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
       console.error("Error uploading image:", error);
       alert("Failed to upload image. Please try again.");
       setIsImageUploading(false);
+    },
+  });
+
+  // Additional image upload mutation
+  const uploadAdditionalImageMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const uniqueId = uuidv4();
+      const fileExtension = file.name.split(".").pop()?.toLowerCase();
+      const key = `${uniqueId}.${fileExtension}`;
+
+      const uploadResponse = await eventGateway.getUploadUrl(key, file.type);
+
+      await fetch(uploadResponse.upload_url, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+        },
+      });
+
+      return uploadResponse.key;
+    },
+    onSuccess: (key) => {
+      setAdditionalImageKey(key);
+      setIsAdditionalImageUploading(false);
+    },
+    onError: (error: any) => {
+      console.error("Error uploading additional image:", error);
+      alert("Failed to upload additional image. Please try again.");
+      setIsAdditionalImageUploading(false);
     },
   });
 
@@ -266,6 +319,11 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
         updateData.image = imageKey;
       }
 
+      // Include additional images if checkbox is checked and image exists
+      if (addAdditionalImage && additionalImageKey) {
+        updateData.additional_images = [additionalImageKey];
+      }
+
       return eventGateway.updateEvent(event.id, updateData);
     },
     onSuccess: () => {
@@ -314,6 +372,21 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
       reader.readAsDataURL(file);
 
       uploadImageMutation.mutate(file);
+    }
+  };
+
+  const handleAdditionalImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedAdditionalImage(file);
+      setIsAdditionalImageUploading(true);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAdditionalImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      uploadAdditionalImageMutation.mutate(file);
     }
   };
 
@@ -430,6 +503,76 @@ export const EventEditForm = ({ event }: EventEditFormProps) => {
                       </Label>
                     </div>
                   </div>
+
+                  {/* Additional Images Checkbox */}
+                  <div className="flex items-center space-x-2 mt-6">
+                    <Checkbox
+                      id="addAdditionalImage"
+                      checked={addAdditionalImage}
+                      onCheckedChange={(checked) => setAddAdditionalImage(checked as boolean)}
+                    />
+                    <Label htmlFor="addAdditionalImage" className="cursor-pointer">
+                      {t("eventManagement.editEvent.labels.addAdditionalImages")}
+                    </Label>
+                  </div>
+
+                  {/* Additional Image Upload */}
+                  {addAdditionalImage && (
+                    <div className="space-y-2 mt-4">
+                      <Label className="text-sm font-medium text-foreground">
+                        {t("eventManagement.editEvent.labels.additionalImage")}
+                      </Label>
+                      <div className="space-y-4">
+                        {additionalImagePreview && (
+                          <div className="relative w-full h-48 rounded-lg overflow-hidden border border-border">
+                            <img
+                              src={additionalImagePreview}
+                              alt="Additional preview"
+                              className="w-full h-full object-cover"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-2 right-2"
+                              onClick={() => {
+                                setAdditionalImagePreview("");
+                                setAdditionalImageKey(null);
+                                setSelectedAdditionalImage(null);
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                        <div className="flex items-center space-x-4">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleAdditionalImageChange}
+                            className="hidden"
+                            id="additionalEventImage"
+                          />
+                          <Label
+                            htmlFor="additionalEventImage"
+                            className="cursor-pointer flex items-center space-x-2 px-4 py-2 border border-border rounded-md hover:bg-accent transition-colors"
+                          >
+                            {isAdditionalImageUploading ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>Carregando...</span>
+                              </>
+                            ) : (
+                              <>
+                                <ImageIcon className="h-4 w-4" />
+                                <span>{t("eventManagement.editEvent.buttons.selectAdditionalImage")}</span>
+                              </>
+                            )}
+                          </Label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Description */}

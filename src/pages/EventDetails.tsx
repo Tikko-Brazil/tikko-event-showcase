@@ -603,6 +603,17 @@ export default function EventDetails() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6 p-4 md:p-6 pt-0">
+                {/* Additional Image */}
+                {eventData.additional_images && eventData.additional_images.length > 0 && (
+                  <div className="w-full">
+                    <img
+                      src={eventData.additional_images[0].image_url}
+                      alt="Additional event image"
+                      className="w-full h-auto rounded-lg object-cover"
+                    />
+                  </div>
+                )}
+
                 <div>
                   <h3 className="text-lg font-semibold mb-3">
                     Sobre o evento

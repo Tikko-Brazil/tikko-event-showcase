@@ -154,7 +154,12 @@
       "buttons": {
         "saveChanges": "Save Changes",
         "cancel": "Cancel",
-        "selectImage": "Select image"
+        "selectImage": "Select image",
+        "selectAdditionalImage": "Select Additional Image"
+      },
+      "labels": {
+        "addAdditionalImages": "Add additional images",
+        "additionalImage": "Additional Image"
       },
       "validation": {
         "nameRequired": "Event name is required",

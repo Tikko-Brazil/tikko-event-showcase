@@ -119,6 +119,7 @@ interface UpdateEventRequest {
   is_private: boolean;
   auto_accept: boolean;
   is_active: boolean;
+  additional_images?: string[];
 }
 
 interface EventWithTicketPricing {
@@ -128,6 +129,14 @@ interface EventWithTicketPricing {
     name: string;
     logo: string;
   };
+  additional_images: Array<{
+    id: number;
+    event_id: number;
+    image_key: string;
+    image_url: string;
+    display_order: number;
+    created_at: string;
+  }>;
 }
 
 interface CreateEventResponse {
