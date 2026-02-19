@@ -1298,7 +1298,12 @@
       "INVALID_REQUEST": "Unable to load events. Please try again.",
       "INVALID_PAGINATION": "Invalid page number. Please try again.",
       "INVALID_ACTIVE_FILTER": "Invalid filter option. Please try again.",
-      "INTERNAL_SERVER_ERROR": "Server error. Please try again later."
+      "INTERNAL_SERVER_ERROR": "Server error. Please try again later.",
+      "getUserEvents": {
+        "invalidRequest": "Failed to parse query parameters. Please try again.",
+        "invalidPagination": "Page or limit must be at least 1.",
+        "invalidActiveFilter": "Active filter must be 'true', 'false', or 'all'."
+      }
     },
     "ticket": {
       "MISSING_PAGINATION_PARAMS": "Page or limit parameter is missing",
