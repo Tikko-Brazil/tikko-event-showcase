@@ -29,7 +29,6 @@ interface UserInfoStepProps {
   onNext: () => void;
   onValidationChange?: (isValid: boolean) => void;
   onContinue?: (userData: UserData) => void;
-  onValidateAndContinue?: (validateAndContinue: () => Promise<boolean>) => void;
 }
 
 export const UserInfoStep: React.FC<UserInfoStepProps> = ({
@@ -40,19 +39,9 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
   onNext,
   onValidationChange,
   onContinue,
-  onValidateAndContinue,
 }) => {
   const { t } = useTranslation();
   const [permanentTouched, setPermanentTouched] = React.useState<Record<string, boolean>>({});
-  const [hasInteracted, setHasInteracted] = React.useState(false);
-  const validateFormRef = React.useRef<any>(null);
-  const valuesRef = React.useRef<any>(null);
-
-  // Reset interaction state on mount
-  React.useEffect(() => {
-    setHasInteracted(false);
-    setPermanentTouched({});
-  }, []);
 
   const commonValidations = createCommonValidations(t);
 
@@ -70,15 +59,15 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
       identificationType === "cpf"
         ? commonValidations.cpf
         : Yup.string()
-            .test(
-              "identification-validation",
-              t("validation.document.invalid"),
-              (value) => {
-                if (!value) return false;
-                return value.length >= 5;
-              }
-            )
-            .required(t("validation.required")),
+          .test(
+            "identification-validation",
+            t("validation.document.invalid"),
+            (value) => {
+              if (!value) return false;
+              return value.length >= 5;
+            }
+          )
+          .required(t("validation.required")),
     birthdate: commonValidations.birthdate,
     instagram: commonValidations.instagram,
   });
@@ -93,7 +82,7 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
           <Formik
             initialValues={{ ...userData, identificationType }}
             validationSchema={validationSchema}
-            validateOnMount={false}
+            validateOnMount={true}
             validateOnChange={false}
             validateOnBlur={true}
             enableReinitialize={true}
@@ -117,7 +106,6 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
               // Custom handleBlur that persists touched state and validates
               const handleBlur = (fieldName?: string) => async (e: any) => {
                 const field = fieldName || e.target.name;
-                setHasInteracted(true);
                 setPermanentTouched(prev => ({ ...prev, [field]: true }));
                 formikHandleBlur(e);
                 // Manually trigger validation after blur
@@ -142,58 +130,16 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
                 onValidationChange?.(isValid);
               }, [isValid]);
 
-              // Store refs for validation
-              React.useEffect(() => {
-                validateFormRef.current = validateForm;
-                valuesRef.current = values;
-              });
-
-              // Validate on mount without touching fields
-              React.useEffect(() => {
-                validateForm();
-              }, []);
-
-              // Expose validation function to parent only once
-              React.useEffect(() => {
-                if (onValidateAndContinue) {
-                  onValidateAndContinue(async () => {
-                    console.log('Validation function called');
-                    setHasInteracted(true); // Enable error display
-                    const errors = await validateFormRef.current();
-                    if (Object.keys(errors).length === 0) {
-                      const { identificationType, ...userDataValues } = valuesRef.current;
-                      onUserDataChange(userDataValues);
-                      onNext();
-                      return true;
-                    } else {
-                      console.log('Validation failed, marking fields as touched:', errors);
-                      // Mark all fields as touched to show errors
-                      const allTouched: Record<string, boolean> = {};
-                      Object.keys(errors).forEach(key => {
-                        allTouched[key] = true;
-                      });
-                      setPermanentTouched(prev => ({ ...prev, ...allTouched }));
-                      return false;
-                    }
-                  });
-                }
-              }, [onValidateAndContinue, onUserDataChange, onNext]);
-
               // Memoize error states to prevent flickering
               const fieldErrors = React.useMemo(() => {
-                console.log('fieldErrors calculation:', { hasInteracted, permanentTouched, errors });
-                // Don't show any errors until user has interacted
-                if (!hasInteracted) return {};
-                
                 const result: Record<string, string | undefined> = {};
                 Object.keys(errors).forEach(key => {
-                  // Only show errors for fields that were manually touched by user
-                  if (permanentTouched[key]) {
+                  if (touched[key] || permanentTouched[key]) {
                     result[key] = errors[key];
                   }
                 });
                 return result;
-              }, [errors, permanentTouched, hasInteracted]);
+              }, [errors, touched, permanentTouched]);
 
               // Check if field should show error
               const shouldShowError = (fieldName: string) => {
