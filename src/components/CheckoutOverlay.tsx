@@ -444,7 +444,9 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
                     ? "overflow-y-auto max-h-[calc(100vh-200px)] lg:max-h-[calc(805px-200px)]"
                     : currentStep === 8
                       ? "overflow-y-auto max-h-[100vh] lg:max-h-none"
-                      : "overflow-y-auto lg:overflow-visible max-h-[calc(100vh-200px)] lg:max-h-none"
+                      : currentStep === 2 || currentStep === 5
+                        ? "overflow-y-auto max-h-[calc(100vh-200px)] lg:max-h-[calc(805px-200px)]"
+                        : "overflow-y-auto lg:overflow-visible max-h-[calc(100vh-200px)] lg:max-h-none"
                   }`}
               >
                 {renderStepContent()}

@@ -73,7 +73,7 @@ export const UserInfoStep: React.FC<UserInfoStepProps> = ({
   });
 
   return (
-    <div className="space-y-6 pb-60">
+    <div className="h-full overflow-y-auto space-y-6 pb-60">
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Dados Pessoais</CardTitle>
