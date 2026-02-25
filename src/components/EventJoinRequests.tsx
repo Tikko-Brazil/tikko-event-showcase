@@ -284,7 +284,7 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
                         {request.payment_details.coupon}
                       </Badge>
                     ) : (
-                      <span className="text-muted-foreground">None</span>
+                      <span className="text-muted-foreground">{t("eventManagement.joinRequests.noCoupon")}</span>
                     )}
                   </span>
                 </div>

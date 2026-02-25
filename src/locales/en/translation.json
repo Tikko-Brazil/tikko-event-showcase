@@ -574,6 +574,7 @@
         "paidValue": "Paid Value",
         "coupon": "Coupon"
       },
+      "noCoupon": "None",
       "actions": {
         "accept": "Accept",
         "reject": "Reject"
