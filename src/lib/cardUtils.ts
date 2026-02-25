@@ -60,8 +60,8 @@ export const detectCardBrand = (cardNumber: string): CardBrandInfo => {
     [/^6(?:011|5)/, "discover"],
     // JCB
     [/^(?:2131|1800|35\d{3})/, "jcb"],
-    // Mastercard
-    [/^5[1-5]|^2[2-7]/, "mastercard"],
+    // Mastercard (includes 50xx-55xx and 2221-2720)
+    [/^5[0-5]|^2[2-7]/, "mastercard"],
     // Visa
     [/^4/, "visa"],
   ];
