@@ -51,21 +51,24 @@ const CardBrandIcon: React.FC<{ brand: CardBrandInfo; size?: "sm" | "md" }> = ({
   if (brand.brand === "unknown") return null;
 
   const sizeClass = size === "sm" ? "scale-75" : "";
+  const pillClass = "px-2 py-0.5 rounded-md bg-muted/80 border border-border/50";
 
   const icons: Record<string, React.ReactNode> = {
-    visa: <span className={`font-bold text-sm italic text-blue-700 ${sizeClass}`}>VISA</span>,
+    visa: (
+      <span className={`${pillClass} font-bold text-sm italic text-blue-400 ${sizeClass}`}>VISA</span>
+    ),
     mastercard: (
-      <div className={`flex items-center -space-x-1.5 ${sizeClass}`}>
-        <div className="w-5 h-5 rounded-full bg-red-500 opacity-80" />
-        <div className="w-5 h-5 rounded-full bg-yellow-500 opacity-80" />
+      <div className={`${pillClass} flex items-center -space-x-1.5 ${sizeClass}`}>
+        <div className="w-5 h-5 rounded-full bg-red-500 opacity-90" />
+        <div className="w-5 h-5 rounded-full bg-yellow-500 opacity-90" />
       </div>
     ),
-    amex: <span className={`font-bold text-xs text-blue-600 ${sizeClass}`}>AMEX</span>,
-    elo: <span className={`font-bold text-xs text-yellow-500 ${sizeClass}`}>elo</span>,
-    hipercard: <span className={`font-bold text-[10px] text-red-600 ${sizeClass}`}>HIPER</span>,
-    diners: <span className={`font-bold text-[10px] text-blue-700 ${sizeClass}`}>DINERS</span>,
-    discover: <span className={`font-bold text-[10px] text-orange-500 ${sizeClass}`}>DISC</span>,
-    jcb: <span className={`font-bold text-[10px] text-green-600 ${sizeClass}`}>JCB</span>,
+    amex: <span className={`${pillClass} font-bold text-xs text-blue-400 ${sizeClass}`}>AMEX</span>,
+    elo: <span className={`${pillClass} font-bold text-xs text-yellow-400 ${sizeClass}`}>elo</span>,
+    hipercard: <span className={`${pillClass} font-bold text-[10px] text-red-400 ${sizeClass}`}>HIPER</span>,
+    diners: <span className={`${pillClass} font-bold text-[10px] text-blue-400 ${sizeClass}`}>DINERS</span>,
+    discover: <span className={`${pillClass} font-bold text-[10px] text-orange-400 ${sizeClass}`}>DISC</span>,
+    jcb: <span className={`${pillClass} font-bold text-[10px] text-green-400 ${sizeClass}`}>JCB</span>,
   };
 
   return <>{icons[brand.brand] || null}</>;
