@@ -105,6 +105,9 @@ export default function Organizations() {
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
+                startIndex={0}
+                endIndex={0}
+                totalItems={0}
               />
             )}
           </>

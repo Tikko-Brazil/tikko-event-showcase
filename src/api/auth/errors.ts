@@ -64,12 +64,12 @@ export function loginErrorMessage(error: AppError, t: TFunction) {
 export function forgotPasswordErrorMessage(error: AppError, t: TFunction) {
   // Handle rate limiting with details
   if (error.code === "PASSWORD_RESET_RATE_LIMITED" && error.details) {
-    const minutes = error.details as string
+    const minutes = String(error.details.minutes ?? error.details)
     return t("errors.auth.PASSWORD_RESET_RATE_LIMITED", { minutes })
   }
 
   if (error.code === "TOO_MANY_PASSWORD_RESET_ATTEMPTS" && error.details) {
-    const minutes = error.details as string
+    const minutes = String(error.details.minutes ?? error.details)
     const hours = Math.floor(Number(minutes) / 60)
     return t("errors.auth.TOO_MANY_PASSWORD_RESET_ATTEMPTS", { hours })
   }
@@ -106,7 +106,7 @@ export function resetPasswordErrorMessage(error: AppError, t: TFunction) {
 export function regenerateCodeErrorMessage(error: AppError, t: TFunction) {
   // Handle rate limiting with details
   if (error.code === "REGENERATION_RATE_LIMITED" && error.details) {
-    const seconds = error.details as string
+    const seconds = String(error.details.seconds ?? error.details)
     const minutes = Math.ceil(Number(seconds) / 60)
     return t("errors.auth.REGENERATION_RATE_LIMITED", { minutes })
   }

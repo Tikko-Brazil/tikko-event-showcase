@@ -51,7 +51,7 @@ export const CouponStep: React.FC<CouponStepProps> = ({
       });
 
       // Handle wrapped response (in case of caching issues)
-      const data = 'data' in response ? response.data : response;
+      const data = ('data' in response ? response.data : response) as { original_price: number; final_price: number };
       
       // Backend returns prices in cents
       const discountAmount = data.original_price - data.final_price;
