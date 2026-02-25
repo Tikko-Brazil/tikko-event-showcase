@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { apiAuth, normalizeApiError } from "../client"
 
-export interface Ticket {
+export interface TicketInfo {
+  uuid: string
   id: number
   user_id: number
   event_id: number
@@ -10,15 +11,26 @@ export interface Ticket {
   qr_code: string
   created_at: string
   updated_at: string
-  event_name: string
-  event_banner_url: string
-  event_start_date: string
-  event_end_date: string
-  event_location: string
   ticket_type: string
   lot: number
   gender: string
   price: number
+  already_validated: boolean
+  validation_date?: string
+}
+
+export interface TicketEvent {
+  name: string
+  date: string
+  banner_url: string
+  start_date: string
+  end_date: string
+  location: string
+}
+
+export interface Ticket {
+  ticket: TicketInfo
+  event: TicketEvent
 }
 
 export interface UserTicketsResponse {

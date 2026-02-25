@@ -210,7 +210,7 @@ const Events = () => {
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {getEventsErrorMessage(eventsError as AppError, t)}
+                {getEventsErrorMessage(eventsError as unknown as AppError, t)}
               </AlertDescription>
             </Alert>
           )}
