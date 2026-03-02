@@ -62,6 +62,36 @@ export const validateCPF = (cpf: string): boolean => {
   return true;
 };
 
+// CNPJ validation function
+export const validateCNPJ = (cnpj: string): boolean => {
+  const cleanCNPJ = cnpj.replace(/[^\d]/g, "");
+
+  if (cleanCNPJ.length !== 14) return false;
+  if (/^(\d)\1{13}$/.test(cleanCNPJ)) return false;
+
+  // First check digit
+  const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  let sum = 0;
+  for (let i = 0; i < 12; i++) {
+    sum += parseInt(cleanCNPJ.charAt(i)) * weights1[i];
+  }
+  const remainder1 = sum % 11;
+  const digit1 = remainder1 < 2 ? 0 : 11 - remainder1;
+  if (digit1 !== parseInt(cleanCNPJ.charAt(12))) return false;
+
+  // Second check digit
+  const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  sum = 0;
+  for (let i = 0; i < 13; i++) {
+    sum += parseInt(cleanCNPJ.charAt(i)) * weights2[i];
+  }
+  const remainder2 = sum % 11;
+  const digit2 = remainder2 < 2 ? 0 : 11 - remainder2;
+  if (digit2 !== parseInt(cleanCNPJ.charAt(13))) return false;
+
+  return true;
+};
+
 // Common validation schemas
 export const createCommonValidations = (t: TFunction) => ({
   email: Yup.string()
@@ -126,6 +156,13 @@ export const createCommonValidations = (t: TFunction) => ({
     .test("cpf-validation", t("validation.document.invalidCPF"), (value) => {
       if (!value) return false;
       return validateCPF(value);
+    })
+    .required(t("validation.required")),
+
+  cnpj: Yup.string()
+    .test("cnpj-validation", t("validation.document.invalidCNPJ"), (value) => {
+      if (!value) return false;
+      return validateCNPJ(value);
     })
     .required(t("validation.required")),
 
