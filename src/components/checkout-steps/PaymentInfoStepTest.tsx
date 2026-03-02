@@ -143,12 +143,13 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
       });
 
       if (response?.id) {
+        const currentBrand = detectCardBrand(values.cardNumber.replace(/\s/g, ""));
         const paymentData = {
           paymentMethod: "credit",
           cardInfo: {
             formData: {
               token: response.id,
-              payment_method_id: "credit_card",
+              payment_method_id: currentBrand.brand === "unknown" ? "credit_card" : currentBrand.brand,
               issuer_id: response.issuer_id || 0,
               installments: 1,
               payer: {

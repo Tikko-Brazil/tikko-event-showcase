@@ -18,6 +18,7 @@ import { useRegisterAndJoinEvent } from "@/api/user/api";
 import { registerAndJoinEventErrorMessage } from "@/api/user/errors";
 import { AppError } from "@/api/errors";
 import { toast } from "@/hooks/use-toast";
+import { ConfirmationStepTest } from "./checkout-steps/ConfirmationStepTest";
 
 interface CheckoutOverlayProps {
   isOpen: boolean;
@@ -298,7 +299,7 @@ export const CheckoutOverlayTest: React.FC<CheckoutOverlayProps> = ({
         );
       case 6:
         return (
-          <ConfirmationStep
+          <ConfirmationStepTest
             userData={userData}
             paymentMethod={paymentMethod}
             ticketPrice={ticketPrice}
