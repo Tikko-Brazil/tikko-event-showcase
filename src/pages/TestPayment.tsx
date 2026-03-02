@@ -111,12 +111,17 @@ const TestPayment = () => {
 
       const [monthStr, yearStr] = values.expiry.split("/");
       const response = await mpRef.current.createCardToken({
-        cardNumber: values.cardNumber.replace(/\s/g, ""),
-        cardholder: { name: values.cardholderName },
-        securityCode: values.securityCode,
-        expirationMonth: monthStr,
-        expirationYear: `20${yearStr}`,
-        identification: { type: values.identificationType, number: values.identificationNumber },
+        card_number: values.cardNumber.replace(/\s/g, ""),
+        cardholder: {
+          name: values.cardholderName,
+          identification: {
+            type: values.identificationType,
+            number: values.identificationNumber.replace(/[^\d]/g, "")
+          }
+        },
+        security_code: values.securityCode,
+        expiration_month: monthStr,
+        expiration_year: `20${yearStr}`,
       });
 
       if (response?.id) {
