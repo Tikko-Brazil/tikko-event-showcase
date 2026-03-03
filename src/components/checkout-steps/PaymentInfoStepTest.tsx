@@ -128,8 +128,10 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
       }
 
       const [monthStr, yearStr] = values.expiry.split("/");
+      const cardNumberClean = values.cardNumber.replace(/\s/g, "");
+      
       const response = await mpRef.current.createCardToken({
-        card_number: values.cardNumber.replace(/\s/g, ""),
+        card_number: cardNumberClean,
         cardholder: {
           name: values.cardholderName,
           identification: {
@@ -143,14 +145,34 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
       });
 
       if (response?.id) {
-        const currentBrand = detectCardBrand(values.cardNumber.replace(/\s/g, ""));
+        // Get payment method from MercadoPago
+        let paymentMethodId = "credit_card";
+        let issuerId = 0;
+        
+        try {
+          const bin = cardNumberClean.substring(0, 6);
+          const paymentMethods = await mpRef.current.getPaymentMethods({ bin });
+          
+          if (paymentMethods?.results?.length > 0) {
+            const method = paymentMethods.results[0];
+            paymentMethodId = method.id;
+            
+            // Get issuer
+            if (method.issuer?.id) {
+              issuerId = method.issuer.id;
+            }
+          }
+        } catch (error) {
+          console.error("Error getting payment methods:", error);
+        }
+        
         const paymentData = {
           paymentMethod: "credit",
           cardInfo: {
             formData: {
               token: response.id,
-              payment_method_id: currentBrand.brand === "unknown" ? "credit_card" : currentBrand.brand,
-              issuer_id: response.issuer_id || 0,
+              payment_method_id: paymentMethodId,
+              issuer_id: issuerId,
               installments: 1,
               payer: {
                 email: values.email,
