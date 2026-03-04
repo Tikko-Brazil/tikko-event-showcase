@@ -1406,7 +1406,11 @@
       "USER_NOT_FOUND": "Usuário não encontrado",
       "INTERNAL_SERVER_ERROR": "Falha ao conectar com Mercado Pago. Por favor, tente novamente mais tarde",
       "MERCADO_PAGO_AUTH_FAILED": "Autorização do Mercado Pago falhou. Por favor, tente novamente",
-      "MERCADO_PAGO_TOKEN_SAVE_FAILED": "Falha ao salvar credenciais de pagamento. Por favor, tente novamente"
+      "MERCADO_PAGO_TOKEN_SAVE_FAILED": "Falha ao salvar credenciais de pagamento. Por favor, tente novamente",
+      "ISSUER_FETCH_FAILED": "Não foi possível validar o cartão. Verifique o número e tente novamente",
+      "ISSUER_NOT_FOUND": "Emissor do cartão não encontrado. Verifique o número do cartão",
+      "SESSION_ID_FETCH_FAILED": "Não foi possível inicializar o pagamento. Tente novamente",
+      "CARD_TOKEN_CREATION_FAILED": "Não foi possível processar as informações do cartão. Verifique os dados e tente novamente"
     },
     "members": {
       "INVALID_ORGANIZATION_ID": "ID da organização inválido",

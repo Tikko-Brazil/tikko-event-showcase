@@ -84,3 +84,18 @@ export function mercadoPagoDisconnectErrorMessage(error: AppError, t: TFunction)
   }
 }
 
+export function cardTokenErrorMessage(error: AppError, t: TFunction): string {
+  const featureKey = `errors.payment.${error.code}`;
+  if (t(featureKey, { defaultValue: "" })) {
+    return t(featureKey);
+  }
+
+  if (error.status) {
+    return t(`errors.http.${error.status}`, {
+      defaultValue: t("errors.generic.UNKNOWN_ERROR"),
+    });
+  }
+
+  return t("errors.generic.UNKNOWN_ERROR");
+}
+
