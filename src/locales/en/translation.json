@@ -1401,7 +1401,11 @@
       "USER_NOT_FOUND": "User not found",
       "INTERNAL_SERVER_ERROR": "Failed to connect with Mercado Pago. Please try again later",
       "MERCADO_PAGO_AUTH_FAILED": "Mercado Pago authorization failed. Please try again",
-      "MERCADO_PAGO_TOKEN_SAVE_FAILED": "Failed to save payment credentials. Please try again"
+      "MERCADO_PAGO_TOKEN_SAVE_FAILED": "Failed to save payment credentials. Please try again",
+      "ISSUER_FETCH_FAILED": "Unable to validate card. Please check the card number and try again",
+      "ISSUER_NOT_FOUND": "Card issuer not found. Please check the card number",
+      "SESSION_ID_FETCH_FAILED": "Unable to initialize payment. Please try again",
+      "CARD_TOKEN_CREATION_FAILED": "Unable to process card information. Please check your details and try again"
     },
     "members": {
       "INVALID_ORGANIZATION_ID": "Invalid organization ID",

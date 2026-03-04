@@ -19,6 +19,10 @@ import {
   CardBrandInfo,
 } from "@/lib/cardUtils";
 import { createCommonValidations, validateCNPJ } from "@/lib/validationSchemas";
+import { useCreateCardToken } from "@/api/payment/api";
+import { cardTokenErrorMessage } from "@/api/payment/errors";
+import { AppError } from "@/api/errors";
+import { toast } from "@/hooks/use-toast";
 
 interface PaymentInfoStepProps {
   paymentMethod: "credit" | "pix" | "";
@@ -27,12 +31,6 @@ interface PaymentInfoStepProps {
   onPaymentDataChange?: (data: any) => void;
   creditPaymentRef?: React.MutableRefObject<(() => void) | null>;
   pixPaymentRef?: React.MutableRefObject<(() => void) | null>;
-}
-
-declare global {
-  interface Window {
-    MercadoPago: any;
-  }
 }
 
 export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
@@ -44,13 +42,13 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
   pixPaymentRef,
 }) => {
   const { t } = useTranslation();
-  const mpRef = useRef<any>(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [cardNumber, setCardNumber] = useState("");
   const [identificationType, setIdentificationType] = useState("CPF");
   const pixFormRef = useRef<any>(null);
   const creditFormRef = useRef<any>(null);
   const brand: CardBrandInfo = detectCardBrand(cardNumber);
+  const { mutateAsync: createCardToken, isPending } = useCreateCardToken();
 
   const commonValidations = createCommonValidations(t);
 
@@ -97,97 +95,46 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
     payerEmail: commonValidations.email,
   });
 
-  useEffect(() => {
-    if (paymentMethod !== "credit") return;
-
-    const script = document.createElement("script");
-    script.src = "https://sdk.mercadopago.com/js/v2";
-    script.async = true;
-    script.onload = () => {
-      try {
-        const mp = new window.MercadoPago(
-          "APP_USR-76122f1c-c643-41c2-937e-4f114917782f",
-          { locale: "pt-BR" }
-        );
-        mpRef.current = mp;
-      } catch (error) {
-        console.error("Error initializing MercadoPago:", error);
-      }
-    };
-    document.body.appendChild(script);
-    return () => {
-      if (document.body.contains(script)) document.body.removeChild(script);
-    };
-  }, [paymentMethod]);
-
   const handleCreditSubmit = async (values: any) => {
     try {
-      if (!mpRef.current) {
-        console.error("MercadoPago not initialized");
-        return;
-      }
-
       const [monthStr, yearStr] = values.expiry.split("/");
-      const cardNumberClean = values.cardNumber.replace(/\s/g, "");
       
-      const response = await mpRef.current.createCardToken({
-        card_number: cardNumberClean,
-        cardholder: {
-          name: values.cardholderName,
-          identification: {
-            type: values.identificationType,
-            number: values.identificationNumber.replace(/[^\d]/g, "")
-          }
-        },
-        security_code: values.securityCode,
-        expiration_month: monthStr,
-        expiration_year: `20${yearStr}`,
+      const tokenResponse = await createCardToken({
+        cardNumber: values.cardNumber.replace(/\s/g, ""),
+        cardholderName: values.cardholderName,
+        cpf: values.identificationNumber.replace(/[^\d]/g, ""),
+        securityCode: values.securityCode,
+        expirationMonth: monthStr,
+        expirationYear: `20${yearStr}`,
       });
 
-      if (response?.id) {
-        // Get payment method from MercadoPago
-        let paymentMethodId = "credit_card";
-        let issuerId = 0;
-        
-        try {
-          const bin = cardNumberClean.substring(0, 6);
-          const paymentMethods = await mpRef.current.getPaymentMethods({ bin });
-          
-          if (paymentMethods?.results?.length > 0) {
-            const method = paymentMethods.results[0];
-            paymentMethodId = method.id;
-            
-            // Get issuer
-            if (method.issuer?.id) {
-              issuerId = method.issuer.id;
-            }
-          }
-        } catch (error) {
-          console.error("Error getting payment methods:", error);
-        }
-        
-        const paymentData = {
-          paymentMethod: "credit",
-          cardInfo: {
-            formData: {
-              token: response.id,
-              payment_method_id: paymentMethodId,
-              issuer_id: issuerId,
-              installments: 1,
-              payer: {
-                email: values.email,
-                identification: {
-                  type: values.identificationType,
-                  number: values.identificationNumber.replace(/[^\d]/g, "")
-                }
+      const currentBrand = detectCardBrand(values.cardNumber.replace(/\s/g, ""));
+      const paymentData = {
+        paymentMethod: "credit",
+        cardInfo: {
+          formData: {
+            token: tokenResponse.id,
+            payment_method_id: currentBrand.brand === "unknown" ? "credit_card" : currentBrand.brand,
+            issuer_id: tokenResponse.issuer_id || 0,
+            installments: 1,
+            payer: {
+              email: values.email,
+              identification: {
+                type: values.identificationType,
+                number: values.identificationNumber.replace(/[^\d]/g, "")
               }
             }
           }
-        };
-        onPaymentDataChange?.(paymentData);
-        onNext();
-      }
+        }
+      };
+      onPaymentDataChange?.(paymentData);
+      onNext();
     } catch (error) {
+      const message = cardTokenErrorMessage(error as AppError, t);
+      toast({ 
+        variant: "destructive", 
+        description: message 
+      });
       console.error("Error creating card token:", error);
     }
   };
