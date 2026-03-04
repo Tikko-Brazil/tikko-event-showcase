@@ -77,7 +77,7 @@ export const useDisconnectMercadoPago = (organizationId: number) => {
 
 const MERCADOPAGO_BASE_URL = "https://api.mercadopago.com";
 
-async function getIssuer(publicKey: string, bin: string): Promise<number> {
+async function getIssuer(publicKey: string, bin: string): Promise<{ issuerId: number; paymentMethodId: string }> {
   const url = new URL(`${MERCADOPAGO_BASE_URL}/v1/payment_methods/search`);
   url.searchParams.set("public_key", publicKey);
   url.searchParams.set("marketplace", "NONE");
@@ -93,15 +93,16 @@ async function getIssuer(publicKey: string, bin: string): Promise<number> {
 
   const data = await response.json();
   const issuerId = data.results?.[0]?.issuer?.id;
+  const paymentMethodId = data.results?.[0]?.id;
   
-  if (!issuerId) {
+  if (!issuerId || !paymentMethodId) {
     throw {
       status: 400,
       code: "ISSUER_NOT_FOUND",
     };
   }
   
-  return issuerId;
+  return { issuerId, paymentMethodId };
 }
 
 async function getSessionId(publicKey: string, locale: string, jsVersion: string, referer: string): Promise<string> {
@@ -194,13 +195,14 @@ export function useCreateCardToken() {
         const jsVersion = import.meta.env.VITE_MERCADOPAGO_JS_VERSION || "2.0.0";
         const referer = import.meta.env.VITE_MERCADOPAGO_REFERER || window.location.origin;
 
-        const issuerId = await getIssuer(publicKey, bin);
+        const { issuerId, paymentMethodId } = await getIssuer(publicKey, bin);
         const sessionId = await getSessionId(publicKey, locale, jsVersion, referer);
         const tokenResponse = await createCardToken(publicKey, locale, jsVersion, referer, sessionId, input);
 
         return {
           ...tokenResponse,
           issuer_id: issuerId,
+          payment_method_id: paymentMethodId,
         };
       } catch (error) {
         throw normalizeApiError(error);

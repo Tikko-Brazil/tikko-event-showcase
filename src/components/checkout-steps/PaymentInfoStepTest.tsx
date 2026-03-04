@@ -98,7 +98,7 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
   const handleCreditSubmit = async (values: any) => {
     try {
       const [monthStr, yearStr] = values.expiry.split("/");
-      
+
       const tokenResponse = await createCardToken({
         cardNumber: values.cardNumber.replace(/\s/g, ""),
         cardholderName: values.cardholderName,
@@ -108,13 +108,12 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
         expirationYear: `20${yearStr}`,
       });
 
-      const currentBrand = detectCardBrand(values.cardNumber.replace(/\s/g, ""));
       const paymentData = {
         paymentMethod: "credit",
         cardInfo: {
           formData: {
             token: tokenResponse.id,
-            payment_method_id: currentBrand.brand === "unknown" ? "credit_card" : currentBrand.brand,
+            payment_method_id: tokenResponse.payment_method_id || "credit_card",
             issuer_id: tokenResponse.issuer_id || 0,
             installments: 1,
             payer: {
@@ -131,9 +130,9 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
       onNext();
     } catch (error) {
       const message = cardTokenErrorMessage(error as AppError, t);
-      toast({ 
-        variant: "destructive", 
-        description: message 
+      toast({
+        variant: "destructive",
+        description: message
       });
       console.error("Error creating card token:", error);
     }
