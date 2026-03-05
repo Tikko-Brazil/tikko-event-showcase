@@ -4,6 +4,7 @@ import * as Yup from "yup";
 import InputMask from "react-input-mask";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CreditCardPreview } from "@/components/CreditCardPreview";
@@ -199,7 +200,7 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
               onSubmit={handleCreditSubmit}
               innerRef={creditFormRef}
             >
-              {({ values, errors, touched, setFieldValue, handleChange, handleBlur, validateField, setFieldTouched }) => {
+              {({ values, errors, touched, setFieldValue, handleChange, handleBlur, validateField, setFieldTouched, isValid }) => {
                 const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                   const raw = e.target.value.replace(/\D/g, "");
                   const currentBrand = detectCardBrand(raw);
@@ -251,7 +252,7 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
                     />)}
 
 
-                    <Form className="space-y-4 pb-32 lg:pb-1">
+                    <Form className="space-y-4 lg:pb-1">
                       <div>
                         <Label htmlFor="cardNumber">Número do Cartão</Label>
                         <div className="relative">
@@ -421,6 +422,15 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
                           <p className="text-destructive text-sm mt-1">{errors.identificationNumber as string}</p>
                         )}
                       </div>
+
+                      <Button
+                        type="submit"
+                        className="w-full lg:hidden"
+                        size="lg"
+                        disabled={!isValid}
+                      >
+                        Continuar para Confirmação
+                      </Button>
                     </Form>
                   </>
                 );
@@ -433,7 +443,7 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
               onSubmit={handlePixPaymentSubmit}
               innerRef={pixFormRef}
             >
-              {({ errors, touched }) => (
+              {({ errors, touched, isValid }) => (
                 <Form className="space-y-4">
                   <div>
                     <Label htmlFor="payerEmail">E-mail do Pagador *</Label>
@@ -455,6 +465,15 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
                       </div>
                     )}
                   </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    size="lg"
+                    disabled={!isValid}
+                  >
+                    Continuar para Confirmação
+                  </Button>
                 </Form>
               )}
             </Formik>

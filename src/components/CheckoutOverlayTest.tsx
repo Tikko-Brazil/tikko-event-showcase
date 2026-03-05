@@ -470,7 +470,7 @@ export const CheckoutOverlayTest: React.FC<CheckoutOverlayProps> = ({
             )}
 
             {/* Price Summary Bottom - Mobile - Fixed Position */}
-            {currentStep < 7 && currentStep !== 8 && (
+            {currentStep < 7 && currentStep != 5 && currentStep !== 8 && (
               <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 z-50 min-h-[200px]">
                 <div className="mb-3">
                   <h3 className="text-sm font-semibold text-foreground mb-2">
