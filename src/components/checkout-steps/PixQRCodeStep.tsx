@@ -33,7 +33,9 @@ export const PixQRCodeStep: React.FC<PixQRCodeStepProps> = ({
   const pixCode = qrCode;
 
   // Payment status polling with React Query
-  const paymentGateway = new PaymentGateway("http://localhost:3000");
+  const paymentGateway = new PaymentGateway(
+      import.meta.env.VITE_API_BASE_URL
+    );
 
   const { data: paymentStatus } = useQuery({
     queryKey: ["paymentStatus", paymentId],
