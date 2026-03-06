@@ -215,7 +215,7 @@ const App = () => (
                 <Route path="payment" element={<PaymentPage />} />
                 <Route path="meta-pixel" element={<div className="text-center py-12"><p className="text-muted-foreground">Coming soon</p></div>} />
               </Route>
-              {/* <Route path="/event/:slug" element={<EventDetails />} /> */}
+              <Route path="/test/event/:slug" element={<EventDetailsTest />} />
               <Route path="/event/:slug" element={<EventDetailsTest />} />
               <Route path="/test-payment" element={<TestPayment />} />
               <Route path="/about" element={<AboutUs />} />

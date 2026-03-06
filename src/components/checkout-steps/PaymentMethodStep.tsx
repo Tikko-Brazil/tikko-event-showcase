@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -18,6 +19,9 @@ export const PaymentMethodStep: React.FC<PaymentMethodStepProps> = ({
   autoAccept,
   onNext
 }) => {
+  const location = useLocation();
+  const isTestRoute = location.pathname.startsWith('/test/event/');
+  
   return (
     <div className="space-y-6 pb-60">
       <Card>
@@ -45,20 +49,22 @@ export const PaymentMethodStep: React.FC<PaymentMethodStepProps> = ({
               </Label>
             </div>
 
-            <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-              <RadioGroupItem value="pix" id="pix" />
-              <Label htmlFor="pix" className="flex-1 flex items-center gap-3 cursor-pointer">
-                <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
-                  <Smartphone className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <div className="font-medium">PIX</div>
-                  <div className="text-sm text-muted-foreground">
-                    Pagamento instantâneo via QR Code ou chave PIX
+            {isTestRoute && (
+              <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                <RadioGroupItem value="pix" id="pix" />
+                <Label htmlFor="pix" className="flex-1 flex items-center gap-3 cursor-pointer">
+                  <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-lg">
+                    <Smartphone className="w-5 h-5 text-primary" />
                   </div>
-                </div>
-              </Label>
-            </div>
+                  <div>
+                    <div className="font-medium">PIX</div>
+                    <div className="text-sm text-muted-foreground">
+                      Pagamento instantâneo via QR Code ou chave PIX
+                    </div>
+                  </div>
+                </Label>
+              </div>
+            )}
           </RadioGroup>
 
         </CardContent>
