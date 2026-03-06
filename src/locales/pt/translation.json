@@ -1266,7 +1266,10 @@
     "success": "Sucesso",
     "back": "Voltar",
     "edit": "Editar",
-    "remove": "Remover"
+    "remove": "Remover",
+    "male": "Masculino",
+    "female": "Feminino",
+    "any": "Unissex"
   },
   "errors": {
     "http": {

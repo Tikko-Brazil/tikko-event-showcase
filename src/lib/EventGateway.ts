@@ -159,6 +159,7 @@ interface EventStats {
     price: number;
     tickets_sold: number;
     total_revenue: number;
+    gender: "male" | "female" | "any";
   }[];
   total_revenue: number;
   total_validated_tickets: number;

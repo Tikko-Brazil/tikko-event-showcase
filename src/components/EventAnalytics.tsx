@@ -293,12 +293,23 @@ export const EventAnalytics = ({ eventId }: EventAnalyticsProps) => {
       ];
     }
 
-    return eventStats.tickets_sold_by_pricing.map((pricing) => ({
-      type: pricing.ticket_type,
-      lot: `${pricing.lot}`,
-      amount: pricing.tickets_sold,
-      revenue: pricing.total_revenue,
-    }));
+    return eventStats.tickets_sold_by_pricing.map((pricing) => {
+      let ticketType = pricing.ticket_type;
+      
+      if (pricing.gender !== "any") {
+        const genderLabel = pricing.gender === "male" 
+          ? t("common.male")
+          : t("common.female");
+        ticketType = `${pricing.ticket_type} - ${genderLabel}`;
+      }
+      
+      return {
+        type: ticketType,
+        lot: `${pricing.lot}`,
+        amount: pricing.tickets_sold,
+        revenue: pricing.total_revenue,
+      };
+    });
   };
 
   const allTicketTypes = getAllTicketTypes();

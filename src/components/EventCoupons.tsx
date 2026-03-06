@@ -855,13 +855,13 @@ export const EventCoupons = ({ eventId, eventSlug }: EventCouponsProps) => {
                             setFieldValue("maxUsage", value[0])
                           }
                           max={1000}
-                          min={editingCoupon.used_count}
+                          min={Math.max(1, editingCoupon.used_count)}
                           step={1}
                           className="w-full"
                         />
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-muted-foreground">
-                            {editingCoupon.used_count}
+                            {Math.max(1, editingCoupon.used_count)}
                           </span>
                           <Input
                             type="number"

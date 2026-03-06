@@ -1261,7 +1261,10 @@
     "success": "Success",
     "back": "Back",
     "edit": "Edit",
-    "remove": "Remove"
+    "remove": "Remove",
+    "male": "Male",
+    "female": "Female",
+    "any": "Any"
   },
   "errors": {
     "http": {
