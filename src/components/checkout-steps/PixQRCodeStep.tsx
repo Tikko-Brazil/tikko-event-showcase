@@ -41,7 +41,7 @@ export const PixQRCodeStep: React.FC<PixQRCodeStepProps> = ({
     queryKey: ["paymentStatus", paymentId],
     queryFn: () => paymentGateway.getPaymentStatus(paymentId!),
     enabled: !!paymentId,
-    refetchInterval: 15000, // Poll every 15 seconds
+    refetchInterval: 5000, // Poll every 5 seconds
     refetchIntervalInBackground: true,
   });
 
