@@ -186,9 +186,12 @@ export const CheckoutOverlayTest: React.FC<CheckoutOverlayProps> = ({
         },
       });
 
-      if (result.qr_code) {
-        setQrCode(result.qr_code);
-        setPaymentId(result.payment_id.toString());
+      // Handle nested data structure from backend
+      const responseData = result.data || result;
+      
+      if (responseData.qr_code) {
+        setQrCode(responseData.qr_code);
+        setPaymentId(responseData.payment_id.toString());
         setCurrentStep(8);
       } else {
         handleNext();
