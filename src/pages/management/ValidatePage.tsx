@@ -19,7 +19,6 @@ import { TicketGateway } from "@/lib/TicketGateway";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Scanner } from '@yudiel/react-qr-scanner';
-import SuccessSnackbar from "@/components/SuccessSnackbar";
 
 interface TicketResponse {
   Ticket: {
@@ -42,8 +41,6 @@ export const ValidatePage = () => {
   const [scannedTicketId, setScannedTicketId] = useState<string | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [lastTicketId, setLastTicketId] = useState<string | null>(null);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
 
   const ticketGateway = new TicketGateway(import.meta.env.VITE_API_BASE_URL);
 
@@ -59,12 +56,18 @@ export const ValidatePage = () => {
   const validateMutation = useMutation({
     mutationFn: (ticketId: string) => ticketGateway.validateTicket(ticketId),
     onSuccess: () => {
-      setSuccessMessage(t("ticketValidation.messages.success"));
-      setShowSuccess(true);
+      const successMsg = t("ticketValidation.messages.success");
       setShowConfirmation(false);
       setLastTicketId(scannedTicketId);
       setScannedTicketId(null);
       setIsCameraVisible(true);
+
+      // Show success toast
+      toast({
+        description: successMsg,
+        variant: "default",
+      });
+
       queryClient.invalidateQueries({ queryKey: ["ticket"] });
     },
     onError: (error: any) => {
@@ -277,13 +280,6 @@ export const ValidatePage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Success Snackbar */}
-      <SuccessSnackbar
-        message={successMessage}
-        visible={showSuccess}
-        onDismiss={() => setShowSuccess(false)}
-      />
     </div>
   );
 };
