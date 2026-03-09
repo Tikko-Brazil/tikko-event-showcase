@@ -563,6 +563,14 @@
       },
       "buttons": {
         "send": "Enviar Ingresso"
+      },
+      "success": "Ingresso cortesia enviado com sucesso",
+      "duplicateDialog": {
+        "title": "Ingresso Já Existe",
+        "description": "Esta pessoa já possui um ingresso para este evento. Deseja reenviar o ingresso?",
+        "cancel": "Cancelar",
+        "confirm": "Reenviar Ingresso",
+        "sending": "Enviando..."
       }
     },
     "joinRequests": {
@@ -1281,6 +1289,16 @@
     "generic": {
       "NETWORK_ERROR": "Erro de rede. Por favor, verifique sua conexão.",
       "UNKNOWN_ERROR": "Ocorreu um erro inesperado."
+    },
+    "invite": {
+      "INVALID_REQUEST": "Por favor, verifique todos os campos obrigatórios e tente novamente.",
+      "INVALID_EVENT_ID": "Algo deu errado com a seleção do evento. Por favor, tente novamente.",
+      "INVALID_EMAIL": "Por favor, insira um endereço de email válido (ex: usuario@exemplo.com).",
+      "VALIDATION_FAILED": "Por favor, insira o nome completo do destinatário.",
+      "INVALID_PHONE_NUMBER": "Por favor, insira um número de telefone válido com código do país (ex: +55 11 99999-9999).",
+      "INVALID_TICKET_PRICING_ID": "Por favor, selecione um tipo de ingresso válido.",
+      "DUPLICATE_TICKET": "Esta pessoa já possui um ingresso para este evento.",
+      "INTERNAL_SERVER_ERROR": "Não foi possível enviar o ingresso. Por favor, tente novamente mais tarde."
     },
     "user": {
       "INVALID_REQUEST": "Por favor, verifique todos os campos obrigatórios e tente novamente.",

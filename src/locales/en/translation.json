@@ -558,6 +558,14 @@
       },
       "buttons": {
         "send": "Send Ticket"
+      },
+      "success": "Courtesy ticket sent successfully",
+      "duplicateDialog": {
+        "title": "Ticket Already Exists",
+        "description": "This person already has a ticket for this event. Do you want to resend the ticket?",
+        "cancel": "Cancel",
+        "confirm": "Resend Ticket",
+        "sending": "Sending..."
       }
     },
     "joinRequests": {
@@ -1276,6 +1284,16 @@
     "generic": {
       "NETWORK_ERROR": "Network error. Please check your connection.",
       "UNKNOWN_ERROR": "An unexpected error occurred."
+    },
+    "invite": {
+      "INVALID_REQUEST": "Please check all required fields and try again.",
+      "INVALID_EVENT_ID": "Something went wrong with the event selection. Please try again.",
+      "INVALID_EMAIL": "Please enter a valid email address (e.g., user@example.com).",
+      "VALIDATION_FAILED": "Please enter the recipient's full name.",
+      "INVALID_PHONE_NUMBER": "Please enter a valid phone number with country code (e.g., +55 11 99999-9999).",
+      "INVALID_TICKET_PRICING_ID": "Please select a valid ticket type.",
+      "DUPLICATE_TICKET": "This person already has a ticket for this event.",
+      "INTERNAL_SERVER_ERROR": "Unable to send ticket. Please try again later."
     },
     "user": {
       "INVALID_REQUEST": "Please check all required fields and try again.",

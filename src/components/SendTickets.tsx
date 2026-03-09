@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import InputMask from "react-input-mask";
@@ -15,11 +15,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Send } from "lucide-react";
-import { InviteGateway } from "@/lib/InviteGateway";
 import { TicketPricingGateway } from "@/lib/TicketPricingGateway";
-import SuccessSnackbar from "./SuccessSnackbar";
-import ErrorSnackbar from "./ErrorSnackbar";
+import { useSendCourtesyTicket } from "@/api/invite/api";
+import { sendCourtesyTicketErrorMessage } from "@/api/invite/errors";
+import { AppError } from "@/api/errors";
+import { useToast } from "@/hooks/use-toast";
 import { createCommonValidations, PHONE_MASK } from "@/lib/validationSchemas";
 
 interface SendTicketsProps {
@@ -29,14 +40,10 @@ interface SendTicketsProps {
 // Phone mask for any country code (same as signup form)
 const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
   const { t } = useTranslation();
-  const [showSuccessSnackbar, setShowSuccessSnackbar] = React.useState(false);
-  const [showErrorSnackbar, setShowErrorSnackbar] = React.useState(false);
-  const [successMessage, setSuccessMessage] = React.useState("");
-  const [errorMessage, setErrorMessage] = React.useState("");
+  const { toast } = useToast();
+  const [showDuplicateDialog, setShowDuplicateDialog] = React.useState(false);
+  const [pendingFormData, setPendingFormData] = React.useState<any>(null);
 
-  const inviteGateway = new InviteGateway(
-    import.meta.env.VITE_API_BASE_URL
-  );
   const ticketPricingGateway = new TicketPricingGateway(
     import.meta.env.VITE_API_BASE_URL
   );
@@ -58,30 +65,7 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
   const ticketPricings = ticketPricingsData?.ticket_pricings || [];
 
   // Send courtesy ticket mutation
-  const sendTicketMutation = useMutation({
-    mutationFn: (data: {
-      name: string;
-      email: string;
-      phone: string;
-      ticket_pricing_id: number;
-    }) =>
-      inviteGateway.sendCourtesyTicket({
-        event_id: eventId,
-        name: data.name,
-        email: data.email,
-        phone_number: data.phone,
-        ticket_pricing_id: data.ticket_pricing_id,
-      }),
-    onSuccess: () => {
-      setSuccessMessage("Courtesy ticket sent successfully");
-      setShowSuccessSnackbar(true);
-      formik.resetForm();
-    },
-    onError: (error: Error) => {
-      setErrorMessage(error.message || "Failed to send courtesy ticket");
-      setShowErrorSnackbar(true);
-    },
-  });
+  const { mutateAsync, isPending } = useSendCourtesyTicket();
 
   // Form validation schema using standardized validations
   const commonValidations = createCommonValidations(t);
@@ -101,15 +85,69 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
       ticket_pricing_id: "",
     },
     validationSchema,
-    onSubmit: (values) => {
-      sendTicketMutation.mutate({
+    onSubmit: async (values, { setSubmitting }) => {
+      const requestData = {
+        event_id: eventId,
         name: values.name,
         email: values.email,
-        phone: values.phone.replace(/[()\\s-]/g, ""),
+        phone_number: values.phone.replace(/[()\\s-]/g, ""),
         ticket_pricing_id: parseInt(values.ticket_pricing_id),
-      });
+      };
+
+      try {
+        await mutateAsync(requestData);
+        toast({
+          description: t("eventManagement.sendTickets.success"),
+        });
+        formik.resetForm();
+      } catch (error) {
+        const appError = error as AppError;
+        
+        // If duplicate ticket, show confirmation dialog
+        if (appError.code === "DUPLICATE_TICKET") {
+          setPendingFormData(requestData);
+          setShowDuplicateDialog(true);
+          setSubmitting(false);
+          return;
+        }
+
+        const message = sendCourtesyTicketErrorMessage(appError, t);
+        toast({
+          variant: "destructive",
+          description: message,
+        });
+      }
     },
   });
+
+  const handleResendConfirm = async () => {
+    if (!pendingFormData) return;
+
+    try {
+      await mutateAsync({
+        ...pendingFormData,
+        ignore_double_ticket: true,
+      });
+      toast({
+        description: t("eventManagement.sendTickets.success"),
+      });
+      formik.resetForm();
+      setShowDuplicateDialog(false);
+      setPendingFormData(null);
+    } catch (error) {
+      const message = sendCourtesyTicketErrorMessage(error as AppError, t);
+      toast({
+        variant: "destructive",
+        description: message,
+      });
+      setShowDuplicateDialog(false);
+    }
+  };
+
+  const handleResendCancel = () => {
+    setShowDuplicateDialog(false);
+    setPendingFormData(null);
+  };
 
   const activePricings = ticketPricings || [];
 
@@ -210,12 +248,14 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
                 </Label>
                 <Select
                   value={formik.values.ticket_pricing_id}
-                  onValueChange={(value) =>
-                    formik.setFieldValue("ticket_pricing_id", value)
-                  }
+                  onValueChange={(value) => {
+                    formik.setFieldValue("ticket_pricing_id", value);
+                  }}
                   disabled={isLoadingPricings}
                 >
                   <SelectTrigger
+                    id="ticket_pricing_id"
+                    onBlur={() => formik.setFieldTouched("ticket_pricing_id", true)}
                     className={
                       formik.touched.ticket_pricing_id &&
                         formik.errors.ticket_pricing_id
@@ -262,10 +302,10 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
             <div className="flex justify-end pt-4">
               <Button
                 type="submit"
-                disabled={sendTicketMutation.isPending || isLoadingPricings}
+                disabled={isPending || isLoadingPricings}
                 className="min-w-32"
               >
-                {sendTicketMutation.isPending
+                {isPending
                   ? "Sending..."
                   : t("eventManagement.sendTickets.buttons.send")}
               </Button>
@@ -274,17 +314,29 @@ const SendTickets: React.FC<SendTicketsProps> = ({ eventId }) => {
         </CardContent>
       </Card>
 
-      <SuccessSnackbar
-        message={successMessage}
-        visible={showSuccessSnackbar}
-        onDismiss={() => setShowSuccessSnackbar(false)}
-      />
-
-      <ErrorSnackbar
-        message={errorMessage}
-        visible={showErrorSnackbar}
-        onDismiss={() => setShowErrorSnackbar(false)}
-      />
+      {/* Duplicate Ticket Confirmation Dialog */}
+      <AlertDialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("eventManagement.sendTickets.duplicateDialog.title")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("eventManagement.sendTickets.duplicateDialog.description")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleResendCancel}>
+              {t("eventManagement.sendTickets.duplicateDialog.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleResendConfirm} disabled={isPending}>
+              {isPending
+                ? t("eventManagement.sendTickets.duplicateDialog.sending")
+                : t("eventManagement.sendTickets.duplicateDialog.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
