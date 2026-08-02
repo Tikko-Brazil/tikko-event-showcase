@@ -147,6 +147,7 @@ const Explore = () => {
                     src={event.image || heroEventImage}
                     alt={event.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-smooth"
+                    onError={(e) => { (e.target as HTMLImageElement).src = heroEventImage; }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-background"></div>
                   {false &&
