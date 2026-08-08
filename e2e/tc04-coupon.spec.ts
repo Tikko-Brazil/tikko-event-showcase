@@ -19,7 +19,9 @@ const requireConfiguration = () => {
 
 async function completeFreeCheckout(page: Page, slug: string, ticketPricingId: number, expectedMessage: RegExp) {
   await page.goto(`/event/${slug}`);
-  const ticket = page.locator(`#${ticketPricingId}`);
+  // Ticket pricing IDs are numeric, so use an attribute selector instead of
+  // a CSS id selector (CSS selectors cannot start with a digit).
+  const ticket = page.locator(`[id="${ticketPricingId}"]`);
   await expect(ticket).toBeVisible();
   await ticket.check();
   await page.getByRole('button', { name: /continuar para pagamento/i }).click();
