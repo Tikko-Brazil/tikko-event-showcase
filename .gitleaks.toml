@@ -1,0 +1,40 @@
+title = "Tikko frontend secret scanning"
+
+# The upstream ruleset carries the well-known provider formats (AWS, GitHub,
+# Stripe, private keys, ...). Everything below is additive.
+[extend]
+useDefault = true
+
+# Mercado Pago is the payment provider. The frontend legitimately handles the
+# MP *public key* via the Brick SDK, but an access token must never reach this
+# repository — the checkout flow gets one from the backend at runtime.
+# Format: APP_USR-<account>-<ddmmyy>-<32 hex>-<user id>. TEST- is the sandbox
+# equivalent and is still a credential.
+[[rules]]
+id = "mercadopago-access-token"
+description = "Mercado Pago access token (production APP_USR- or sandbox TEST-)"
+regex = '''\b(?:APP_USR|TEST)-\d{10,20}-\d{6}-[a-f0-9]{32}-\d{6,12}\b'''
+keywords = ["app_usr-", "test-"]
+
+# PostHog ships two key prefixes and only one of them is a secret:
+#   phc_ = project API key, designed to be embedded in client bundles — public.
+#   phx_ = personal API key, full read/write on the PostHog API — secret.
+# Matching only phx_ keeps this rule from flagging legitimate frontend config.
+[[rules]]
+id = "posthog-personal-api-key"
+description = "PostHog personal API key (phx_) — grants PostHog API access"
+regex = '''\bphx_[A-Za-z0-9]{32,}\b'''
+keywords = ["phx_"]
+
+[allowlist]
+description = "Documented non-secrets"
+paths = [
+  # Placeholder values only.
+  '''\.env\.example$''',
+  # The scanner's own config necessarily contains the patterns it looks for.
+  '''\.gitleaks\.toml$''',
+  # Never committed; present only when a scan runs after `npm ci` / `npm run
+  # build`, and scanning them makes the result depend on step ordering.
+  '''(^|/)node_modules/''',
+  '''(^|/)(dist|playwright-report|test-results)/''',
+]

@@ -1,0 +1,10 @@
+{
+  "$comment": [
+    "Findings the CodeQL gate should not block on. Keep this list empty when you can.",
+    "Every entry needs a `reason` a reviewer can check and an `expires` date (YYYY-MM-DD).",
+    "An expired entry fails the build on purpose, so a silenced finding cannot be forgotten.",
+    "`rule` is the CodeQL ruleId and `path` is the file path exactly as it appears in the SARIF.",
+    "See SECURITY.md > Handling a false positive."
+  ],
+  "suppressions": []
+}
