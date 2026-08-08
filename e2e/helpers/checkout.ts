@@ -1,6 +1,6 @@
 import { expect, type Frame, type Locator, type Page } from '@playwright/test';
 import type { MercadoPagoCard } from '../fixtures/mercadopago-cards';
-import { TEST_USER } from '../fixtures/test-users';
+import { TEST_USER, smokeIdentification } from '../fixtures/test-users';
 
 // The checkout renders its own card form and tokenizes through the Mercado
 // Pago REST API, so the fields live in the host document:
@@ -147,12 +147,17 @@ export async function purchaseWithCard(
   attachCheckoutDiagnostics(page);
   await openEventCheckout(page, event.slug, event.ticketPricingId);
 
+  // One document per buyer: a run pays a dozen times with the same card, and
+  // repeating the payer on top of that gets the later payments refused as
+  // duplicates.
+  const identification = smokeIdentification(email);
+
   const checkout = new CheckoutPage(page);
   await checkout.acceptTerms();
-  await checkout.fillUserInfo({ email });
+  await checkout.fillUserInfo({ email, identification });
   await checkout.skipCoupon();
   await checkout.selectPaymentMethod('credit');
-  await checkout.fillCard(card, email);
+  await checkout.fillCard({ ...card, identification }, email);
 
   try {
     await expect(checkout.dialog.getByText(/confirma[cç][aã]o da compra/i)).toBeVisible();
