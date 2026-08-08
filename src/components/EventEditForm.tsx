@@ -143,15 +143,20 @@ export const EventEditForm = ({ event, additionalImages }: EventEditFormProps) =
     isActive: Yup.boolean(),
   });
 
-  // Extract S3 key from signed URL
-  const extractS3Key = (url: string | null): string | null => {
-    if (!url) return null;
+  // Extract the bare S3 object key from either:
+  //   - a pre-signed S3 URL (https://bucket.s3.region.amazonaws.com/<key>?X-Amz-...)
+  //   - a plain S3 key already stored correctly (e.g. "uuid.jpg" or "folder/uuid.jpg")
+  // Returns null only when the value is falsy or cannot be parsed at all.
+  const extractS3Key = (value: string | null): string | null => {
+    if (!value) return null;
     try {
-      const urlObj = new URL(url);
+      const urlObj = new URL(value);
+      // It is a URL — strip the leading slash from the path to get the key.
       const pathname = urlObj.pathname;
       return pathname.startsWith('/') ? pathname.substring(1) : pathname;
     } catch {
-      return null;
+      // Not a valid URL — assume it is already a plain S3 key.
+      return value;
     }
   };
 
@@ -457,6 +462,11 @@ export const EventEditForm = ({ event, additionalImages }: EventEditFormProps) =
                           src={imagePreview}
                           alt="Preview"
                           className="w-full aspect-square object-cover rounded-lg border border-border"
+                          onError={(e) => {
+                            // If the stored image URL is invalid/expired, clear the preview
+                            // so the user sees they need to re-upload rather than a broken image.
+                            setImagePreview("");
+                          }}
                         />
                         <Button
                           type="button"
@@ -466,7 +476,7 @@ export const EventEditForm = ({ event, additionalImages }: EventEditFormProps) =
                           onClick={() => {
                             setImagePreview("");
                             setSelectedImage(null);
-                            setImageKey(undefined);
+                            setImageKey(null);
                           }}
                         >
                           <X className="h-4 w-4" />

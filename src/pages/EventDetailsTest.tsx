@@ -322,6 +322,7 @@ export default function EventDetails() {
               src={event.image || heroImage}
               alt={event.name}
               className="w-full h-full object-cover"
+              onError={(e) => { (e.target as HTMLImageElement).src = heroImage; }}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/5 to-background"></div>
           </div>
@@ -374,6 +375,7 @@ export default function EventDetails() {
                 src={event.image || heroImage}
                 alt={event.name}
                 className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).src = heroImage; }}
               />
             </div>
           </div>
