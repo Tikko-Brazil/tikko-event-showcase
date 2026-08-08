@@ -18,6 +18,7 @@ import { useRegisterAndJoinEvent } from "@/api/user/api";
 import { registerAndJoinEventErrorMessage } from "@/api/user/errors";
 import { AppError } from "@/api/errors";
 import { toast } from "@/hooks/use-toast";
+import { initMercadoPago } from "@mercadopago/sdk-react";
 
 interface CheckoutOverlayProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ interface CheckoutOverlayProps {
   autoAccept?: boolean;
   initialCoupon?: string;
   initialDiscount?: DiscountData;
+  orgIsTest?: boolean;
 }
 
 export interface UserData {
@@ -58,7 +60,14 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   autoAccept = true,
   initialCoupon,
   initialDiscount,
+  orgIsTest = false,
 }) => {
+  React.useEffect(() => {
+    const publicKey = orgIsTest
+      ? import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY_TEST
+      : import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
+    if (publicKey) initMercadoPago(publicKey, { locale: "pt-BR" });
+  }, [orgIsTest]);
   const [currentStep, setCurrentStep] = useState(1);
   const [userData, setUserData] = useState<UserData>({
     fullName: "",

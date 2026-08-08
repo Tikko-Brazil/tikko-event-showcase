@@ -243,6 +243,7 @@ const EnhancedIndex = () => {
                         src={event.image || heroEventImage}
                         alt={event.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-smooth"
+                        onError={(e) => { (e.target as HTMLImageElement).src = heroEventImage; }}
                       />
                       <div className="absolute top-4 left-4">
                         <Badge
