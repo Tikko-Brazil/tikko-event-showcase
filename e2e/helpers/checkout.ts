@@ -1,6 +1,87 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Frame, type Locator, type Page } from '@playwright/test';
 import type { MercadoPagoCard } from '../fixtures/mercadopago-cards';
 import { TEST_USER } from '../fixtures/test-users';
+
+// The Mercado Pago CardPayment Brick splits its form across several iframes
+// (one per PCI field) plus inputs in the host document, and neither the iframe
+// titles nor the field ids are a documented contract. Instead of pinning one
+// layout, look the field up across every frame using its known aliases.
+const FIELD_ALIASES: Record<string, string[]> = {
+  cardNumber: ['cardNumber', 'card-number', 'cardNumberInput'],
+  expirationDate: ['expirationDate', 'expiration-date', 'cardExpirationDate'],
+  expirationMonth: ['expirationMonth', 'cardExpirationMonth'],
+  expirationYear: ['expirationYear', 'cardExpirationYear'],
+  securityCode: ['securityCode', 'security-code', 'cardSecurityCode'],
+  cardholderName: ['cardholderName', 'cardholder-name'],
+  cardholderEmail: ['cardholderEmail', 'cardholder-email', 'payerEmail'],
+  identificationNumber: ['identificationNumber', 'identification-number', 'docNumber'],
+};
+
+const selectorsFor = (field: string): string[] => {
+  const aliases = FIELD_ALIASES[field] || [field];
+  return [
+    ...aliases.map((alias) => `input[name="${alias}"]`),
+    ...aliases.map((alias) => `input[id="${alias}"]`),
+    ...aliases.map((alias) => `input[data-checkout="${alias}"]`),
+    ...aliases.map((alias) => `input[name*="${alias}" i]`),
+    ...aliases.map((alias) => `input[id*="${alias}" i]`),
+  ];
+};
+
+async function firstVisible(frame: Frame, selector: string): Promise<Locator | null> {
+  try {
+    const locator = frame.locator(selector).first();
+    if ((await locator.count()) > 0 && (await locator.isVisible())) return locator;
+  } catch {
+    // The Brick re-creates its frames while it boots; a detached frame is
+    // expected here and simply means "not this one".
+  }
+  return null;
+}
+
+async function findBrickField(page: Page, field: string, timeout: number): Promise<Locator | null> {
+  const deadline = Date.now() + timeout;
+  do {
+    // Selector priority is global: an exact `name` match anywhere beats a
+    // fuzzy match in the frame that happened to be scanned first.
+    for (const selector of selectorsFor(field)) {
+      for (const frame of page.frames()) {
+        const locator = await firstVisible(frame, selector);
+        if (locator) return locator;
+      }
+    }
+    await page.waitForTimeout(250);
+  } while (Date.now() < deadline);
+  return null;
+}
+
+/**
+ * Inventory of every frame and form control currently on the page. The Brick's
+ * real DOM is only observable in CI (the smoke config lives in repository
+ * secrets), so this is logged on the payment step to keep the selectors above
+ * verifiable from the workflow log.
+ */
+export async function describeCheckoutFrames(page: Page): Promise<string> {
+  const lines: string[] = [];
+  for (const frame of page.frames()) {
+    try {
+      const controls = await frame.evaluate(() =>
+        Array.from(document.querySelectorAll('input, select')).map((element) => ({
+          tag: element.tagName.toLowerCase(),
+          type: element.getAttribute('type'),
+          name: element.getAttribute('name'),
+          id: element.id || null,
+          placeholder: element.getAttribute('placeholder'),
+          dataCheckout: element.getAttribute('data-checkout'),
+        })),
+      );
+      lines.push(`frame name=${JSON.stringify(frame.name())} url=${frame.url()} controls=${JSON.stringify(controls)}`);
+    } catch (error) {
+      lines.push(`frame name=${JSON.stringify(frame.name())} url=${frame.url()} unavailable=${String(error)}`);
+    }
+  }
+  return lines.join('\n');
+}
 
 export class CheckoutPage {
   constructor(private readonly page: Page) {}
@@ -25,7 +106,9 @@ export class CheckoutPage {
     await this.dialog.locator('#confirmPhone').fill(user.phone);
     await this.dialog.locator('#identification').fill(user.identification);
     await this.dialog.locator('#birthdate').fill(user.birthdate);
-    await this.dialog.locator('#instagram').fill('');
+    // Instagram is a required field on this step; leaving it empty keeps the
+    // step invalid and the Continue button disabled.
+    await this.dialog.locator('#instagram').fill(user.instagram);
 
     const email = this.dialog.locator('#email');
     const confirmEmail = this.dialog.locator('#confirmEmail');
@@ -62,17 +145,48 @@ export class CheckoutPage {
     await this.continueButton.click();
   }
 
-  async fillCard(card: MercadoPagoCard) {
-    // Mercado Pago CardPayment Brick currently renders these fields in its
-    // last iframe. The iframe itself has no stable public title; the field
-    // names are the stable SDK contract used by the Playwright smoke test.
-    const frame = this.page.frameLocator('iframe').last();
-    await expect(this.page.locator('iframe').last()).toBeVisible();
-    await frame.locator('input[name="cardNumber"]').fill(card.number);
-    await frame.locator('input[name="expirationDate"]').fill(`${card.expirationMonth}/${card.expirationYear}`);
-    await frame.locator('input[name="securityCode"]').fill(card.securityCode);
-    await frame.locator('input[name="cardholderName"]').fill(`TEST ${card.paymentStatus}`);
-    await frame.locator('input[name="identificationNumber"]').fill(card.identification);
+  private async typeBrickField(field: string, value: string, timeout: number): Promise<boolean> {
+    const locator = await findBrickField(this.page, field, timeout);
+    if (!locator) return false;
+    await locator.click();
+    await locator.fill('');
+    // The Brick's PCI inputs mask and validate on keystrokes, so replay the
+    // value as typing rather than setting it in one shot.
+    await locator.pressSequentially(value, { delay: 40 });
+    return true;
+  }
+
+  async fillCard(card: MercadoPagoCard, payerEmail = TEST_USER.email) {
+    console.log(`[TC-01] checkout frames before filling the card:\n${await describeCheckoutFrames(this.page)}`);
+
+    const missing: string[] = [];
+    if (!(await this.typeBrickField('cardNumber', card.number, 30_000))) missing.push('cardNumber');
+
+    const expiration = `${card.expirationMonth}/${card.expirationYear}`;
+    if (!(await this.typeBrickField('expirationDate', expiration, 5_000))) {
+      // Older Brick layouts split expiry into two inputs.
+      const month = await this.typeBrickField('expirationMonth', card.expirationMonth, 5_000);
+      const year = await this.typeBrickField('expirationYear', card.expirationYear, 5_000);
+      if (!month || !year) missing.push('expirationDate');
+    }
+
+    if (!(await this.typeBrickField('securityCode', card.securityCode, 10_000))) missing.push('securityCode');
+    if (!(await this.typeBrickField('cardholderName', `TEST ${card.paymentStatus}`, 10_000))) {
+      missing.push('cardholderName');
+    }
+    if (!(await this.typeBrickField('identificationNumber', card.identification, 10_000))) {
+      missing.push('identificationNumber');
+    }
+    // The payer email is only rendered when the Brick is not initialized with
+    // one, so treat it as best-effort.
+    await this.typeBrickField('cardholderEmail', payerEmail, 3_000);
+
+    if (missing.length) {
+      throw new Error(
+        `Mercado Pago Brick fields not found: ${missing.join(', ')}\n${await describeCheckoutFrames(this.page)}`,
+      );
+    }
+
     await this.continueButton.click();
   }
 
