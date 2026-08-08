@@ -129,6 +129,7 @@ interface EventWithTicketPricing {
     name: string;
     logo: string;
   };
+  org_is_test?: boolean;
   additional_images: Array<{
     id: number;
     event_id: number;

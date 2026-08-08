@@ -185,11 +185,12 @@ async function createCardToken(
   return response.json();
 }
 
-export function useCreateCardToken() {
+export function useCreateCardToken(publicKeyOverride?: string) {
   return useMutation({
     mutationFn: async (input: CardTokenInput) => {
       try {
-        const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
+        const publicKey = publicKeyOverride || import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
+        if (!publicKey) throw { status: 500, code: "MERCADO_PAGO_PUBLIC_KEY_MISSING" };
         const bin = input.cardNumber.substring(0, 6);
         const locale = import.meta.env.VITE_MERCADOPAGO_LOCALE || "pt-BR";
         const jsVersion = import.meta.env.VITE_MERCADOPAGO_JS_VERSION || "2.0.0";
@@ -210,4 +211,3 @@ export function useCreateCardToken() {
     },
   });
 }
-

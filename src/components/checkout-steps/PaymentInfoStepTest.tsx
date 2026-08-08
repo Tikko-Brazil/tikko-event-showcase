@@ -49,7 +49,9 @@ export const PaymentInfoStepTest: React.FC<PaymentInfoStepProps> = ({
   const pixFormRef = useRef<any>(null);
   const creditFormRef = useRef<any>(null);
   const brand: CardBrandInfo = detectCardBrand(cardNumber);
-  const { mutateAsync: createCardToken, isPending } = useCreateCardToken();
+  const { mutateAsync: createCardToken, isPending } = useCreateCardToken(
+    import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY_TEST
+  );
 
   const commonValidations = createCommonValidations(t);
 
