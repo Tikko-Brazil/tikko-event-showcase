@@ -37,6 +37,7 @@ export class CheckoutPage {
     await this.dialog.locator('#instagram').press('Tab');
     await expect(email).toHaveValue(user.email);
     await expect(confirmEmail).toHaveValue(user.email);
+    await expect(this.continueButton).toBeEnabled();
     await this.continueButton.click();
   }
 
