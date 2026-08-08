@@ -42,6 +42,31 @@ export const smokeEmail = (prefix: string, attempt = 0) => {
 
 export const issuedSmokeEmails = () => [...issuedEmails];
 
+const cpfCheckDigit = (digits: number[]) => {
+  const firstWeight = digits.length + 1;
+  const sum = digits.reduce((total, digit, index) => total + digit * (firstWeight - index), 0);
+  const rest = (sum * 10) % 11;
+  return rest >= 10 ? 0 : rest;
+};
+
+/**
+ * A distinct, valid CPF per buyer.
+ *
+ * Every smoke checkout used to send the same document, and a run makes a dozen
+ * card payments in a few minutes — same card, same payer, same amount. Mercado
+ * Pago starts refusing those as duplicates, and the refusal lands on whichever
+ * case runs last (the backend answers 500 and the invite never gets a payment
+ * intent). Deriving the document from the e-mail makes each buyer a different
+ * payer, and keeps it reproducible for a given run.
+ */
+export const smokeIdentification = (seed: string) => {
+  let hash = 0;
+  for (const character of seed) hash = (hash * 31 + character.charCodeAt(0)) % 1_000_000_007;
+  const base = String(hash).padStart(9, '0').slice(-9).split('').map(Number);
+  const first = cpfCheckDigit(base);
+  return [...base, first, cpfCheckDigit([...base, first])].join('');
+};
+
 export const requireTestUserCredentials = () => {
   if (!TEST_USER.password) {
     throw new Error('SMOKE_TEST_USER_PASSWORD must be configured for smoke tests');

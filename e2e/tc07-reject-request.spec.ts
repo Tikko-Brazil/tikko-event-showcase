@@ -107,10 +107,10 @@ test.describe('TC-07: rejeitar solicitação de participação', () => {
       const invite = list.find((item) => Number(item.event_id) === MANUAL_APPROVAL_EVENT.id);
       expect(invite, `No invite for event ${MANUAL_APPROVAL_EVENT.id} in ${JSON.stringify(body)}`).toBeTruthy();
       expect(invite!.status).toBe('Rejected');
-      // The authorization did happen — `purchased_at` is stamped when Mercado
-      // Pago authorizes — so a rejected invite is an authorized-then-released
-      // charge, not a charge that never existed.
-      expect(invite!.purchased_at).toBeTruthy();
+      // `purchased_at` is not asserted here even though the row carries it:
+      // `GetInvitesByUserID` selects id, uuid, event_id, user_id, inviter_id,
+      // accepted, status, type and approved_by only, so the column never
+      // reaches this response and `omitempty` drops it.
     } finally {
       await api.dispose();
     }
