@@ -31,15 +31,20 @@ async function completeFreeCheckout(page: Page, slug: string, ticketPricingId: n
   await dialog.locator('#fullName').fill(TEST_USER.fullName);
   const email = dialog.locator('#email');
   const confirmEmail = dialog.locator('#confirmEmail');
-  await email.fill(TEST_USER.email);
-  await expect(email).toHaveValue(TEST_USER.email);
-  await confirmEmail.fill(TEST_USER.email);
-  await expect(confirmEmail).toHaveValue(TEST_USER.email);
   await dialog.locator('#phone').fill(TEST_USER.phone);
   await dialog.locator('#confirmPhone').fill(TEST_USER.phone);
   await dialog.locator('#identification').fill(TEST_USER.identification);
   await dialog.locator('#birthdate').fill(TEST_USER.birthdate);
   await dialog.locator('#instagram').fill('smoke_test');
+  // Enter the coupled email fields after the other fields. Their Formik
+  // parent sync can reinitialize a field while focus moves between inputs.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    await email.fill(TEST_USER.email);
+    await confirmEmail.fill(TEST_USER.email);
+    if (await email.inputValue() === TEST_USER.email && await confirmEmail.inputValue() === TEST_USER.email) break;
+  }
+  await expect(email).toHaveValue(TEST_USER.email);
+  await expect(confirmEmail).toHaveValue(TEST_USER.email);
   const userInfoContinue = dialog.getByRole('button', { name: /^continuar$/i });
   // The form validates on blur; explicitly leave the last field before
   // asserting that Formik has enabled the next step.
