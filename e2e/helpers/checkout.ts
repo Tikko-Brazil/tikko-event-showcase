@@ -161,12 +161,33 @@ export class CheckoutPage {
   private async typeBrickField(field: string, value: string, timeout: number): Promise<Locator | null> {
     const locator = await findBrickField(this.page, field, timeout);
     if (!locator) return null;
-    await locator.click();
-    await locator.fill('');
-    // The Brick's PCI inputs mask and validate on keystrokes, so replay the
-    // value as typing rather than setting it in one shot.
-    await locator.pressSequentially(value, { delay: 40 });
-    return locator;
+    // Changing the document type re-renders the fields below it, so a value
+    // can be dropped right after it is typed. Retry until it sticks.
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      await locator.click();
+      await locator.fill('');
+      // The Brick's inputs mask and validate on keystrokes, so replay the
+      // value as typing rather than setting it in one shot.
+      await locator.pressSequentially(value, { delay: 40 });
+      if ((await locator.inputValue()).trim() !== '') return locator;
+    }
+    return null;
+  }
+
+  private async selectDocumentType() {
+    // Must happen before the document number is typed: switching the type
+    // clears the number field.
+    for (const frame of this.page.frames()) {
+      const select = frame.locator('select#identificationType, select[name="identificationType"]').first();
+      try {
+        if ((await select.count()) > 0 && (await select.isVisible())) {
+          await select.selectOption('CPF');
+          return;
+        }
+      } catch {
+        // Not every Brick version renders a document-type select.
+      }
+    }
   }
 
   private async fillExpiration(card: MercadoPagoCard): Promise<boolean> {
@@ -193,38 +214,24 @@ export class CheckoutPage {
   async fillCard(card: MercadoPagoCard, payerEmail = TEST_USER.email) {
     console.log(`[TC-01] checkout frames before filling the card:\n${await describeCheckoutFrames(this.page)}`);
 
-    const missing: string[] = [];
-    if (!(await this.typeBrickField('cardNumber', card.number, 30_000))) missing.push('cardNumber');
-    if (!(await this.fillExpiration(card))) missing.push('expirationDate');
+    const unfilled: string[] = [];
+    if (!(await this.typeBrickField('cardNumber', card.number, 30_000))) unfilled.push('cardNumber');
+    if (!(await this.fillExpiration(card))) unfilled.push('expirationDate');
 
-    if (!(await this.typeBrickField('securityCode', card.securityCode, 10_000))) missing.push('securityCode');
+    if (!(await this.typeBrickField('securityCode', card.securityCode, 10_000))) unfilled.push('securityCode');
     if (!(await this.typeBrickField('cardholderName', `TEST ${card.paymentStatus}`, 10_000))) {
-      missing.push('cardholderName');
+      unfilled.push('cardholderName');
     }
+    if (!(await this.typeBrickField('cardholderEmail', payerEmail, 10_000))) unfilled.push('cardholderEmail');
+
+    await this.selectDocumentType();
     if (!(await this.typeBrickField('identificationNumber', card.identification, 10_000))) {
-      missing.push('identificationNumber');
-    }
-    // The payer email is only rendered when the Brick is not initialized with
-    // one, so treat it as best-effort.
-    if (!(await this.typeBrickField('cardholderEmail', payerEmail, 10_000))) missing.push('cardholderEmail');
-
-    // Document type defaults to CPF; pin it anyway so the fixture's document
-    // number is always validated against the same type.
-    for (const frame of this.page.frames()) {
-      const select = frame.locator('select#identificationType').first();
-      try {
-        if ((await select.count()) > 0 && (await select.isVisible())) {
-          await select.selectOption('CPF');
-          break;
-        }
-      } catch {
-        // Not every Brick version renders a document-type select.
-      }
+      unfilled.push('identificationNumber');
     }
 
-    if (missing.length) {
+    if (unfilled.length) {
       throw new Error(
-        `Mercado Pago Brick fields not found: ${missing.join(', ')}\n${await describeCheckoutFrames(this.page)}`,
+        `Mercado Pago Brick fields missing or empty: ${unfilled.join(', ')}\n${await describeCheckoutFrames(this.page)}`,
       );
     }
 

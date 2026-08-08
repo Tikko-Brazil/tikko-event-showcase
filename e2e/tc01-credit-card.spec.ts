@@ -38,8 +38,10 @@ async function completeCreditCardCheckout(page: Page, email: string) {
     await expect(checkout.dialog.getByText(/confirma[cç][aã]o da compra/i)).toBeVisible();
   } catch (error) {
     // Tokenization failures leave the Brick on screen with inline errors, so
-    // dump its DOM before rethrowing — it is the only view CI gives us.
+    // dump its DOM and visible text before rethrowing — it is the only view
+    // CI gives us into a production-only flow.
     console.log(`[TC-01] checkout frames after submitting the card:\n${await describeCheckoutFrames(page)}`);
+    console.log(`[TC-01] dialog text after submitting the card:\n${await checkout.dialog.innerText()}`);
     throw error;
   }
 }
