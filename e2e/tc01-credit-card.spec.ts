@@ -8,7 +8,7 @@ import {
 } from './helpers/checkout';
 import { TEST_EVENT } from './fixtures/test-events';
 import { MERCADO_PAGO_CARDS, requireCard } from './fixtures/mercadopago-cards';
-import { uniqueTestEmail } from './fixtures/test-users';
+import { issuedSmokeEmails, smokeEmail } from './fixtures/test-users';
 
 const requireConfiguration = () => {
   const missing = [
@@ -50,15 +50,15 @@ test.beforeEach(() => requireConfiguration());
 test.afterAll(async () => {
   const request = await playwrightRequest.newContext();
   try {
-    await cleanupTestData(request, [TEST_EVENT.id]);
+    await cleanupTestData(request, [TEST_EVENT.id], issuedSmokeEmails());
   } finally {
     await request.dispose();
   }
 });
 
 test.describe('TC-01: compra com cartão de crédito', () => {
-  test('completa a compra com cartão de teste aprovado', async ({ page }) => {
-    await completeCreditCardCheckout(page, uniqueTestEmail('tc01-approved'));
+  test('completa a compra com cartão de teste aprovado', async ({ page }, testInfo) => {
+    await completeCreditCardCheckout(page, smokeEmail('tc01-approved', testInfo.retry));
 
     const registration = page.waitForResponse((response) =>
       new URL(response.url()).pathname === '/public/user/register-and-join-event' && response.request().method() === 'POST',
@@ -69,8 +69,8 @@ test.describe('TC-01: compra com cartão de crédito', () => {
     await expect(page.getByRole('dialog').getByText(/compra realizada/i).last()).toBeVisible();
   });
 
-  test('envia token e dados de pagamento no payload de registro', async ({ page }) => {
-    await completeCreditCardCheckout(page, uniqueTestEmail('tc01-payload'));
+  test('envia token e dados de pagamento no payload de registro', async ({ page }, testInfo) => {
+    await completeCreditCardCheckout(page, smokeEmail('tc01-payload', testInfo.retry));
 
     const registration = page.waitForResponse((response) =>
       new URL(response.url()).pathname === '/public/user/register-and-join-event' && response.request().method() === 'POST',

@@ -31,6 +31,12 @@ export const TEST_USER = {
   instagram: process.env.SMOKE_TEST_USER_INSTAGRAM || 'smoke_test',
 };
 
+// Every address a run hands out, so `afterAll` can clean all of them. An
+// address that is issued but not remembered is one the cleanup cannot know
+// about, and it stays in production forever — which is what TC-01 did while it
+// derived its buyers with `uniqueTestEmail` and cleaned only the base address.
+const issuedEmails = new Set<string>();
+
 // A participation is unique per (user, event), so two checkouts against the
 // same event — the two TC-01 cases, or TC-01 racing the TC-04 job inside the
 // same workflow run — need distinct users. Only the email has to vary; the
@@ -38,20 +44,17 @@ export const TEST_USER = {
 export const uniqueTestEmail = (suffix: string) => {
   const safeSuffix = suffix.replace(/[^a-zA-Z0-9-]/g, '-').slice(0, 40);
   const [localPart, domain] = TEST_USER.email.split('@');
-  return `${localPart}-${safeSuffix}@${domain}`;
+  const email = `${localPart}-${safeSuffix}@${domain}`;
+  issuedEmails.add(email);
+  return email;
 };
 
 // A checkout that goes through leaves an invite the backend refuses to create
 // twice, so a Playwright retry of a test that already paid would fail with a
 // duplicate instead of reproducing the original problem. Vary the address per
-// attempt, and remember every address so `afterAll` can clean all of them.
-const issuedEmails = new Set<string>();
-
-export const smokeEmail = (prefix: string, attempt = 0) => {
-  const email = uniqueTestEmail(attempt > 0 ? `${prefix}-retry${attempt}` : prefix);
-  issuedEmails.add(email);
-  return email;
-};
+// attempt.
+export const smokeEmail = (prefix: string, attempt = 0) =>
+  uniqueTestEmail(attempt > 0 ? `${prefix}-retry${attempt}` : prefix);
 
 export const issuedSmokeEmails = () => [...issuedEmails];
 
