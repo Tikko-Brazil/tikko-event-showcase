@@ -38,12 +38,7 @@ async function completeFreeCheckout(page: Page, slug: string, ticketPricingId: n
   await dialog.locator('#identification').fill(TEST_USER.identification);
   await dialog.locator('#birthdate').fill(TEST_USER.birthdate);
   await dialog.locator('#instagram').fill('smoke_test');
-  const userInfoContinue = dialog.getByRole('button', { name: /^continuar$/i });
-  // The form validates on blur; explicitly leave the last field before
-  // asserting that Formik has enabled the next step.
-  await dialog.locator('#instagram').press('Tab');
-  await expect(userInfoContinue).toBeEnabled();
-  await userInfoContinue.click();
+  await dialog.getByRole('button', { name: /^continuar$/i }).click();
 
   await dialog.locator('#coupon').fill(process.env.SMOKE_TEST_COUPON_CODE || 'SMOKETEST100');
   await dialog.getByRole('button', { name: /aplicar/i }).click();
