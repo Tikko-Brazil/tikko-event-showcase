@@ -3,8 +3,6 @@ import { cleanupTestData } from './helpers/checkout';
 import { TEST_EVENT, MANUAL_APPROVAL_EVENT } from './fixtures/test-events';
 import { TEST_USER } from './fixtures/test-users';
 
-const apiBaseUrl = process.env.SMOKE_TEST_API_BASE_URL || process.env.VITE_API_BASE_URL || 'http://localhost:3000';
-
 const requireConfiguration = () => {
   const missing = [
     ['SMOKE_TEST_EVENT_SLUG', TEST_EVENT.slug],
@@ -50,7 +48,7 @@ async function completeFreeCheckout(page: Page, slug: string, ticketPricingId: n
   await expect(dialog.getByText(/confirma[cç][aã]o da compra/i)).toBeVisible();
 
   const registration = page.waitForResponse((response) =>
-    response.url() === `${apiBaseUrl}/public/user/register-and-join-event` && response.request().method() === 'POST',
+    new URL(response.url()).pathname === '/public/user/register-and-join-event' && response.request().method() === 'POST',
   );
   await dialog.getByRole('button', { name: /confirmar e finalizar compra/i }).last().click();
   const registrationResponse = await registration;
