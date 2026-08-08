@@ -28,6 +28,20 @@ export const uniqueTestEmail = (suffix: string) => {
   return `${localPart}-${safeSuffix}@${domain}`;
 };
 
+// A checkout that goes through leaves an invite the backend refuses to create
+// twice, so a Playwright retry of a test that already paid would fail with a
+// duplicate instead of reproducing the original problem. Vary the address per
+// attempt, and remember every address so `afterAll` can clean all of them.
+const issuedEmails = new Set<string>();
+
+export const smokeEmail = (prefix: string, attempt = 0) => {
+  const email = uniqueTestEmail(attempt > 0 ? `${prefix}-retry${attempt}` : prefix);
+  issuedEmails.add(email);
+  return email;
+};
+
+export const issuedSmokeEmails = () => [...issuedEmails];
+
 export const requireTestUserCredentials = () => {
   if (!TEST_USER.password) {
     throw new Error('SMOKE_TEST_USER_PASSWORD must be configured for smoke tests');

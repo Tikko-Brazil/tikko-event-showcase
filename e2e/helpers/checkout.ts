@@ -2,14 +2,12 @@ import { expect, type Frame, type Locator, type Page } from '@playwright/test';
 import type { MercadoPagoCard } from '../fixtures/mercadopago-cards';
 import { TEST_USER } from '../fixtures/test-users';
 
-// Field ids/names inside the Mercado Pago CardPayment Brick are not a
-// documented contract, and depending on the SDK version the Brick renders its
-// PCI inputs either in the host document or in one iframe per field. Rather
-// than pin one layout, look each field up across every frame by alias.
-//
-// Observed in production (SDK currently in use, single frame, no iframes):
+// The checkout renders its own card form and tokenizes through the Mercado
+// Pago REST API, so the fields live in the host document:
 //   #cardNumber  #expiry  #securityCode  #cardholderName
 //   #email  select#identificationType  #identificationNumber
+// The lookup still scans every frame by alias so the helper keeps working if
+// the form is ever swapped back for an SDK widget that renders in iframes.
 const FIELD_ALIASES: Record<string, string[]> = {
   cardNumber: ['cardNumber', 'card-number', 'cardNumberInput'],
   expirationDate: ['expiry', 'expirationDate', 'expiration-date', 'cardExpirationDate'],
@@ -37,13 +35,13 @@ async function firstVisible(frame: Frame, selector: string): Promise<Locator | n
     const locator = frame.locator(selector).first();
     if ((await locator.count()) > 0 && (await locator.isVisible())) return locator;
   } catch {
-    // The Brick re-creates its frames while it boots; a detached frame is
-    // expected here and simply means "not this one".
+    // A frame can detach while the page is still settling; that is expected
+    // here and simply means "not this one".
   }
   return null;
 }
 
-async function findBrickField(page: Page, field: string, timeout: number): Promise<Locator | null> {
+async function findCardField(page: Page, field: string, timeout: number): Promise<Locator | null> {
   const deadline = Date.now() + timeout;
   do {
     // Selector priority is global: an exact `name` match anywhere beats a
@@ -60,10 +58,10 @@ async function findBrickField(page: Page, field: string, timeout: number): Promi
 }
 
 /**
- * Inventory of every frame and form control currently on the page. The Brick's
- * real DOM is only observable in CI (the smoke config lives in repository
- * secrets), so this is logged on the payment step to keep the selectors above
- * verifiable from the workflow log.
+ * Inventory of every frame and form control currently on the page. The payment
+ * step is only reachable in CI (the smoke config lives in repository secrets),
+ * so this is logged there to keep the selectors above verifiable from the
+ * workflow log.
  */
 export async function describeCheckoutFrames(page: Page): Promise<string> {
   const lines: string[] = [];
@@ -94,10 +92,10 @@ export async function describeCheckoutFrames(page: Page): Promise<string> {
 }
 
 /**
- * The credit card step swallows its failures: `createPayment` only
- * `console.error`s when the Brick's `getFormData()` rejects, so without this
- * a tokenization failure is invisible from the outside. Mirror the browser
- * console and failing Mercado Pago calls into the test output.
+ * The credit card step swallows its failures: `handleCreditSubmit` only
+ * `console.error`s when tokenization rejects, so without this a failure is
+ * invisible from the outside. Mirror the browser console and failing Mercado
+ * Pago calls into the test output.
  */
 export function attachCheckoutDiagnostics(page: Page) {
   const redact = (text: string) => text.replace(/\d{6,}/g, (match) => `<${match.length} digits>`);
@@ -119,6 +117,28 @@ export function attachCheckoutDiagnostics(page: Page) {
     const path = new URL(response.url()).pathname;
     console.log(`[mercadopago] ${response.status()} ${path} ${redact(body)}`);
   });
+}
+
+/**
+ * Uncaught exceptions raised by the app while a test runs. A rejected payment
+ * must surface as a message, never as a broken page, so the failure cases
+ * assert this list stayed empty.
+ */
+export function collectPageErrors(page: Page): string[] {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(String(error)));
+  return errors;
+}
+
+/** Select the smoke ticket on an event page and open the checkout overlay. */
+export async function openEventCheckout(page: Page, slug: string, ticketPricingId: number) {
+  await page.goto(`/event/${slug}`);
+  // Ticket pricing IDs are numeric, so use an attribute selector instead of
+  // a CSS id selector (CSS selectors cannot start with a digit).
+  const ticket = page.locator(`[id="${ticketPricingId}"]`);
+  await expect(ticket).toBeVisible();
+  await ticket.check();
+  await page.getByRole('button', { name: /continuar para pagamento/i }).click();
 }
 
 export class CheckoutPage {
@@ -182,20 +202,23 @@ export class CheckoutPage {
   }
 
   async fillPix(email = TEST_USER.email) {
-    await this.dialog.locator('input[type="email"]').fill(email);
-    await this.continueButton.click();
+    await this.dialog.locator('#payerEmail').fill(email);
+    // Two buttons are labelled "Continuar para Confirmação" on this step — the
+    // one in the price summary and the Pix form's own submit. Only the form's
+    // is scoped to a <form>, so target that one and avoid a strict-mode clash.
+    await this.dialog.locator('form button[type="submit"]').click();
   }
 
-  private async typeBrickField(field: string, value: string, timeout: number): Promise<Locator | null> {
-    const locator = await findBrickField(this.page, field, timeout);
+  private async typeCardField(field: string, value: string, timeout: number): Promise<Locator | null> {
+    const locator = await findCardField(this.page, field, timeout);
     if (!locator) return null;
     // Changing the document type re-renders the fields below it, so a value
     // can be dropped right after it is typed. Retry until it sticks.
     for (let attempt = 0; attempt < 3; attempt += 1) {
       await locator.click();
       await locator.fill('');
-      // The Brick's inputs mask and validate on keystrokes, so replay the
-      // value as typing rather than setting it in one shot.
+      // The inputs mask and validate on keystrokes, so replay the value as
+      // typing rather than setting it in one shot.
       await locator.pressSequentially(value, { delay: 40 });
       if ((await locator.inputValue()).trim() !== '') return locator;
     }
@@ -213,7 +236,7 @@ export class CheckoutPage {
           return;
         }
       } catch {
-        // Not every Brick version renders a document-type select.
+        // Not every layout renders a document-type select.
       }
     }
   }
@@ -221,7 +244,7 @@ export class CheckoutPage {
   private async fillExpiration(card: MercadoPagoCard): Promise<boolean> {
     // The field is masked as MM/YY, so type the digits and let the mask insert
     // the separator; fall back to the explicit form if it did not.
-    const locator = await this.typeBrickField(
+    const locator = await this.typeCardField(
       'expirationDate',
       `${card.expirationMonth}${card.expirationYear}`,
       10_000,
@@ -233,40 +256,40 @@ export class CheckoutPage {
       }
       return true;
     }
-    // Older Brick layouts split expiry into two inputs.
-    const month = await this.typeBrickField('expirationMonth', card.expirationMonth, 5_000);
-    const year = await this.typeBrickField('expirationYear', card.expirationYear, 5_000);
+    // Some layouts split expiry into two inputs.
+    const month = await this.typeCardField('expirationMonth', card.expirationMonth, 5_000);
+    const year = await this.typeCardField('expirationYear', card.expirationYear, 5_000);
     return Boolean(month && year);
   }
 
   async fillCard(card: MercadoPagoCard, payerEmail = TEST_USER.email) {
-    console.log(`[TC-01] checkout frames before filling the card:\n${await describeCheckoutFrames(this.page)}`);
+    console.log(`[checkout] frames before filling the card:\n${await describeCheckoutFrames(this.page)}`);
 
     const unfilled: string[] = [];
-    if (!(await this.typeBrickField('cardNumber', card.number, 30_000))) unfilled.push('cardNumber');
+    if (!(await this.typeCardField('cardNumber', card.number, 30_000))) unfilled.push('cardNumber');
     if (!(await this.fillExpiration(card))) unfilled.push('expirationDate');
 
-    if (!(await this.typeBrickField('securityCode', card.securityCode, 10_000))) unfilled.push('securityCode');
+    if (!(await this.typeCardField('securityCode', card.securityCode, 10_000))) unfilled.push('securityCode');
     // Mercado Pago drives the sandbox payment outcome from the cardholder
     // name, so the status code has to lead; the checkout also requires a
     // surname.
-    if (!(await this.typeBrickField('cardholderName', `${card.paymentStatus} Teste`, 10_000))) {
+    if (!(await this.typeCardField('cardholderName', `${card.paymentStatus} Teste`, 10_000))) {
       unfilled.push('cardholderName');
     }
-    if (!(await this.typeBrickField('cardholderEmail', payerEmail, 10_000))) unfilled.push('cardholderEmail');
+    if (!(await this.typeCardField('cardholderEmail', payerEmail, 10_000))) unfilled.push('cardholderEmail');
 
     await this.selectDocumentType();
-    if (!(await this.typeBrickField('identificationNumber', card.identification, 10_000))) {
+    if (!(await this.typeCardField('identificationNumber', card.identification, 10_000))) {
       unfilled.push('identificationNumber');
     }
 
     if (unfilled.length) {
       throw new Error(
-        `Mercado Pago Brick fields missing or empty: ${unfilled.join(', ')}\n${await describeCheckoutFrames(this.page)}`,
+        `Card form fields missing or empty: ${unfilled.join(', ')}\n${await describeCheckoutFrames(this.page)}`,
       );
     }
 
-    console.log(`[TC-01] checkout frames after filling the card:\n${await describeCheckoutFrames(this.page)}`);
+    console.log(`[checkout] frames after filling the card:\n${await describeCheckoutFrames(this.page)}`);
     await this.continueButton.click();
   }
 
@@ -287,13 +310,26 @@ export class CheckoutPage {
   }
 }
 
+/**
+ * Removes the participations, invites and users a smoke run created. A run can
+ * touch several e-mails (a checkout that succeeds and one that is refused must
+ * not share a participation), so every address is cleaned in turn.
+ *
+ * Without `SMOKE_TEST_CLEANUP_URL` this is a no-op and each run leaves its
+ * records behind — which is why the e-mails are unique per run.
+ */
 export async function cleanupTestData(
   request: import('@playwright/test').APIRequestContext,
   eventIds: number[],
-  userEmail = TEST_USER.email,
+  userEmails: string | string[] = TEST_USER.email,
 ) {
   const endpoint = process.env.SMOKE_TEST_CLEANUP_URL;
-  if (!endpoint) return;
-  const response = await request.post(endpoint, { data: { event_ids: eventIds, user_email: userEmail } });
-  expect(response.ok(), `Smoke test cleanup failed (${response.status()})`).toBeTruthy();
+  if (!endpoint) {
+    console.log('[cleanup] SMOKE_TEST_CLEANUP_URL is not configured; smoke records were left in place');
+    return;
+  }
+  for (const userEmail of [...new Set([userEmails].flat())]) {
+    const response = await request.post(endpoint, { data: { event_ids: eventIds, user_email: userEmail } });
+    expect(response.ok(), `Smoke test cleanup failed for ${userEmail} (${response.status()})`).toBeTruthy();
+  }
 }

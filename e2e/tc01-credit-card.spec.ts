@@ -4,6 +4,7 @@ import {
   cleanupTestData,
   CheckoutPage,
   describeCheckoutFrames,
+  openEventCheckout,
 } from './helpers/checkout';
 import { TEST_EVENT } from './fixtures/test-events';
 import { MERCADO_PAGO_CARDS, requireCard } from './fixtures/mercadopago-cards';
@@ -21,17 +22,9 @@ const requireConfiguration = () => {
   requireCard(MERCADO_PAGO_CARDS.approved);
 };
 
-async function selectTicketAndOpenCheckout(page: Page) {
-  await page.goto(`/event/${TEST_EVENT.slug}`);
-  const ticket = page.locator(`[id="${TEST_EVENT.ticketPricingId}"]`);
-  await expect(ticket).toBeVisible();
-  await ticket.check();
-  await page.getByRole('button', { name: /continuar para pagamento/i }).click();
-}
-
 async function completeCreditCardCheckout(page: Page, email: string) {
   attachCheckoutDiagnostics(page);
-  await selectTicketAndOpenCheckout(page);
+  await openEventCheckout(page, TEST_EVENT.slug, TEST_EVENT.ticketPricingId);
 
   const checkout = new CheckoutPage(page);
   await checkout.acceptTerms();
@@ -43,25 +36,11 @@ async function completeCreditCardCheckout(page: Page, email: string) {
   try {
     await expect(checkout.dialog.getByText(/confirma[cç][aã]o da compra/i)).toBeVisible();
   } catch (error) {
-    // Tokenization failures leave the Brick on screen with inline errors, so
-    // dump its DOM and visible text before rethrowing — it is the only view
+    // Tokenization failures leave the card form on screen with inline errors,
+    // so dump its DOM and visible text before rethrowing — it is the only view
     // CI gives us into a production-only flow.
     console.log(`[TC-01] checkout frames after submitting the card:\n${await describeCheckoutFrames(page)}`);
     console.log(`[TC-01] dialog text after submitting the card:\n${await checkout.dialog.innerText()}`);
-    // Ask the Brick itself why it refused to hand over form data. Only on the
-    // failure path, so a working checkout never pays for the extra token.
-    const brickState = await page.evaluate(async () => {
-      const controller = (window as unknown as { cardPaymentBrickController?: { getFormData?: () => Promise<unknown> } })
-        .cardPaymentBrickController;
-      if (!controller?.getFormData) return 'cardPaymentBrickController is not available';
-      try {
-        const formData = await controller.getFormData();
-        return formData ? `getFormData keys: ${Object.keys(formData).join(', ')}` : 'getFormData resolved null';
-      } catch (brickError) {
-        return `getFormData rejected: ${JSON.stringify(brickError, Object.getOwnPropertyNames(Object(brickError)))}`;
-      }
-    });
-    console.log(`[TC-01] brick state: ${brickState}`);
     throw error;
   }
 }

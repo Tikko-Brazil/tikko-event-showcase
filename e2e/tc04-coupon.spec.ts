@@ -1,5 +1,5 @@
 import { expect, request as playwrightRequest, test, type Page } from '@playwright/test';
-import { cleanupTestData } from './helpers/checkout';
+import { cleanupTestData, openEventCheckout } from './helpers/checkout';
 import { TEST_EVENT, MANUAL_APPROVAL_EVENT } from './fixtures/test-events';
 import { TEST_USER } from './fixtures/test-users';
 
@@ -16,13 +16,14 @@ const requireConfiguration = () => {
 };
 
 async function completeFreeCheckout(page: Page, slug: string, ticketPricingId: number, expectedMessage: RegExp) {
-  await page.goto(`/event/${slug}`);
-  // Ticket pricing IDs are numeric, so use an attribute selector instead of
-  // a CSS id selector (CSS selectors cannot start with a digit).
-  const ticket = page.locator(`[id="${ticketPricingId}"]`);
-  await expect(ticket).toBeVisible();
-  await ticket.check();
-  await page.getByRole('button', { name: /continuar para pagamento/i }).click();
+  // A 100% coupon must settle entirely inside Tikko: no Mercado Pago call at
+  // all, on either approval flow.
+  let mercadoPagoRequests = 0;
+  page.on('request', (request) => {
+    if (/mercadopago/i.test(request.url())) mercadoPagoRequests += 1;
+  });
+
+  await openEventCheckout(page, slug, ticketPricingId);
 
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('checkbox').check();
@@ -73,6 +74,7 @@ async function completeFreeCheckout(page: Page, slug: string, ticketPricingId: n
   expect(payload.payment.payment_method_id).toBe('free');
   expect(payload.payment.token).toBe('');
   await expect(dialog.getByText(expectedMessage).last()).toBeVisible();
+  expect(mercadoPagoRequests, 'A free checkout must not touch Mercado Pago').toBe(0);
 }
 
 test.beforeEach(() => requireConfiguration());
@@ -87,12 +89,7 @@ test.afterAll(async () => {
 });
 
 test('TC-04: 100% coupon on auto-accept event skips external payment', async ({ page }) => {
-  let mercadoPagoRequests = 0;
-  page.on('request', (request) => {
-    if (/mercadopago/i.test(request.url())) mercadoPagoRequests += 1;
-  });
   await completeFreeCheckout(page, TEST_EVENT.slug, TEST_EVENT.ticketPricingId, /compra realizada/i);
-  expect(mercadoPagoRequests).toBe(0);
 });
 
 test('TC-04b: 100% coupon preserves manual approval flow', async ({ page }) => {
