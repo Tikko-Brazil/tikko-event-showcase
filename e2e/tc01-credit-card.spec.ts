@@ -1,7 +1,8 @@
 import { expect, request as playwrightRequest, test, type Page } from '@playwright/test';
-import { cleanupTestData, CheckoutPage } from './helpers/checkout';
+import { cleanupTestData, CheckoutPage, describeCheckoutFrames } from './helpers/checkout';
 import { TEST_EVENT } from './fixtures/test-events';
 import { MERCADO_PAGO_CARDS, requireCard } from './fixtures/mercadopago-cards';
+import { uniqueTestEmail } from './fixtures/test-users';
 
 const requireConfiguration = () => {
   const missing = [
@@ -23,16 +24,24 @@ async function selectTicketAndOpenCheckout(page: Page) {
   await page.getByRole('button', { name: /continuar para pagamento/i }).click();
 }
 
-async function completeCreditCardCheckout(page: Page) {
+async function completeCreditCardCheckout(page: Page, email: string) {
   await selectTicketAndOpenCheckout(page);
 
   const checkout = new CheckoutPage(page);
   await checkout.acceptTerms();
-  await checkout.fillUserInfo();
+  await checkout.fillUserInfo({ email });
   await checkout.skipCoupon();
   await checkout.selectPaymentMethod('credit');
-  await checkout.fillCreditCard(requireCard(MERCADO_PAGO_CARDS.approved));
-  await expect(checkout.dialog.getByText(/confirma[cç][aã]o da compra/i)).toBeVisible();
+  await checkout.fillCard(requireCard(MERCADO_PAGO_CARDS.approved), email);
+
+  try {
+    await expect(checkout.dialog.getByText(/confirma[cç][aã]o da compra/i)).toBeVisible();
+  } catch (error) {
+    // Tokenization failures leave the Brick on screen with inline errors, so
+    // dump its DOM before rethrowing — it is the only view CI gives us.
+    console.log(`[TC-01] checkout frames after submitting the card:\n${await describeCheckoutFrames(page)}`);
+    throw error;
+  }
 }
 
 test.beforeEach(() => requireConfiguration());
@@ -48,7 +57,7 @@ test.afterAll(async () => {
 
 test.describe('TC-01: compra com cartão de crédito', () => {
   test('completa a compra com cartão de teste aprovado', async ({ page }) => {
-    await completeCreditCardCheckout(page);
+    await completeCreditCardCheckout(page, uniqueTestEmail('tc01-approved'));
 
     const registration = page.waitForResponse((response) =>
       new URL(response.url()).pathname === '/public/user/register-and-join-event' && response.request().method() === 'POST',
@@ -60,7 +69,7 @@ test.describe('TC-01: compra com cartão de crédito', () => {
   });
 
   test('envia token e dados de pagamento no payload de registro', async ({ page }) => {
-    await completeCreditCardCheckout(page);
+    await completeCreditCardCheckout(page, uniqueTestEmail('tc01-payload'));
 
     const registration = page.waitForResponse((response) =>
       new URL(response.url()).pathname === '/public/user/register-and-join-event' && response.request().method() === 'POST',
