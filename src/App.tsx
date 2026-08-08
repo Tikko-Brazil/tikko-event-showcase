@@ -50,7 +50,6 @@ import Events from "./pages/Events";
 import TestPayment from "./pages/TestPayment";
 import posthog from 'posthog-js';
 import { PostHogProvider } from '@posthog/react'
-import EventDetailsTest from "./pages/EventDetailsTest";
 
 posthog.init(import.meta.env.VITE_PUBLIC_POSTHOG_API_KEY, {
   api_host: "https://us.i.posthog.com",
@@ -215,8 +214,8 @@ const App = () => (
                 <Route path="payment" element={<PaymentPage />} />
                 <Route path="meta-pixel" element={<div className="text-center py-12"><p className="text-muted-foreground">Coming soon</p></div>} />
               </Route>
-              <Route path="/test/event/:slug" element={<EventDetailsTest />} />
-              <Route path="/event/:slug" element={<EventDetailsTest />} />
+              <Route path="/test/event/:slug" element={<EventDetails />} />
+              <Route path="/event/:slug" element={<EventDetails />} />
               <Route path="/test-payment" element={<TestPayment />} />
               <Route path="/about" element={<AboutUs />} />
               <Route path="/contact" element={<Contact />} />
