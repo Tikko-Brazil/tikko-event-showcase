@@ -81,7 +81,7 @@ Configure these GitHub Actions repository variables or secrets before dispatchin
 - `SMOKE_TEST_COUPON_CODE`, `SMOKE_TEST_CLEANUP_URL`
 - `SMOKE_TEST_USER_EMAIL`, `SMOKE_TEST_USER_PHONE`, `SMOKE_TEST_USER_IDENTIFICATION`, `SMOKE_TEST_USER_BIRTHDATE`
 
-`SMOKE_TEST_USER_PASSWORD` must be a repository secret. Event slugs and IDs are configuration values, not source-controlled test data. Failed runs upload the Playwright report, traces, screenshots, videos, test results, and the captured smoke log for 14 days.
+`SMOKE_TEST_USER_PASSWORD` and `SMOKE_TEST_CLEANUP_TOKEN` must be repository secrets. Event slugs and IDs are configuration values, not source-controlled test data. Failed runs upload the Playwright report, traces, screenshots, videos, test results, and the captured smoke log for 14 days.
 
 ### Mercado Pago test cards
 
@@ -98,7 +98,9 @@ A brand with no secret is reported as skipped (with the missing variable named) 
 
 ### Cleanup
 
-`SMOKE_TEST_CLEANUP_URL` is what removes the users, invites and participations a run creates. While it is unset, cleanup is a logged no-op and every run leaves records in production — which is why each case derives a unique e-mail from `GITHUB_RUN_ID`.
+`SMOKE_TEST_CLEANUP_URL` points at `POST /public/smoke-test/cleanup` on the backend, which removes the tickets, participations, invites and user row a run created for one address, and gives back the coupon uses it consumed. `afterAll` calls it once per e-mail the run issued. While the URL is unset, cleanup is a logged no-op and every run leaves records in production — which is why each case derives a unique e-mail from `GITHUB_RUN_ID`.
+
+`SMOKE_TEST_CLEANUP_TOKEN` must be a repository **secret** and must match `SMOKE_TEST_CLEANUP_TOKEN` in the backend environment; without it the endpoint answers 401 and the suite fails in `afterAll`. The backend refuses the call anyway for any event outside an `is_test` organization and for any address that is not a smoke address, so a leaked token still cannot reach real data.
 
 ## How can I deploy this project?
 

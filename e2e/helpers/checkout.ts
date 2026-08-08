@@ -366,9 +366,14 @@ export class CheckoutPage {
 }
 
 /**
- * Removes the participations, invites and users a smoke run created. A run can
- * touch several e-mails (a checkout that succeeds and one that is refused must
- * not share a participation), so every address is cleaned in turn.
+ * Removes the participations, invites, tickets and users a smoke run created,
+ * and gives back the coupon uses it consumed. A run can touch several e-mails
+ * (a checkout that succeeds and one that is refused must not share a
+ * participation), so every address is cleaned in turn.
+ *
+ * The endpoint is destructive and lives in production, so it is guarded by a
+ * shared secret: `SMOKE_TEST_CLEANUP_TOKEN` has to match the backend's, or the
+ * call comes back 401 and the `afterAll` fails.
  *
  * Without `SMOKE_TEST_CLEANUP_URL` this is a no-op and each run leaves its
  * records behind — which is why the e-mails are unique per run.
@@ -383,8 +388,19 @@ export async function cleanupTestData(
     console.log('[cleanup] SMOKE_TEST_CLEANUP_URL is not configured; smoke records were left in place');
     return;
   }
+
+  const token = process.env.SMOKE_TEST_CLEANUP_TOKEN;
+  expect(
+    token,
+    'SMOKE_TEST_CLEANUP_URL is configured but SMOKE_TEST_CLEANUP_TOKEN is not; the endpoint would answer 401',
+  ).toBeTruthy();
+
   for (const userEmail of [...new Set([userEmails].flat())]) {
-    const response = await request.post(endpoint, { data: { event_ids: eventIds, user_email: userEmail } });
+    const response = await request.post(endpoint, {
+      headers: { 'X-Smoke-Cleanup-Token': token as string },
+      data: { event_ids: eventIds, user_email: userEmail },
+    });
     expect(response.ok(), `Smoke test cleanup failed for ${userEmail} (${response.status()})`).toBeTruthy();
+    console.log(`[cleanup] ${userEmail}: ${await response.text()}`);
   }
 }
