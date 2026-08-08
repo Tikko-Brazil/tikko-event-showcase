@@ -19,10 +19,26 @@ export function watchApiOrigin(page: Page) {
   });
 }
 
+/**
+ * `SMOKE_TEST_CLEANUP_URL` is an absolute URL on the same backend, so its
+ * origin answers the question even when nothing else is configured and no page
+ * has made a call yet — which is exactly the state an `afterAll` runs in.
+ */
+const cleanupApiOrigin = () => {
+  const url = process.env.SMOKE_TEST_CLEANUP_URL;
+  if (!url) return undefined;
+  try {
+    return new URL(url).origin;
+  } catch {
+    return undefined;
+  }
+};
+
 export const apiBaseUrl = () =>
   process.env.SMOKE_TEST_API_BASE_URL ||
   process.env.VITE_API_BASE_URL ||
   observedApiOrigin ||
+  cleanupApiOrigin() ||
   'http://localhost:3000';
 
 /** Fails loudly instead of silently querying `localhost` from a CI runner. */
@@ -36,19 +52,23 @@ export const requireApiBaseUrl = () => {
   return baseUrl;
 };
 
+/**
+ * The one API login path in the suite.
+ *
+ * It insists on a known origin: the buyer specs never call `watchApiOrigin`,
+ * so an `afterAll` that logs in used to reach `http://localhost:3000` from the
+ * runner and fail with ECONNREFUSED, blaming whichever test happened to be
+ * last. A named error beats a connection refused.
+ */
+
 export type TokenPair = { access_token: string; refresh_token: string };
 
-/**
- * The one API login path in the suite. `loginAsOrganizer` drives the real
- * login screen because that flow is itself under test; this is for the callers
- * that only need a bearer token (the cleanup in `afterAll`, which has no page).
- */
 export async function loginViaApi(
   request: APIRequestContext,
   credentials: { email: string; password: string },
   label = 'Smoke user',
 ) {
-  const response = await request.post(`${apiBaseUrl()}/public/login`, {
+  const response = await request.post(`${requireApiBaseUrl()}/public/login`, {
     data: { email: credentials.email, password: credentials.password },
   });
   expect(response.ok(), `${label} login failed (${response.status()})`).toBeTruthy();
