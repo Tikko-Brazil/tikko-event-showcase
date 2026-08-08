@@ -35,7 +35,7 @@ export const TEST_USER = {
 // same event — the two TC-01 cases, or TC-01 racing the TC-04 job inside the
 // same workflow run — need distinct users. Only the email has to vary; the
 // CPF is reused across runs today without conflict.
-export const uniqueTestEmail = (suffix: string) => {
+const uniqueTestEmail = (suffix: string) => {
   const safeSuffix = suffix.replace(/[^a-zA-Z0-9-]/g, '-').slice(0, 40);
   const [localPart, domain] = TEST_USER.email.split('@');
   return `${localPart}-${safeSuffix}@${domain}`;

@@ -1,10 +1,10 @@
 import { expect, type APIRequestContext, type BrowserContext, type Page } from '@playwright/test';
 import { TEST_USER, requireTestUserCredentials } from '../fixtures/test-users';
 
-// The API origin is not published as a secret: the smoke run only gets the
-// frontend URL, and the bundle carries its own `VITE_API_BASE_URL`. Rather
-// than duplicate that value in CI, watch the traffic the app itself makes and
-// learn the origin from the first `/public/*` or `/private/*` call.
+// Observing the app's own traffic is the last resort for learning the API
+// origin, and it only ever works inside a test that already drove a page — the
+// `afterAll` cleanup runs with none. It stays as a fallback, but nothing is
+// allowed to depend on it.
 let observedApiOrigin: string | undefined;
 
 export function watchApiOrigin(page: Page) {
@@ -19,13 +19,9 @@ export function watchApiOrigin(page: Page) {
   });
 }
 
-/**
- * `SMOKE_TEST_CLEANUP_URL` is an absolute URL on the same backend, so its
- * origin answers the question even when nothing else is configured and no page
- * has made a call yet — which is exactly the state an `afterAll` runs in.
- */
-const cleanupApiOrigin = () => {
-  const url = process.env.SMOKE_TEST_CLEANUP_URL;
+const LOCAL_API_BASE_URL = 'http://localhost:3000';
+
+const originOf = (url: string | undefined) => {
   if (!url) return undefined;
   try {
     return new URL(url).origin;
@@ -34,41 +30,58 @@ const cleanupApiOrigin = () => {
   }
 };
 
-export const apiBaseUrl = () =>
-  process.env.SMOKE_TEST_API_BASE_URL ||
-  process.env.VITE_API_BASE_URL ||
-  observedApiOrigin ||
-  cleanupApiOrigin() ||
-  'http://localhost:3000';
-
-/** Fails loudly instead of silently querying `localhost` from a CI runner. */
-export const requireApiBaseUrl = () => {
-  const baseUrl = apiBaseUrl();
-  if (/localhost|127\.0\.0\.1/.test(baseUrl) && process.env.CI) {
-    throw new Error(
-      'API base URL is unknown: no /public or /private request was observed and SMOKE_TEST_API_BASE_URL is unset',
-    );
-  }
-  return baseUrl;
-};
+const pointsAtLocalhost = (url: string) =>
+  /^(https?:\/\/)?(localhost|127\.0\.0\.1|\[::1\])(:\d+)?(\/|$)/.test(url);
 
 /**
- * The one API login path in the suite.
- *
- * It insists on a known origin: the buyer specs never call `watchApiOrigin`,
- * so an `afterAll` that logs in used to reach `http://localhost:3000` from the
- * runner and fail with ECONNREFUSED, blaming whichever test happened to be
- * last. A named error beats a connection refused.
+ * Where the API lives, in decreasing order of how much the value can be
+ * trusted. `SMOKE_TEST_CLEANUP_URL` is an absolute URL on the same backend, so
+ * its origin answers the question in exactly the state an `afterAll` runs in —
+ * and it is checked before the observed origin, because configuration outranks
+ * inference.
  */
+const resolveApiBaseUrl = () =>
+  process.env.SMOKE_TEST_API_BASE_URL ||
+  process.env.VITE_API_BASE_URL ||
+  originOf(process.env.SMOKE_TEST_CLEANUP_URL) ||
+  observedApiOrigin;
+
+/**
+ * The API origin, or a thrown configuration error — never a quiet fall back to
+ * `localhost` while the suite runs against a deployed frontend. That fallback
+ * turned a missing environment variable into `ECONNREFUSED ::1:3000` inside
+ * `afterAll`, which reads like a broken test rather than a broken config.
+ */
+export const apiBaseUrl = () => {
+  const resolved = resolveApiBaseUrl();
+  if (resolved) return resolved;
+
+  // No local backend is reachable from a CI runner, and a run against a
+  // deployed frontend has no business talking to one anywhere.
+  const frontendUrl = process.env.SMOKE_TEST_BASE_URL;
+  if (process.env.CI || (frontendUrl && !pointsAtLocalhost(frontendUrl))) {
+    throw new Error(
+      'Cannot resolve the API base URL: set SMOKE_TEST_API_BASE_URL (or SMOKE_TEST_CLEANUP_URL, whose origin is used) ' +
+        `— refusing to fall back to ${LOCAL_API_BASE_URL}${frontendUrl ? ` while testing ${frontendUrl}` : ''}`,
+    );
+  }
+  return LOCAL_API_BASE_URL;
+};
 
 export type TokenPair = { access_token: string; refresh_token: string };
 
+/**
+ * The one API login path in the suite. `loginAsOrganizer` drives the real login
+ * screen because that flow is itself under test; this is for the callers that
+ * only need a bearer token — the cleanup in `afterAll`, which has no page, and
+ * so no observed origin either.
+ */
 export async function loginViaApi(
   request: APIRequestContext,
   credentials: { email: string; password: string },
   label = 'Smoke user',
 ) {
-  const response = await request.post(`${requireApiBaseUrl()}/public/login`, {
+  const response = await request.post(`${apiBaseUrl()}/public/login`, {
     data: { email: credentials.email, password: credentials.password },
   });
   expect(response.ok(), `${label} login failed (${response.status()})`).toBeTruthy();

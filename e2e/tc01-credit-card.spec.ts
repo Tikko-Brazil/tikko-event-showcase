@@ -8,7 +8,7 @@ import {
 } from './helpers/checkout';
 import { TEST_EVENT } from './fixtures/test-events';
 import { MERCADO_PAGO_CARDS, requireCard } from './fixtures/mercadopago-cards';
-import { uniqueTestEmail } from './fixtures/test-users';
+import { issuedSmokeEmails, smokeEmail, smokeIdentification } from './fixtures/test-users';
 
 const requireConfiguration = () => {
   const missing = [
@@ -26,12 +26,17 @@ async function completeCreditCardCheckout(page: Page, email: string) {
   attachCheckoutDiagnostics(page);
   await openEventCheckout(page, TEST_EVENT.slug, TEST_EVENT.ticketPricingId);
 
+  // One document per buyer: same card, same amount and the same payer a few
+  // times over gets the later payments refused as duplicates, which would
+  // undo the per-attempt address below on the very retry it exists for.
+  const identification = smokeIdentification(email);
+
   const checkout = new CheckoutPage(page);
   await checkout.acceptTerms();
-  await checkout.fillUserInfo({ email });
+  await checkout.fillUserInfo({ email, identification });
   await checkout.skipCoupon();
   await checkout.selectPaymentMethod('credit');
-  await checkout.fillCard(requireCard(MERCADO_PAGO_CARDS.approved), email);
+  await checkout.fillCard({ ...requireCard(MERCADO_PAGO_CARDS.approved), identification }, email);
 
   try {
     await expect(checkout.dialog.getByText(/confirma[cç][aã]o da compra/i)).toBeVisible();
@@ -50,15 +55,15 @@ test.beforeEach(() => requireConfiguration());
 test.afterAll(async () => {
   const request = await playwrightRequest.newContext();
   try {
-    await cleanupTestData(request, [TEST_EVENT.id]);
+    await cleanupTestData(request, [TEST_EVENT.id], issuedSmokeEmails());
   } finally {
     await request.dispose();
   }
 });
 
 test.describe('TC-01: compra com cartão de crédito', () => {
-  test('completa a compra com cartão de teste aprovado', async ({ page }) => {
-    await completeCreditCardCheckout(page, uniqueTestEmail('tc01-approved'));
+  test('completa a compra com cartão de teste aprovado', async ({ page }, testInfo) => {
+    await completeCreditCardCheckout(page, smokeEmail('tc01-approved', testInfo.retry));
 
     const registration = page.waitForResponse((response) =>
       new URL(response.url()).pathname === '/public/user/register-and-join-event' && response.request().method() === 'POST',
@@ -69,8 +74,8 @@ test.describe('TC-01: compra com cartão de crédito', () => {
     await expect(page.getByRole('dialog').getByText(/compra realizada/i).last()).toBeVisible();
   });
 
-  test('envia token e dados de pagamento no payload de registro', async ({ page }) => {
-    await completeCreditCardCheckout(page, uniqueTestEmail('tc01-payload'));
+  test('envia token e dados de pagamento no payload de registro', async ({ page }, testInfo) => {
+    await completeCreditCardCheckout(page, smokeEmail('tc01-payload', testInfo.retry));
 
     const registration = page.waitForResponse((response) =>
       new URL(response.url()).pathname === '/public/user/register-and-join-event' && response.request().method() === 'POST',
