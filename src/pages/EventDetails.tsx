@@ -36,7 +36,6 @@ import { formatEventDate, formatEventTime } from "@/lib/utils";
 import getEventIdFromSlug from "@/helpers/getEventIdFromSlug";
 import heroImage from "@/assets/hero-event-image.jpg";
 import { usePostHog } from '@posthog/react'
-import { CheckoutOverlay } from "@/components/CheckoutOverlay";
 
 const eventGateway = new EventGateway(import.meta.env.VITE_API_BASE_URL);
 const geocodingGateway = new GeocodingGateway();

@@ -130,6 +130,56 @@ export function collectPageErrors(page: Page): string[] {
   return errors;
 }
 
+export type SmokeEvent = { slug: string; id: number; ticketPricingId: number };
+
+/**
+ * A full card checkout, from the event page to the registration response. The
+ * organizer specs need a real paid participant before they have anything to
+ * accept, reject or refund, so the buyer half of those flows lives here rather
+ * than being copied into each one.
+ */
+export async function purchaseWithCard(
+  page: Page,
+  event: SmokeEvent,
+  email: string,
+  card: MercadoPagoCard,
+) {
+  attachCheckoutDiagnostics(page);
+  await openEventCheckout(page, event.slug, event.ticketPricingId);
+
+  const checkout = new CheckoutPage(page);
+  await checkout.acceptTerms();
+  await checkout.fillUserInfo({ email });
+  await checkout.skipCoupon();
+  await checkout.selectPaymentMethod('credit');
+  await checkout.fillCard(card, email);
+
+  try {
+    await expect(checkout.dialog.getByText(/confirma[cç][aã]o da compra/i)).toBeVisible();
+  } catch (error) {
+    // Tokenization failures leave the card form on screen with inline errors,
+    // and this step only ever runs in CI — dump the DOM before rethrowing.
+    console.log(`[checkout] frames after submitting the card:\n${await describeCheckoutFrames(page)}`);
+    console.log(`[checkout] dialog text after submitting the card:\n${await checkout.dialog.innerText()}`);
+    throw error;
+  }
+
+  const registration = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === '/public/user/register-and-join-event' &&
+      response.request().method() === 'POST',
+  );
+  await checkout.dialog.getByRole('button', { name: /confirmar e finalizar compra/i }).last().click();
+  const response = await registration;
+  expect(response.ok(), `Registration failed (${response.status()})`).toBeTruthy();
+
+  const body = await response.json();
+  const data = (body.data ?? body) as { user_id: number; event_id: number; payment_id?: string };
+  expect(data.user_id, 'Registration did not return the buyer user id').toBeTruthy();
+
+  return { checkout, response, data };
+}
+
 /** Select the smoke ticket on an event page and open the checkout overlay. */
 export async function openEventCheckout(page: Page, slug: string, ticketPricingId: number) {
   await page.goto(`/event/${slug}`);
