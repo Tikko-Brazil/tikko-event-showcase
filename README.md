@@ -62,7 +62,16 @@ This project is built with:
 
 ## Playwright smoke workflow
 
-The manual `Playwright smoke tests` workflow runs `e2e/tc04-coupon.spec.ts` (TC-04 and TC-04b). It uses the `SMOKE_TEST_BASE_URL` secret when available, or starts Vite on `http://127.0.0.1:4173`; provide a different `frontend_url` to override it.
+The manual `Playwright smoke tests` workflow runs one job per case, so a red suite never hides the others:
+
+| job | spec | covers |
+| --- | --- | --- |
+| TC-01 credit card | `e2e/tc01-credit-card.spec.ts` | approved purchase and the registration payload |
+| TC-02 Pix | `e2e/tc02-pix.spec.ts` | QR Code + polling on both approval flows |
+| TC-04 coupon | `e2e/tc04-coupon.spec.ts` | 100% coupon on both paid events |
+| TC-05 card failures | `e2e/tc05-card-failures.spec.ts` | every declined result, contingency, and the brand matrix |
+
+It uses the `SMOKE_TEST_BASE_URL` secret when available, or starts Vite on `http://127.0.0.1:4173`; provide a different `frontend_url` to override it.
 
 Configure these GitHub Actions repository variables or secrets before dispatching it (the workflow accepts either):
 
@@ -73,6 +82,23 @@ Configure these GitHub Actions repository variables or secrets before dispatchin
 - `SMOKE_TEST_USER_EMAIL`, `SMOKE_TEST_USER_PHONE`, `SMOKE_TEST_USER_IDENTIFICATION`, `SMOKE_TEST_USER_BIRTHDATE`
 
 `SMOKE_TEST_USER_PASSWORD` must be a repository secret. Event slugs and IDs are configuration values, not source-controlled test data. Failed runs upload the Playwright report, traces, screenshots, videos, test results, and the captured smoke log for 14 days.
+
+### Mercado Pago test cards
+
+Card numbers are never committed. Mercado Pago decides the sandbox outcome from the **cardholder name**, so a single card covers every status code (`APRO`, `OTHE`, `CONT`, `CALL`, `FUND`, `SECU`, `EXPI`, `FORM`): `SMOKE_TEST_MP_APPROVED_NUMBER` / `_SECURITY_CODE`, with `SMOKE_TEST_MP_CARD_EXPIRATION_MONTH` / `_YEAR`.
+
+The brand matrix needs one card per brand, from the private Mercado Pago fixture, as repository secrets:
+
+- `SMOKE_TEST_MP_MASTERCARD_NUMBER` / `_SECURITY_CODE`
+- `SMOKE_TEST_MP_VISA_NUMBER` / `_SECURITY_CODE`
+- `SMOKE_TEST_MP_AMEX_NUMBER` / `_SECURITY_CODE`
+- `SMOKE_TEST_MP_ELO_DEBIT_NUMBER` / `_SECURITY_CODE`
+
+A brand with no secret is reported as skipped (with the missing variable named) rather than silently passing.
+
+### Cleanup
+
+`SMOKE_TEST_CLEANUP_URL` is what removes the users, invites and participations a run creates. While it is unset, cleanup is a logged no-op and every run leaves records in production — which is why each case derives a unique e-mail from `GITHUB_RUN_ID`.
 
 ## How can I deploy this project?
 
