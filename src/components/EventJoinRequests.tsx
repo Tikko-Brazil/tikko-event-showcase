@@ -174,7 +174,9 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
   if (error) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-red-500">Error loading join requests</div>
+        <div className="text-red-500" data-testid="join-requests-error">
+          Error loading join requests
+        </div>
       </div>
     );
   }
@@ -210,7 +212,12 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
       {/* Join Requests Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 px-1 sm:px-0">
         {requests.map((request) => (
-          <Card key={request.invite_id} className="relative">
+          <Card
+            key={request.invite_id}
+            className="relative"
+            data-testid="join-request-card"
+            data-user-email={request.user.email}
+          >
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -297,6 +304,7 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
                       variant="outline"
                       size="sm"
                       className="flex-1"
+                      data-testid="join-request-reject"
                       disabled={
                         rejectRequestMutation.isPending ||
                         acceptRequestMutation.isPending
@@ -327,6 +335,7 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
                       </AlertDialogCancel>
                       <AlertDialogAction
                         className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        data-testid="join-request-reject-confirm"
                         onClick={() => onRejectRequest(request.invite_id)}
                       >
                         {t(
@@ -342,6 +351,7 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
                     <Button
                       size="sm"
                       className="flex-1"
+                      data-testid="join-request-accept"
                       disabled={
                         acceptRequestMutation.isPending ||
                         rejectRequestMutation.isPending
@@ -371,6 +381,7 @@ export const EventJoinRequests = ({ eventId }: EventJoinRequestsProps) => {
                         )}
                       </AlertDialogCancel>
                       <AlertDialogAction
+                        data-testid="join-request-accept-confirm"
                         onClick={() => onAcceptRequest(request.invite_id)}
                       >
                         {t(
