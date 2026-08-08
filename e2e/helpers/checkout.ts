@@ -93,6 +93,34 @@ export async function describeCheckoutFrames(page: Page): Promise<string> {
   return lines.join('\n');
 }
 
+/**
+ * The credit card step swallows its failures: `createPayment` only
+ * `console.error`s when the Brick's `getFormData()` rejects, so without this
+ * a tokenization failure is invisible from the outside. Mirror the browser
+ * console and failing Mercado Pago calls into the test output.
+ */
+export function attachCheckoutDiagnostics(page: Page) {
+  const redact = (text: string) => text.replace(/\d{6,}/g, (match) => `<${match.length} digits>`);
+
+  page.on('console', (message) => {
+    if (message.type() === 'error' || message.type() === 'warning') {
+      console.log(`[browser:${message.type()}] ${redact(message.text())}`);
+    }
+  });
+  page.on('pageerror', (error) => console.log(`[browser:pageerror] ${redact(String(error))}`));
+  page.on('response', async (response) => {
+    if (response.status() < 400 || !/mercadopago/i.test(response.url())) return;
+    let body = '';
+    try {
+      body = (await response.text()).slice(0, 500);
+    } catch {
+      body = '<unavailable>';
+    }
+    const path = new URL(response.url()).pathname;
+    console.log(`[mercadopago] ${response.status()} ${path} ${redact(body)}`);
+  });
+}
+
 export class CheckoutPage {
   constructor(private readonly page: Page) {}
 

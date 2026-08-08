@@ -1,5 +1,10 @@
 import { expect, request as playwrightRequest, test, type Page } from '@playwright/test';
-import { cleanupTestData, CheckoutPage, describeCheckoutFrames } from './helpers/checkout';
+import {
+  attachCheckoutDiagnostics,
+  cleanupTestData,
+  CheckoutPage,
+  describeCheckoutFrames,
+} from './helpers/checkout';
 import { TEST_EVENT } from './fixtures/test-events';
 import { MERCADO_PAGO_CARDS, requireCard } from './fixtures/mercadopago-cards';
 import { uniqueTestEmail } from './fixtures/test-users';
@@ -25,6 +30,7 @@ async function selectTicketAndOpenCheckout(page: Page) {
 }
 
 async function completeCreditCardCheckout(page: Page, email: string) {
+  attachCheckoutDiagnostics(page);
   await selectTicketAndOpenCheckout(page);
 
   const checkout = new CheckoutPage(page);
@@ -42,6 +48,20 @@ async function completeCreditCardCheckout(page: Page, email: string) {
     // CI gives us into a production-only flow.
     console.log(`[TC-01] checkout frames after submitting the card:\n${await describeCheckoutFrames(page)}`);
     console.log(`[TC-01] dialog text after submitting the card:\n${await checkout.dialog.innerText()}`);
+    // Ask the Brick itself why it refused to hand over form data. Only on the
+    // failure path, so a working checkout never pays for the extra token.
+    const brickState = await page.evaluate(async () => {
+      const controller = (window as unknown as { cardPaymentBrickController?: { getFormData?: () => Promise<unknown> } })
+        .cardPaymentBrickController;
+      if (!controller?.getFormData) return 'cardPaymentBrickController is not available';
+      try {
+        const formData = await controller.getFormData();
+        return formData ? `getFormData keys: ${Object.keys(formData).join(', ')}` : 'getFormData resolved null';
+      } catch (brickError) {
+        return `getFormData rejected: ${JSON.stringify(brickError, Object.getOwnPropertyNames(Object(brickError)))}`;
+      }
+    });
+    console.log(`[TC-01] brick state: ${brickState}`);
     throw error;
   }
 }
