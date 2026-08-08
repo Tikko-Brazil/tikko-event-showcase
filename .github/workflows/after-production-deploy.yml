@@ -1,0 +1,29 @@
+name: Smoke tests after production deploy
+
+# The frontend is deployed by Vercel, not by a workflow in this repository, so
+# there is no deploy job to hang the smoke tests off. Vercel does create a
+# GitHub Deployment for every build, and its status turning `success` on the
+# Production environment is the real "frontend is live" signal — that is what
+# triggers the suite here.
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    # Preview deployments (one per pull request) share the production database
+    # and the single test account, so only Production is worth smoking.
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      (github.event.deployment.environment == 'Production' ||
+       github.event.deployment.environment == 'production')
+    uses: ./.github/workflows/smoke-tests.yml
+    secrets: inherit
+    with:
+      # Deliberately empty: SMOKE_TEST_BASE_URL is the stable production
+      # hostname, while a Vercel environment_url can be a per-build alias that
+      # the payment provider's allowed origins do not cover.
+      frontend_url: ''
+      trigger_id: frontend-deploy-${{ github.event.deployment.sha }}
