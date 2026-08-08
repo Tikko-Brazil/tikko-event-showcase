@@ -7,6 +7,19 @@ const uniqueConfiguredEmail = configuredEmail
     })()
   : undefined;
 
+/**
+ * The registered account behind `SMOKE_TEST_USER_EMAIL` — the standard test
+ * user, and the only address in the suite that has a password.
+ *
+ * Every buyer below is a `+smoke-<run id>` alias of it, created by the checkout
+ * with no password at all, so `TEST_USER.email` can never log in. Anything that
+ * needs a session (the cleanup in `afterAll`) authenticates as this account.
+ */
+export const TEST_ACCOUNT = {
+  email: configuredEmail || '',
+  password: process.env.SMOKE_TEST_USER_PASSWORD || '',
+};
+
 export const TEST_USER = {
   email: uniqueConfiguredEmail || `smoke-test+${runId}@tikko.com.br`,
   password: process.env.SMOKE_TEST_USER_PASSWORD || '',
@@ -68,8 +81,10 @@ export const smokeIdentification = (seed: string) => {
 };
 
 export const requireTestUserCredentials = () => {
-  if (!TEST_USER.password) {
-    throw new Error('SMOKE_TEST_USER_PASSWORD must be configured for smoke tests');
+  if (!TEST_ACCOUNT.email || !TEST_ACCOUNT.password) {
+    throw new Error(
+      'SMOKE_TEST_USER_EMAIL and SMOKE_TEST_USER_PASSWORD must be configured for smoke tests',
+    );
   }
-  return TEST_USER;
+  return TEST_ACCOUNT;
 };
