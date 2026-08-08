@@ -660,6 +660,7 @@ export default function EventDetails() {
         eventId={event.id}
         ticketPricingId={selectedTicketData?.id || 0}
         autoAccept={event.auto_accept}
+        orgIsTest={eventData.org_is_test}
         initialCoupon={selectedTicketData?.coupon || undefined}
         initialDiscount={
           selectedTicketData?.coupon && selectedTicketData?.discount !== undefined
