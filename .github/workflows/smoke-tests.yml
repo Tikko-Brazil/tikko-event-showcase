@@ -81,6 +81,9 @@ jobs:
       SMOKE_TEST_MANUAL_APPROVAL_TICKET_PRICING_ID: ${{ secrets.SMOKE_TEST_MANUAL_APPROVAL_TICKET_PRICING_ID || vars.SMOKE_TEST_MANUAL_APPROVAL_TICKET_PRICING_ID }}
       SMOKE_TEST_COUPON_CODE: ${{ secrets.SMOKE_TEST_COUPON_CODE || vars.SMOKE_TEST_COUPON_CODE }}
       SMOKE_TEST_CLEANUP_URL: ${{ secrets.SMOKE_TEST_CLEANUP_URL || vars.SMOKE_TEST_CLEANUP_URL }}
+      # Shared secret for the cleanup endpoint. Secret only — it is what stands
+      # between a public URL and a delete in production.
+      SMOKE_TEST_CLEANUP_TOKEN: ${{ secrets.SMOKE_TEST_CLEANUP_TOKEN }}
       SMOKE_TEST_USER_EMAIL: ${{ secrets.SMOKE_TEST_USER_EMAIL || vars.SMOKE_TEST_USER_EMAIL }}
       SMOKE_TEST_USER_PASSWORD: ${{ secrets.SMOKE_TEST_USER_PASSWORD }}
       SMOKE_TEST_USER_PHONE: ${{ secrets.SMOKE_TEST_USER_PHONE || vars.SMOKE_TEST_USER_PHONE }}
