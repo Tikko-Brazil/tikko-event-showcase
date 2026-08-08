@@ -89,7 +89,10 @@ jobs:
       SMOKE_TEST_USER_IDENTIFICATION: ${{ secrets.SMOKE_TEST_USER_IDENTIFICATION || vars.SMOKE_TEST_USER_IDENTIFICATION }}
       SMOKE_TEST_USER_BIRTHDATE: ${{ secrets.SMOKE_TEST_USER_BIRTHDATE || vars.SMOKE_TEST_USER_BIRTHDATE }}
       # Public Mercado Pago sandbox card; repository secrets can override it.
-      SMOKE_TEST_MP_APPROVED_NUMBER: ${{ secrets.SMOKE_TEST_MP_APPROVED_NUMBER || '5031433215406351' }}
+      # Visa, not the Mastercard sandbox card: payment_methods/search returns
+      # no issuer for BIN 503143 on this test account, so tokenization failed
+      # with ISSUER_NOT_FOUND. BIN 423564 resolves to issuer 25 / "visa".
+      SMOKE_TEST_MP_APPROVED_NUMBER: ${{ secrets.SMOKE_TEST_MP_APPROVED_NUMBER || '4235647728025682' }}
       SMOKE_TEST_MP_APPROVED_SECURITY_CODE: ${{ secrets.SMOKE_TEST_MP_APPROVED_SECURITY_CODE || '123' }}
       SMOKE_TEST_MP_APPROVED_IDENTIFICATION: ${{ secrets.SMOKE_TEST_MP_APPROVED_IDENTIFICATION || vars.SMOKE_TEST_MP_APPROVED_IDENTIFICATION }}
       SMOKE_TEST_MP_CARD_EXPIRATION_MONTH: ${{ secrets.SMOKE_TEST_MP_CARD_EXPIRATION_MONTH || vars.SMOKE_TEST_MP_CARD_EXPIRATION_MONTH || '11' }}
