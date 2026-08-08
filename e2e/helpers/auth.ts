@@ -36,17 +36,31 @@ export const requireApiBaseUrl = () => {
   return baseUrl;
 };
 
-export async function loginAsSmokeUser(request: APIRequestContext) {
-  const user = requireTestUserCredentials();
+export type TokenPair = { access_token: string; refresh_token: string };
+
+/**
+ * The one API login path in the suite. `loginAsOrganizer` drives the real
+ * login screen because that flow is itself under test; this is for the callers
+ * that only need a bearer token (the cleanup in `afterAll`, which has no page).
+ */
+export async function loginViaApi(
+  request: APIRequestContext,
+  credentials: { email: string; password: string },
+  label = 'Smoke user',
+) {
   const response = await request.post(`${apiBaseUrl()}/public/login`, {
-    data: { email: user.email, password: user.password },
+    data: { email: credentials.email, password: credentials.password },
   });
-  expect(response.ok(), `Smoke user login failed (${response.status()})`).toBeTruthy();
+  expect(response.ok(), `${label} login failed (${response.status()})`).toBeTruthy();
   const body = await response.json();
   if (!body.token_pair?.access_token || !body.token_pair?.refresh_token) {
     throw new Error('Login response did not contain a token pair');
   }
-  return body.token_pair as { access_token: string; refresh_token: string };
+  return body.token_pair as TokenPair;
+}
+
+export function loginAsSmokeUser(request: APIRequestContext) {
+  return loginViaApi(request, requireTestUserCredentials());
 }
 
 export async function authenticateContext(context: BrowserContext, request: APIRequestContext) {
