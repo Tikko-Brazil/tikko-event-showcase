@@ -11,7 +11,7 @@ import {
   readAccessToken,
   requireOrganizerCredentials,
 } from './helpers/organizer';
-import { requireApiBaseUrl } from './helpers/auth';
+import { apiBaseUrl } from './helpers/auth';
 import { MANUAL_APPROVAL_EVENT } from './fixtures/test-events';
 import { MERCADO_PAGO_CARDS, requireCard } from './fixtures/mercadopago-cards';
 import { issuedSmokeEmails, smokeEmail } from './fixtures/test-users';
@@ -96,7 +96,7 @@ test.describe('TC-06: aceitar solicitação de participação', () => {
     const token = await readAccessToken(organizerView);
     const api = await playwrightRequest.newContext();
     try {
-      const invites = await api.get(`${requireApiBaseUrl()}/private/invite/user/${data.user_id}`, {
+      const invites = await api.get(`${apiBaseUrl()}/private/invite/user/${data.user_id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       expect(invites.ok(), `Buyer invite lookup failed (${invites.status()})`).toBeTruthy();

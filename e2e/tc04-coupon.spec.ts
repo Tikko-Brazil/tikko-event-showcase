@@ -1,7 +1,9 @@
 import { expect, request as playwrightRequest, test, type Page } from '@playwright/test';
-import { cleanupTestData, openEventCheckout } from './helpers/checkout';
+import { CheckoutPage, cleanupTestData, openEventCheckout } from './helpers/checkout';
 import { TEST_EVENT, MANUAL_APPROVAL_EVENT } from './fixtures/test-events';
-import { TEST_USER } from './fixtures/test-users';
+import { issuedSmokeEmails, smokeEmail, smokeIdentification } from './fixtures/test-users';
+
+const couponCode = () => process.env.SMOKE_TEST_COUPON_CODE || 'SMOKETEST100';
 
 const requireConfiguration = () => {
   const missing = [
@@ -15,7 +17,13 @@ const requireConfiguration = () => {
   if (missing.length) throw new Error(`Missing smoke-test configuration: ${missing.map(([name]) => name).join(', ')}`);
 };
 
-async function completeFreeCheckout(page: Page, slug: string, ticketPricingId: number, expectedMessage: RegExp) {
+async function completeFreeCheckout(
+  page: Page,
+  slug: string,
+  ticketPricingId: number,
+  email: string,
+  expectedMessage: RegExp,
+) {
   // A 100% coupon must settle entirely inside Tikko: no Mercado Pago call at
   // all, on either approval flow.
   let mercadoPagoRequests = 0;
@@ -25,35 +33,14 @@ async function completeFreeCheckout(page: Page, slug: string, ticketPricingId: n
 
   await openEventCheckout(page, slug, ticketPricingId);
 
-  const dialog = page.getByRole('dialog');
-  await dialog.getByRole('checkbox').check();
-  await dialog.getByRole('button', { name: /^continuar$/i }).click();
+  // The user-info step is shared with every other buyer flow, including the
+  // retry loop that survives Formik reinitializing the coupled email fields.
+  const checkout = new CheckoutPage(page);
+  const { dialog } = checkout;
+  await checkout.acceptTerms();
+  await checkout.fillUserInfo({ email, identification: smokeIdentification(email) });
 
-  await dialog.locator('#fullName').fill(TEST_USER.fullName);
-  const email = dialog.locator('#email');
-  const confirmEmail = dialog.locator('#confirmEmail');
-  await dialog.locator('#phone').fill(TEST_USER.phone);
-  await dialog.locator('#confirmPhone').fill(TEST_USER.phone);
-  await dialog.locator('#identification').fill(TEST_USER.identification);
-  await dialog.locator('#birthdate').fill(TEST_USER.birthdate);
-  await dialog.locator('#instagram').fill('smoke_test');
-  // Enter the coupled email fields after the other fields. Their Formik
-  // parent sync can reinitialize a field while focus moves between inputs.
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    await email.fill(TEST_USER.email);
-    await confirmEmail.fill(TEST_USER.email);
-    if (await email.inputValue() === TEST_USER.email && await confirmEmail.inputValue() === TEST_USER.email) break;
-  }
-  await expect(email).toHaveValue(TEST_USER.email);
-  await expect(confirmEmail).toHaveValue(TEST_USER.email);
-  const userInfoContinue = dialog.getByRole('button', { name: /^continuar$/i });
-  // The form validates on blur; explicitly leave the last field before
-  // asserting that Formik has enabled the next step.
-  await dialog.locator('#instagram').press('Tab');
-  await expect(userInfoContinue).toBeEnabled();
-  await userInfoContinue.click();
-
-  await dialog.locator('#coupon').fill(process.env.SMOKE_TEST_COUPON_CODE || 'SMOKETEST100');
+  await dialog.locator('#coupon').fill(couponCode());
   await dialog.getByRole('button', { name: /aplicar/i }).click();
   await expect(dialog.getByText(/cupom .* aplicado/i)).toBeVisible();
   await expect(dialog.getByText('Total').last().locator('..')).toContainText('R$ 0,00');
@@ -69,7 +56,7 @@ async function completeFreeCheckout(page: Page, slug: string, ticketPricingId: n
   const registrationResponse = await registration;
   expect(registrationResponse.ok(), `Registration failed (${registrationResponse.status()})`).toBeTruthy();
   const payload = registrationResponse.request().postDataJSON();
-  expect(payload.coupon).toBe((process.env.SMOKE_TEST_COUPON_CODE || 'SMOKETEST100').toUpperCase());
+  expect(payload.coupon).toBe(couponCode().toUpperCase());
   expect(payload.payment.transaction_amount).toBe(0);
   expect(payload.payment.payment_method_id).toBe('free');
   expect(payload.payment.token).toBe('');
@@ -82,16 +69,28 @@ test.beforeEach(() => requireConfiguration());
 test.afterAll(async () => {
   const request = await playwrightRequest.newContext();
   try {
-    await cleanupTestData(request, [TEST_EVENT.id, MANUAL_APPROVAL_EVENT.id]);
+    await cleanupTestData(request, [TEST_EVENT.id, MANUAL_APPROVAL_EVENT.id], issuedSmokeEmails());
   } finally {
     await request.dispose();
   }
 });
 
-test('TC-04: 100% coupon on auto-accept event skips external payment', async ({ page }) => {
-  await completeFreeCheckout(page, TEST_EVENT.slug, TEST_EVENT.ticketPricingId, /compra realizada/i);
+test('TC-04: 100% coupon on auto-accept event skips external payment', async ({ page }, testInfo) => {
+  await completeFreeCheckout(
+    page,
+    TEST_EVENT.slug,
+    TEST_EVENT.ticketPricingId,
+    smokeEmail('tc04-auto', testInfo.retry),
+    /compra realizada/i,
+  );
 });
 
-test('TC-04b: 100% coupon preserves manual approval flow', async ({ page }) => {
-  await completeFreeCheckout(page, MANUAL_APPROVAL_EVENT.slug, MANUAL_APPROVAL_EVENT.ticketPricingId, /solicita[cç][aã]o enviada/i);
+test('TC-04b: 100% coupon preserves manual approval flow', async ({ page }, testInfo) => {
+  await completeFreeCheckout(
+    page,
+    MANUAL_APPROVAL_EVENT.slug,
+    MANUAL_APPROVAL_EVENT.ticketPricingId,
+    smokeEmail('tc04-manual', testInfo.retry),
+    /solicita[cç][aã]o enviada/i,
+  );
 });

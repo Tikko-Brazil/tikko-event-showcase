@@ -215,11 +215,19 @@ export class CheckoutPage {
 
   async fillUserInfo(overrides: Partial<typeof TEST_USER> = {}) {
     const user = { ...TEST_USER, ...overrides };
+    const email = this.dialog.locator('#email');
+    await expect(email).toBeVisible();
+
     // The coupled email fields can be reinitialized by their Formik parent
     // while focus moves between inputs, which silently drops a value and
-    // leaves the step invalid. Filling is idempotent, so retry the whole form
-    // until Formik actually enables the next step.
+    // leaves the step invalid — Formik then disables Continue again, and it can
+    // do that between the assertion that it is enabled and the click. So the
+    // click belongs inside the retry, with leaving the step as the condition
+    // that ends it. Filling is idempotent, and the guard below makes a second
+    // pass a no-op once the step is behind us.
     await expect(async () => {
+      if (!(await email.isVisible())) return;
+
       await this.dialog.locator('#fullName').fill(user.fullName);
       await this.dialog.locator('#phone').fill(user.phone);
       await this.dialog.locator('#confirmPhone').fill(user.phone);
@@ -228,17 +236,17 @@ export class CheckoutPage {
       // Instagram is required on this step; leaving it empty keeps the step
       // invalid and the Continue button disabled.
       await this.dialog.locator('#instagram').fill(user.instagram);
-      await this.dialog.locator('#email').fill(user.email);
+      await email.fill(user.email);
       await this.dialog.locator('#confirmEmail').fill(user.email);
       // The form validates on blur; leave the last field before asserting.
       await this.dialog.locator('#instagram').press('Tab');
 
-      await expect(this.dialog.locator('#email')).toHaveValue(user.email, { timeout: 2_000 });
+      await expect(email).toHaveValue(user.email, { timeout: 2_000 });
       await expect(this.dialog.locator('#confirmEmail')).toHaveValue(user.email, { timeout: 2_000 });
       await expect(this.continueButton).toBeEnabled({ timeout: 2_000 });
+      await this.continueButton.click({ timeout: 5_000 });
+      await expect(email).toBeHidden({ timeout: 5_000 });
     }).toPass({ timeout: 45_000 });
-
-    await this.continueButton.click();
   }
 
   async applyCoupon(code: string) {
