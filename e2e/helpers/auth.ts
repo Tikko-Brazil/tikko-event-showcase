@@ -59,8 +59,9 @@ export async function loginViaApi(
   return body.token_pair as TokenPair;
 }
 
+/** The standard test user — `SMOKE_TEST_USER_EMAIL`, not a per-run buyer alias. */
 export function loginAsSmokeUser(request: APIRequestContext) {
-  return loginViaApi(request, requireTestUserCredentials());
+  return loginViaApi(request, requireTestUserCredentials(), 'Smoke test user');
 }
 
 export async function authenticateContext(context: BrowserContext, request: APIRequestContext) {
