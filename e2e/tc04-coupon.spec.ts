@@ -35,7 +35,7 @@ async function completeFreeCheckout(page: Page, slug: string, ticketPricingId: n
   await dialog.locator('#confirmPhone').fill(TEST_USER.phone);
   await dialog.locator('#identification').fill(TEST_USER.identification);
   await dialog.locator('#birthdate').fill(TEST_USER.birthdate);
-  await dialog.locator('#instagram').fill('');
+  await dialog.locator('#instagram').fill('smoke_test');
   await dialog.getByRole('button', { name: /^continuar$/i }).click();
 
   await dialog.locator('#coupon').fill(process.env.SMOKE_TEST_COUPON_CODE || 'SMOKETEST100');
@@ -64,7 +64,7 @@ async function completeFreeCheckout(page: Page, slug: string, ticketPricingId: n
 test.beforeEach(() => requireConfiguration());
 
 test.afterAll(async () => {
-  const request = await playwrightRequest.newContext({ baseURL: apiBaseUrl });
+  const request = await playwrightRequest.newContext();
   try {
     await cleanupTestData(request, [TEST_EVENT.id, MANUAL_APPROVAL_EVENT.id]);
   } finally {
