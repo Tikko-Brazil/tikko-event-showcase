@@ -29,10 +29,12 @@ async function completeFreeCheckout(page: Page, slug: string, ticketPricingId: n
   await dialog.getByRole('button', { name: /^continuar$/i }).click();
 
   await dialog.locator('#fullName').fill(TEST_USER.fullName);
-  await dialog.locator('#confirmEmail').fill(TEST_USER.email);
-  // Fill the primary email last: blurring it triggers the form's parent sync,
-  // which otherwise can reinitialize the field before the confirmation is set.
-  await dialog.locator('#email').fill(TEST_USER.email);
+  const email = dialog.locator('#email');
+  const confirmEmail = dialog.locator('#confirmEmail');
+  await email.fill(TEST_USER.email);
+  await expect(email).toHaveValue(TEST_USER.email);
+  await confirmEmail.fill(TEST_USER.email);
+  await expect(confirmEmail).toHaveValue(TEST_USER.email);
   await dialog.locator('#phone').fill(TEST_USER.phone);
   await dialog.locator('#confirmPhone').fill(TEST_USER.phone);
   await dialog.locator('#identification').fill(TEST_USER.identification);
