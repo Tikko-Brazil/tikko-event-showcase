@@ -1,0 +1,230 @@
+name: Security
+
+on:
+  pull_request:
+    branches: [main, release]
+  push:
+    branches: [main, release]
+  # New advisories land against code that has not changed, so a PR-only trigger
+  # would let the repository drift out of compliance silently.
+  schedule:
+    - cron: '23 6 * * 1'
+  workflow_dispatch:
+
+# Read-only by default. Jobs that publish SARIF widen this for themselves and
+# nothing here ever needs write access to repository contents.
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: '20'
+  GITLEAKS_VERSION: v8.30.1
+
+jobs:
+  secrets:
+    name: Secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          # Needed for the pull request range and the history report below.
+          fetch-depth: 0
+
+      # Blocking. Everything currently tracked in the repository must be clean.
+      # --redact=100 replaces every match with "REDACTED" in both stdout and the
+      # report, so a leak never becomes a second leak in the run log.
+      - name: Scan repository content
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo \
+            "ghcr.io/gitleaks/gitleaks:${GITLEAKS_VERSION}" \
+            dir . --config .gitleaks.toml --no-banner --redact=100 --exit-code 1 \
+            --report-format sarif --report-path gitleaks.sarif
+
+      # Blocking. Catches a secret that is added and removed within the same
+      # pull request, which the content scan above cannot see. This repository
+      # is public, so anything that lands here is world-readable immediately.
+      - name: Scan pull request commits
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git fetch --no-tags --quiet origin "$BASE_SHA" "$HEAD_SHA" 2>/dev/null || true
+          docker run --rm -v "$PWD:/repo" -w /repo \
+            "ghcr.io/gitleaks/gitleaks:${GITLEAKS_VERSION}" \
+            git --config .gitleaks.toml --no-banner --redact=100 --exit-code 1 \
+            --log-opts="${BASE_SHA}..${HEAD_SHA}"
+
+      # Report only, on purpose. History cannot be cleaned by the pull request
+      # being reviewed: a committed secret is fixed by rotating the credential,
+      # not by editing the commit. Blocking here would make every pull request
+      # red for a reason no author can act on. See SECURITY.md.
+      - name: Report secrets in git history
+        if: always()
+        run: |
+          docker run --rm -v "$PWD:/repo" -w /repo \
+            "ghcr.io/gitleaks/gitleaks:${GITLEAKS_VERSION}" \
+            git --config .gitleaks.toml --no-banner --redact=100 --exit-code 0 \
+            --report-format json --report-path gitleaks-history.json || true
+
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, pathlib
+          report = pathlib.Path("gitleaks-history.json")
+          findings = json.loads(report.read_text() or "[]") if report.exists() else []
+          print("## Secrets in git history\n")
+          if not findings:
+              print("No historical findings.")
+          else:
+              print(f"**{len(findings)}** finding(s) in past commits. These are not")
+              print("fixed by a code change — the credential must be rotated.")
+              print("See SECURITY.md > Credential rotation.\n")
+              print("| Rule | File | Commit |")
+              print("| --- | --- | --- |")
+              for f in findings:
+                  # Never the secret itself, redacted or not.
+                  print(f"| `{f.get('RuleID')}` | `{f.get('File')}` | `{str(f.get('Commit'))[:12]}` |")
+          PY
+
+      - name: Publish findings to code scanning
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: gitleaks.sarif
+          category: gitleaks
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            gitleaks.sarif
+            gitleaks-history.json
+          retention-days: 14
+
+  sast:
+    name: SAST
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+
+      # upload: false so that the SARIF is on disk for the gate step. This
+      # repository is public, so the publish step below does reach the Security
+      # tab, but the exit code is what makes SAST a real check.
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:javascript-typescript
+          output: codeql-results
+          upload: false
+
+      - name: Publish findings to code scanning
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: codeql-results
+          category: /language:javascript-typescript
+
+      # CodeQL never fails a run by itself, so without this step SAST would be a
+      # green check that enforces nothing.
+      - name: Enforce severity threshold
+        run: python3 .github/scripts/codeql_gate.py codeql-results
+
+      - name: Upload CodeQL results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-${{ github.run_id }}
+          if-no-files-found: warn
+          path: codeql-results
+          retention-days: 14
+
+  dependencies:
+    name: Dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # package-lock.json is the source of truth here — the smoke test workflow
+      # installs with `npm ci`, so auditing the lockfile audits what is built
+      # and deployed. bun.lockb is not used by any pipeline.
+      - name: Verify lockfile is installable
+        run: npm ci --ignore-scripts
+
+      # Blocking. Runtime dependencies are the ones that end up in the bundle
+      # served to users.
+      - name: Enforce no high or critical vulnerabilities in runtime deps
+        run: npm audit --omit=dev --audit-level=high
+
+      # Report only. Build tooling (vite, rollup, eslint, playwright) never
+      # reaches a browser, and several of its advisories have no fixed release,
+      # so blocking on them would produce a permanently red required check.
+      # They are still surfaced so the debt stays visible.
+      - name: Report build-tooling vulnerabilities
+        if: always()
+        run: |
+          npm audit --json > npm-audit.json || true
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, pathlib
+          raw = pathlib.Path("npm-audit.json").read_text() or "{}"
+          data = json.loads(raw)
+          counts = data.get("metadata", {}).get("vulnerabilities", {})
+          vulns = data.get("vulnerabilities", {})
+          print("## Dependency audit (full tree, report only)\n")
+          print(f"Totals: {counts}\n")
+          rows = [
+              (name, v.get("severity"), v.get("range", ""))
+              for name, v in sorted(vulns.items())
+              if v.get("severity") in ("high", "critical")
+          ]
+          if rows:
+              print("| Package | Severity | Vulnerable range |")
+              print("| --- | --- | --- |")
+              for name, sev, rng in rows:
+                  print(f"| `{name}` | {sev} | `{rng}` |")
+          else:
+              print("No high or critical advisories in the full tree.")
+          PY
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-${{ github.run_id }}
+          if-no-files-found: warn
+          path: npm-audit.json
+          retention-days: 14
