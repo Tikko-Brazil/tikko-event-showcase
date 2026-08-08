@@ -247,7 +247,10 @@ export class CheckoutPage {
     if (!(await this.fillExpiration(card))) unfilled.push('expirationDate');
 
     if (!(await this.typeBrickField('securityCode', card.securityCode, 10_000))) unfilled.push('securityCode');
-    if (!(await this.typeBrickField('cardholderName', `TEST ${card.paymentStatus}`, 10_000))) {
+    // Mercado Pago drives the sandbox payment outcome from the cardholder
+    // name, so the status code has to lead; the checkout also requires a
+    // surname.
+    if (!(await this.typeBrickField('cardholderName', `${card.paymentStatus} Teste`, 10_000))) {
       unfilled.push('cardholderName');
     }
     if (!(await this.typeBrickField('cardholderEmail', payerEmail, 10_000))) unfilled.push('cardholderEmail');
