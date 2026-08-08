@@ -1,5 +1,4 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -19,9 +18,6 @@ export const PaymentMethodStep: React.FC<PaymentMethodStepProps> = ({
   autoAccept,
   onNext
 }) => {
-  const location = useLocation();
-  const isTestRoute = location.pathname.startsWith('/test/event/');
-
   return (
     <div className="space-y-6 pb-60">
       <Card>

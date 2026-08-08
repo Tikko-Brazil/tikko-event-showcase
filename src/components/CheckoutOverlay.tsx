@@ -18,7 +18,6 @@ import { useRegisterAndJoinEvent } from "@/api/user/api";
 import { registerAndJoinEventErrorMessage } from "@/api/user/errors";
 import { AppError } from "@/api/errors";
 import { toast } from "@/hooks/use-toast";
-import { initMercadoPago } from "@mercadopago/sdk-react";
 
 interface CheckoutOverlayProps {
   isOpen: boolean;
@@ -28,9 +27,10 @@ interface CheckoutOverlayProps {
   eventId: number;
   ticketPricingId: number;
   autoAccept?: boolean;
+  /** Test organizations tokenize against the Mercado Pago sandbox key. */
+  orgIsTest?: boolean;
   initialCoupon?: string;
   initialDiscount?: DiscountData;
-  orgIsTest?: boolean;
 }
 
 export interface UserData {
@@ -58,16 +58,10 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
   eventId,
   ticketPricingId,
   autoAccept = true,
+  orgIsTest = false,
   initialCoupon,
   initialDiscount,
-  orgIsTest = false,
 }) => {
-  React.useEffect(() => {
-    const publicKey = orgIsTest
-      ? import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY_TEST
-      : import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
-    if (publicKey) initMercadoPago(publicKey, { locale: "pt-BR" });
-  }, [orgIsTest]);
   const [currentStep, setCurrentStep] = useState(1);
   const [userData, setUserData] = useState<UserData>({
     fullName: "",
@@ -194,9 +188,12 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
         },
       });
 
-      if (result.qr_code) {
-        setQrCode(result.qr_code);
-        setPaymentId(result.payment_id.toString());
+      // Handle nested data structure from backend
+      const responseData = result.data || result;
+      
+      if (responseData.qr_code) {
+        setQrCode(responseData.qr_code);
+        setPaymentId(responseData.payment_id.toString());
         setCurrentStep(8);
       } else {
         handleNext();
@@ -303,6 +300,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             onPaymentDataChange={setPaymentData}
             creditPaymentRef={creditPaymentRef}
             pixPaymentRef={pixPaymentRef}
+            orgIsTest={orgIsTest}
           />
         );
       case 6:
@@ -478,7 +476,7 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             )}
 
             {/* Price Summary Bottom - Mobile - Fixed Position */}
-            {currentStep < 7 && currentStep !== 8 && (
+            {currentStep < 7 && currentStep != 5 && currentStep !== 8 && (
               <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 z-50 min-h-[200px]">
                 <div className="mb-3">
                   <h3 className="text-sm font-semibold text-foreground mb-2">
