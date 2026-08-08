@@ -2,18 +2,22 @@ import { expect, type Frame, type Locator, type Page } from '@playwright/test';
 import type { MercadoPagoCard } from '../fixtures/mercadopago-cards';
 import { TEST_USER } from '../fixtures/test-users';
 
-// The Mercado Pago CardPayment Brick splits its form across several iframes
-// (one per PCI field) plus inputs in the host document, and neither the iframe
-// titles nor the field ids are a documented contract. Instead of pinning one
-// layout, look the field up across every frame using its known aliases.
+// Field ids/names inside the Mercado Pago CardPayment Brick are not a
+// documented contract, and depending on the SDK version the Brick renders its
+// PCI inputs either in the host document or in one iframe per field. Rather
+// than pin one layout, look each field up across every frame by alias.
+//
+// Observed in production (SDK currently in use, single frame, no iframes):
+//   #cardNumber  #expiry  #securityCode  #cardholderName
+//   #email  select#identificationType  #identificationNumber
 const FIELD_ALIASES: Record<string, string[]> = {
   cardNumber: ['cardNumber', 'card-number', 'cardNumberInput'],
-  expirationDate: ['expirationDate', 'expiration-date', 'cardExpirationDate'],
+  expirationDate: ['expiry', 'expirationDate', 'expiration-date', 'cardExpirationDate'],
   expirationMonth: ['expirationMonth', 'cardExpirationMonth'],
   expirationYear: ['expirationYear', 'cardExpirationYear'],
   securityCode: ['securityCode', 'security-code', 'cardSecurityCode'],
   cardholderName: ['cardholderName', 'cardholder-name'],
-  cardholderEmail: ['cardholderEmail', 'cardholder-email', 'payerEmail'],
+  cardholderEmail: ['cardholderEmail', 'cardholder-email', 'payerEmail', 'email'],
   identificationNumber: ['identificationNumber', 'identification-number', 'docNumber'],
 };
 
@@ -73,6 +77,12 @@ export async function describeCheckoutFrames(page: Page): Promise<string> {
           id: element.id || null,
           placeholder: element.getAttribute('placeholder'),
           dataCheckout: element.getAttribute('data-checkout'),
+          // Digits and letters are redacted: the pattern is enough to tell
+          // whether a field was filled and how its mask formatted the value,
+          // without putting card or payer data in a public workflow log.
+          valuePattern: ((element as HTMLInputElement).value || '')
+            .replace(/\d/g, '#')
+            .replace(/[A-Za-z]/g, 'a'),
         })),
       );
       lines.push(`frame name=${JSON.stringify(frame.name())} url=${frame.url()} controls=${JSON.stringify(controls)}`);
@@ -101,26 +111,29 @@ export class CheckoutPage {
 
   async fillUserInfo(overrides: Partial<typeof TEST_USER> = {}) {
     const user = { ...TEST_USER, ...overrides };
-    await this.dialog.locator('#fullName').fill(user.fullName);
-    await this.dialog.locator('#phone').fill(user.phone);
-    await this.dialog.locator('#confirmPhone').fill(user.phone);
-    await this.dialog.locator('#identification').fill(user.identification);
-    await this.dialog.locator('#birthdate').fill(user.birthdate);
-    // Instagram is a required field on this step; leaving it empty keeps the
-    // step invalid and the Continue button disabled.
-    await this.dialog.locator('#instagram').fill(user.instagram);
+    // The coupled email fields can be reinitialized by their Formik parent
+    // while focus moves between inputs, which silently drops a value and
+    // leaves the step invalid. Filling is idempotent, so retry the whole form
+    // until Formik actually enables the next step.
+    await expect(async () => {
+      await this.dialog.locator('#fullName').fill(user.fullName);
+      await this.dialog.locator('#phone').fill(user.phone);
+      await this.dialog.locator('#confirmPhone').fill(user.phone);
+      await this.dialog.locator('#identification').fill(user.identification);
+      await this.dialog.locator('#birthdate').fill(user.birthdate);
+      // Instagram is required on this step; leaving it empty keeps the step
+      // invalid and the Continue button disabled.
+      await this.dialog.locator('#instagram').fill(user.instagram);
+      await this.dialog.locator('#email').fill(user.email);
+      await this.dialog.locator('#confirmEmail').fill(user.email);
+      // The form validates on blur; leave the last field before asserting.
+      await this.dialog.locator('#instagram').press('Tab');
 
-    const email = this.dialog.locator('#email');
-    const confirmEmail = this.dialog.locator('#confirmEmail');
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      await email.fill(user.email);
-      await confirmEmail.fill(user.email);
-      if (await email.inputValue() === user.email && await confirmEmail.inputValue() === user.email) break;
-    }
-    await this.dialog.locator('#instagram').press('Tab');
-    await expect(email).toHaveValue(user.email);
-    await expect(confirmEmail).toHaveValue(user.email);
-    await expect(this.continueButton).toBeEnabled();
+      await expect(this.dialog.locator('#email')).toHaveValue(user.email, { timeout: 2_000 });
+      await expect(this.dialog.locator('#confirmEmail')).toHaveValue(user.email, { timeout: 2_000 });
+      await expect(this.continueButton).toBeEnabled({ timeout: 2_000 });
+    }).toPass({ timeout: 45_000 });
+
     await this.continueButton.click();
   }
 
@@ -145,15 +158,36 @@ export class CheckoutPage {
     await this.continueButton.click();
   }
 
-  private async typeBrickField(field: string, value: string, timeout: number): Promise<boolean> {
+  private async typeBrickField(field: string, value: string, timeout: number): Promise<Locator | null> {
     const locator = await findBrickField(this.page, field, timeout);
-    if (!locator) return false;
+    if (!locator) return null;
     await locator.click();
     await locator.fill('');
     // The Brick's PCI inputs mask and validate on keystrokes, so replay the
     // value as typing rather than setting it in one shot.
     await locator.pressSequentially(value, { delay: 40 });
-    return true;
+    return locator;
+  }
+
+  private async fillExpiration(card: MercadoPagoCard): Promise<boolean> {
+    // The field is masked as MM/YY, so type the digits and let the mask insert
+    // the separator; fall back to the explicit form if it did not.
+    const locator = await this.typeBrickField(
+      'expirationDate',
+      `${card.expirationMonth}${card.expirationYear}`,
+      10_000,
+    );
+    if (locator) {
+      if (!/\d{2}\D?\d{2}/.test(await locator.inputValue())) {
+        await locator.fill('');
+        await locator.pressSequentially(`${card.expirationMonth}/${card.expirationYear}`, { delay: 40 });
+      }
+      return true;
+    }
+    // Older Brick layouts split expiry into two inputs.
+    const month = await this.typeBrickField('expirationMonth', card.expirationMonth, 5_000);
+    const year = await this.typeBrickField('expirationYear', card.expirationYear, 5_000);
+    return Boolean(month && year);
   }
 
   async fillCard(card: MercadoPagoCard, payerEmail = TEST_USER.email) {
@@ -161,14 +195,7 @@ export class CheckoutPage {
 
     const missing: string[] = [];
     if (!(await this.typeBrickField('cardNumber', card.number, 30_000))) missing.push('cardNumber');
-
-    const expiration = `${card.expirationMonth}/${card.expirationYear}`;
-    if (!(await this.typeBrickField('expirationDate', expiration, 5_000))) {
-      // Older Brick layouts split expiry into two inputs.
-      const month = await this.typeBrickField('expirationMonth', card.expirationMonth, 5_000);
-      const year = await this.typeBrickField('expirationYear', card.expirationYear, 5_000);
-      if (!month || !year) missing.push('expirationDate');
-    }
+    if (!(await this.fillExpiration(card))) missing.push('expirationDate');
 
     if (!(await this.typeBrickField('securityCode', card.securityCode, 10_000))) missing.push('securityCode');
     if (!(await this.typeBrickField('cardholderName', `TEST ${card.paymentStatus}`, 10_000))) {
@@ -179,7 +206,21 @@ export class CheckoutPage {
     }
     // The payer email is only rendered when the Brick is not initialized with
     // one, so treat it as best-effort.
-    await this.typeBrickField('cardholderEmail', payerEmail, 3_000);
+    if (!(await this.typeBrickField('cardholderEmail', payerEmail, 10_000))) missing.push('cardholderEmail');
+
+    // Document type defaults to CPF; pin it anyway so the fixture's document
+    // number is always validated against the same type.
+    for (const frame of this.page.frames()) {
+      const select = frame.locator('select#identificationType').first();
+      try {
+        if ((await select.count()) > 0 && (await select.isVisible())) {
+          await select.selectOption('CPF');
+          break;
+        }
+      } catch {
+        // Not every Brick version renders a document-type select.
+      }
+    }
 
     if (missing.length) {
       throw new Error(
@@ -187,6 +228,7 @@ export class CheckoutPage {
       );
     }
 
+    console.log(`[TC-01] checkout frames after filling the card:\n${await describeCheckoutFrames(this.page)}`);
     await this.continueButton.click();
   }
 
