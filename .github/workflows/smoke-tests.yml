@@ -39,12 +39,12 @@ on:
 permissions:
   contents: read
 
-# The suite drives real production data through one dedicated test account and
-# two fixed events, so two runs at the same time would step on each other's
-# join requests and tickets. Queue instead of overlapping.
-concurrency:
-  group: smoke-tests
-  cancel-in-progress: false
+# Deliberately no `concurrency` group. Overlapping runs are safe — every buyer
+# address is derived from GITHUB_RUN_ID, so two runs never share a participation
+# — and serializing them is not: GitHub keeps a single pending run per group, so
+# a backend deploy waiting on its dispatched run watched it get cancelled the
+# moment a frontend deploy queued another. A deploy gate must not go red because
+# another deploy happened.
 
 jobs:
   smoke:
