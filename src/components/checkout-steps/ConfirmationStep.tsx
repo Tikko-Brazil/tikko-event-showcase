@@ -40,7 +40,7 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
   onNext,
 }) => {
   const [error, setError] = useState<string | null>(null);
-  
+
   // Convert prices from cents to decimal for calculations
   const ticketPriceDecimal = fromCents(ticketPrice);
   const discountAmountDecimal = discount?.amount ? fromCents(discount.amount) : 0;
@@ -166,11 +166,10 @@ export const ConfirmationStep: React.FC<ConfirmationStepProps> = ({
                       <span className="font-medium">
                         {paymentData?.cardInfo?.formData?.payment_method_id
                           ? paymentData.cardInfo.formData.payment_method_id
-                              .charAt(0)
-                              .toUpperCase() +
-                            paymentData.cardInfo.formData.payment_method_id.slice(
-                              1
-                            )
+                            .replace(/_/g, " ")
+                            .split(" ")
+                            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(" ")
                           : "Cartão de Crédito"}
                       </span>
                     </>
