@@ -1,6 +1,8 @@
 import { expect, type Frame, type Locator, type Page } from '@playwright/test';
 import type { MercadoPagoCard } from '../fixtures/mercadopago-cards';
 import { TEST_USER, smokeIdentification } from '../fixtures/test-users';
+import { loginViaApi } from './auth';
+import { requireOrganizerCredentials } from './organizer';
 
 // The checkout renders its own card form and tokenizes through the Mercado
 // Pago REST API, so the fields live in the host document:
@@ -371,9 +373,10 @@ export class CheckoutPage {
  * (a checkout that succeeds and one that is refused must not share a
  * participation), so every address is cleaned in turn.
  *
- * The endpoint is destructive and lives in production, so it is guarded by a
- * shared secret: `SMOKE_TEST_CLEANUP_TOKEN` has to match the backend's, or the
- * call comes back 401 and the `afterAll` fails.
+ * The endpoint is destructive and lives in production, so it sits behind an
+ * admin session: the suite logs in with the same organizer credentials TC-06
+ * through TC-09 already use and sends that bearer token. A non-admin session
+ * gets 403 from the backend, so a buyer token is of no use here.
  *
  * Without `SMOKE_TEST_CLEANUP_URL` this is a no-op and each run leaves its
  * records behind — which is why the e-mails are unique per run.
@@ -389,15 +392,11 @@ export async function cleanupTestData(
     return;
   }
 
-  const token = process.env.SMOKE_TEST_CLEANUP_TOKEN;
-  expect(
-    token,
-    'SMOKE_TEST_CLEANUP_URL is configured but SMOKE_TEST_CLEANUP_TOKEN is not; the endpoint would answer 401',
-  ).toBeTruthy();
+  const { access_token } = await loginViaApi(request, requireOrganizerCredentials(), 'Cleanup admin');
 
   for (const userEmail of [...new Set([userEmails].flat())]) {
     const response = await request.post(endpoint, {
-      headers: { 'X-Smoke-Cleanup-Token': token as string },
+      headers: { Authorization: `Bearer ${access_token}` },
       data: { event_ids: eventIds, user_email: userEmail },
     });
     expect(response.ok(), `Smoke test cleanup failed for ${userEmail} (${response.status()})`).toBeTruthy();
