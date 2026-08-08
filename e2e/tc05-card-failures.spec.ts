@@ -18,8 +18,8 @@ import { issuedSmokeEmails, smokeEmail } from './fixtures/test-users';
 // A refused payment leaves the invite in `payment_failed`, which the backend
 // explicitly allows to be retried — so every declined result can reuse one
 // e-mail, and the run creates a single user instead of six. The contingency
-// case does NOT leave that state (it is accepted as pending), so it gets its
-// own address, and the brand matrix never submits, so it needs no records.
+// case does NOT leave that state, so it gets its own address, and the brand
+// matrix never submits, so it needs no records.
 const DECLINED_EMAIL = smokeEmail('tc05-declined');
 
 const DECLINED_RESULTS: Array<{ card: MercadoPagoCard; reason: string }> = [
@@ -114,9 +114,13 @@ test.describe('TC-05: cartões recusados', () => {
     });
   }
 
-  test('CONT (contingência) é aceito como pendente sem quebrar o checkout', async ({ page }, testInfo) => {
-    // A pending payment is accepted, so the invite it leaves behind blocks a
-    // second attempt with the same address.
+  test('CONT (contingência) falha com mensagem amigável e mantém o checkout', async ({ page }, testInfo) => {
+    // CONT does not reach the "pending" branch the backend accepts: Mercado
+    // Pago refuses the request outright on this test account, so the create
+    // call errors before any status is recorded. The invite is therefore left
+    // untouched (still `Accepted` on an auto-accept event, never
+    // `PaymentFailed`), which blocks a retry with the same address — hence the
+    // per-attempt e-mail.
     const email = smokeEmail('tc05-pending', testInfo.retry);
     const { checkout, pageErrors } = await fillCheckoutUpToConfirmation(
       page,
@@ -130,15 +134,31 @@ test.describe('TC-05: cartões recusados', () => {
     await checkout.dialog.getByRole('button', { name: /confirmar e finalizar compra/i }).last().click();
     const response = await registration;
 
-    // `CONT` settles as `pending` at Mercado Pago, which the backend accepts
-    // (approved / authorized / pending all move the invite forward). This is
-    // the one non-approved result that must NOT surface as a failure.
-    expect(response.status(), 'CONT should be accepted as pending').toBe(200);
-    await expect(checkout.dialog.getByText(/compra realizada/i).last()).toBeVisible();
-    await expect(page.getByText(/falha no processamento do pagamento/i)).toHaveCount(0);
+    expect(response.status(), 'CONT should be reported as a payment failure').toBe(500);
+    const body = await response.json();
+    expect(body.error?.code).toBe('PAYMENT_FAILED');
+
+    // What must hold: the user is told, in words, that the payment did not go
+    // through, and nothing claims a ticket was issued.
+    await expect(page.getByText(/falha no processamento do pagamento/i).last()).toBeVisible();
+    await expect(
+      checkout.dialog.getByRole('button', { name: /confirmar e finalizar compra/i }).last(),
+    ).toBeVisible();
+    await expect(checkout.dialog.getByText(/compra realizada|solicita[cç][aã]o enviada/i)).toHaveCount(0);
     expect(pageErrors, `Uncaught page errors: ${pageErrors.join(' | ')}`).toHaveLength(0);
   });
 });
+
+const unconfiguredBrands = MERCADO_PAGO_BRANDS.filter((brand) => !brand.isConfigured);
+if (unconfiguredBrands.length) {
+  // Printed unconditionally so the workflow log names the gap; a skipped test
+  // alone reads like coverage.
+  console.log(
+    `[TC-05] brand coverage missing for: ${unconfiguredBrands
+      .map((brand) => `${brand.label} (SMOKE_TEST_MP_${brand.envPrefix}_NUMBER / _SECURITY_CODE)`)
+      .join(', ')} — these bandeiras were not exercised`,
+  );
+}
 
 test.describe('TC-05: bandeiras aceitas', () => {
   for (const brand of MERCADO_PAGO_BRANDS) {
