@@ -1,8 +1,7 @@
 import { expect, type Frame, type Locator, type Page } from '@playwright/test';
 import type { MercadoPagoCard } from '../fixtures/mercadopago-cards';
 import { TEST_USER, smokeIdentification } from '../fixtures/test-users';
-import { loginViaApi } from './auth';
-import { requireOrganizerCredentials } from './organizer';
+import { loginAsSmokeUser } from './auth';
 
 // The checkout renders its own card form and tokenizes through the Mercado
 // Pago REST API, so the fields live in the host document:
@@ -374,9 +373,11 @@ export class CheckoutPage {
  * participation), so every address is cleaned in turn.
  *
  * The endpoint is destructive and lives in production, so it sits behind an
- * admin session: the suite logs in with the same organizer credentials TC-06
- * through TC-09 already use and sends that bearer token. A non-admin session
- * gets 403 from the backend, so a buyer token is of no use here.
+ * admin session. The token is the standard test user's — `SMOKE_TEST_USER_EMAIL`
+ * / `SMOKE_TEST_USER_PASSWORD`, the account every buyer alias hangs off — and
+ * the backend still re-reads `user.role` per request and answers 403 to anyone
+ * who is not an admin. Holding this token is not what grants the deletes; being
+ * an admin is.
  *
  * Without `SMOKE_TEST_CLEANUP_URL` this is a no-op and each run leaves its
  * records behind — which is why the e-mails are unique per run.
@@ -392,7 +393,7 @@ export async function cleanupTestData(
     return;
   }
 
-  const { access_token } = await loginViaApi(request, requireOrganizerCredentials(), 'Cleanup admin');
+  const { access_token } = await loginAsSmokeUser(request);
 
   for (const userEmail of [...new Set([userEmails].flat())]) {
     const response = await request.post(endpoint, {

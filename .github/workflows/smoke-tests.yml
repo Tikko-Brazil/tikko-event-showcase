@@ -80,20 +80,22 @@ jobs:
       SMOKE_TEST_MANUAL_APPROVAL_EVENT_ID: ${{ secrets.SMOKE_TEST_MANUAL_APPROVAL_EVENT_ID || vars.SMOKE_TEST_MANUAL_APPROVAL_EVENT_ID }}
       SMOKE_TEST_MANUAL_APPROVAL_TICKET_PRICING_ID: ${{ secrets.SMOKE_TEST_MANUAL_APPROVAL_TICKET_PRICING_ID || vars.SMOKE_TEST_MANUAL_APPROVAL_TICKET_PRICING_ID }}
       SMOKE_TEST_COUPON_CODE: ${{ secrets.SMOKE_TEST_COUPON_CODE || vars.SMOKE_TEST_COUPON_CODE }}
-      # POST /private/smoke-test/cleanup. It authenticates with the admin
-      # session below, so there is no separate cleanup secret to keep in sync.
+      # POST /private/smoke-test/cleanup. It authenticates with the standard
+      # test user's session below, so there is no cleanup secret to keep in sync.
       SMOKE_TEST_CLEANUP_URL: ${{ secrets.SMOKE_TEST_CLEANUP_URL || vars.SMOKE_TEST_CLEANUP_URL }}
+      # The standard test user. Every buyer is a `+smoke-<run id>` alias of this
+      # address created by the checkout, so this pair is the only credential in
+      # the suite that can log in — and it is the session the cleanup uses. The
+      # backend answers 403 to any caller whose `user.role` is not admin, so this
+      # account has to keep that role.
       SMOKE_TEST_USER_EMAIL: ${{ secrets.SMOKE_TEST_USER_EMAIL || vars.SMOKE_TEST_USER_EMAIL }}
       SMOKE_TEST_USER_PASSWORD: ${{ secrets.SMOKE_TEST_USER_PASSWORD }}
       SMOKE_TEST_USER_PHONE: ${{ secrets.SMOKE_TEST_USER_PHONE || vars.SMOKE_TEST_USER_PHONE }}
       SMOKE_TEST_USER_IDENTIFICATION: ${{ secrets.SMOKE_TEST_USER_IDENTIFICATION || vars.SMOKE_TEST_USER_IDENTIFICATION }}
       SMOKE_TEST_USER_BIRTHDATE: ${{ secrets.SMOKE_TEST_USER_BIRTHDATE || vars.SMOKE_TEST_USER_BIRTHDATE }}
 
-      # Organizer session (TC-06/07/08/09) and the cleanup in every `afterAll`.
-      # This is the admin account that owns the `is_test` organization; it must
-      # never be the buyer account, since a buyer is created by the checkout and
-      # has no password at all. The cleanup endpoint answers 403 to any session
-      # whose `user.role` is not admin, so this account has to keep that role.
+      # Organizer session (TC-06/07/08/09): the account that owns the `is_test`
+      # organization and drives the real login screen in those cases.
       SMOKE_TEST_ADMIN_EMAIL: ${{ secrets.SMOKE_TEST_ADMIN_EMAIL || vars.SMOKE_TEST_ADMIN_EMAIL }}
       SMOKE_TEST_ADMIN_PASSWORD: ${{ secrets.SMOKE_TEST_ADMIN_PASSWORD }}
       SMOKE_TEST_ORGANIZER_EMAIL: ${{ secrets.SMOKE_TEST_ORGANIZER_EMAIL || vars.SMOKE_TEST_ORGANIZER_EMAIL }}
