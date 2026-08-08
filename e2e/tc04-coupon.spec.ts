@@ -72,7 +72,7 @@ async function completeFreeCheckout(page: Page, slug: string, ticketPricingId: n
   expect(payload.payment.transaction_amount).toBe(0);
   expect(payload.payment.payment_method_id).toBe('free');
   expect(payload.payment.token).toBe('');
-  await expect(dialog.getByText(expectedMessage)).toBeVisible();
+  await expect(dialog.getByText(expectedMessage).last()).toBeVisible();
 }
 
 test.beforeEach(() => requireConfiguration());

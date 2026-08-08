@@ -1,8 +1,14 @@
 const runId = (process.env.GITHUB_RUN_ID || `local-${Date.now()}`).replace(/[^a-zA-Z0-9-]/g, '-');
 const configuredEmail = process.env.SMOKE_TEST_USER_EMAIL;
+const uniqueConfiguredEmail = configuredEmail
+  ? (() => {
+      const [localPart, domain] = configuredEmail.split('@');
+      return `${localPart}+smoke-${runId}@${domain}`;
+    })()
+  : undefined;
 
 export const TEST_USER = {
-  email: configuredEmail || `smoke-test+${runId}@tikko.com.br`,
+  email: uniqueConfiguredEmail || `smoke-test+${runId}@tikko.com.br`,
   password: process.env.SMOKE_TEST_USER_PASSWORD || '',
   fullName: 'Smoke Test User',
   phone: process.env.SMOKE_TEST_USER_PHONE || '+55 (11) 99999-9999',
