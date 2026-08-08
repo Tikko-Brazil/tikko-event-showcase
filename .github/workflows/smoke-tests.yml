@@ -1,6 +1,23 @@
 name: Playwright smoke tests
 
+run-name: >-
+  Playwright smoke tests${{ inputs.trigger_id && format(' · {0}', inputs.trigger_id) || '' }}
+
 on:
+  # Called by another workflow in this repository (see after-production-deploy.yml).
+  workflow_call:
+    inputs:
+      frontend_url:
+        description: 'Optional frontend URL override (otherwise SMOKE_TEST_BASE_URL is used)'
+        required: false
+        default: ''
+        type: string
+      trigger_id:
+        description: 'Free-form marker shown in the run name so a caller can find this run'
+        required: false
+        default: ''
+        type: string
+  # Dispatched by hand, and by the tikko-backend deploy via CROSS_REPO_PAT.
   workflow_dispatch:
     inputs:
       frontend_url:
@@ -8,40 +25,51 @@ on:
         required: false
         default: ''
         type: string
+      trigger_id:
+        description: 'Free-form marker shown in the run name so a caller can find this run'
+        required: false
+        default: ''
+        type: string
+  schedule:
+    # 06:00 America/Sao_Paulo — production payments are exercised daily even
+    # when nothing is deployed, so a broken external dependency (Mercado Pago,
+    # e-mail, webhooks) surfaces before the next deploy blames itself for it.
+    - cron: '0 9 * * *'
 
 permissions:
   contents: read
 
+# The suite drives real production data through one dedicated test account and
+# two fixed events, so two runs at the same time would step on each other's
+# join requests and tickets. Queue instead of overlapping.
+concurrency:
+  group: smoke-tests
+  cancel-in-progress: false
+
 jobs:
   smoke:
-    name: ${{ matrix.name }}
+    name: Smoke tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      # Every case must report its own result: one red suite should not hide
-      # the state of the others.
-      fail-fast: false
-      matrix:
-        include:
-          - name: TC-01 credit card
-            spec: e2e/tc01-credit-card.spec.ts
-          - name: TC-02 Pix
-            spec: e2e/tc02-pix.spec.ts
-          - name: TC-04 coupon
-            spec: e2e/tc04-coupon.spec.ts
-          - name: TC-05 card failures
-            spec: e2e/tc05-card-failures.spec.ts
-          - name: TC-06 accept join request
-            spec: e2e/tc06-accept-request.spec.ts
-          - name: TC-07 reject join request
-            spec: e2e/tc07-reject-request.spec.ts
-          - name: TC-08 refund ticket
-            spec: e2e/tc08-refund.spec.ts
-          - name: TC-09 management errors and permissions
-            spec: e2e/tc09-management-errors.spec.ts
+    timeout-minutes: 45
+
+    # Browsers and their system libraries ship inside the image, so there is no
+    # `playwright install` download on any run. Keep the tag in lockstep with
+    # @playwright/test in package-lock.json — PLAYWRIGHT_VERSION below is the
+    # same number and the "Verify Playwright image" step fails the run if the
+    # two ever drift (the `container.image` field cannot read the env context).
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
+      # 1001 is `pwuser` in the image: Chromium must not run as root, and
+      # --ipc=host avoids the shared-memory crashes Chromium hits in Docker.
+      options: --user 1001 --ipc=host
 
     env:
       CI: true
+      PLAYWRIGHT_VERSION: 1.62.1
+      # $HOME inside a container job is not reliably writable for uid 1001;
+      # keep npm's cache in the workspace, which the checkout owns.
+      npm_config_cache: ${{ github.workspace }}/.npm-cache
+
       SMOKE_TEST_BASE_URL: ${{ inputs.frontend_url || secrets.SMOKE_TEST_BASE_URL || vars.SMOKE_TEST_BASE_URL || 'http://127.0.0.1:4173' }}
       VITE_API_BASE_URL: ${{ secrets.SMOKE_TEST_API_BASE_URL || vars.SMOKE_TEST_API_BASE_URL }}
       SMOKE_TEST_API_BASE_URL: ${{ secrets.SMOKE_TEST_API_BASE_URL || vars.SMOKE_TEST_API_BASE_URL }}
@@ -95,23 +123,31 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Cache npm downloads
+        uses: actions/cache@v4
         with:
-          node-version: 20
-          cache: npm
+          path: ${{ github.workspace }}/.npm-cache
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: npm-${{ runner.os }}-
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Verify Playwright image matches the lockfile
+        shell: bash
+        run: |
+          locked="$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")"
+          if [ "$locked" != "$PLAYWRIGHT_VERSION" ]; then
+            echo "::error::package-lock.json pins @playwright/test $locked but this job runs mcr.microsoft.com/playwright:v$PLAYWRIGHT_VERSION-noble. Bump the container image tag and PLAYWRIGHT_VERSION in this workflow together."
+            exit 1
+          fi
+          echo "Playwright $locked, browsers preinstalled at ${PLAYWRIGHT_BROWSERS_PATH:-<image default>}"
 
-      - name: Run ${{ matrix.name }}
+      - name: Run smoke tests
         shell: bash
         run: |
           set -o pipefail
-          npm run test:e2e -- ${{ matrix.spec }} 2>&1 | tee smoke-test.log
+          npm run test:e2e -- e2e/ 2>&1 | tee smoke-test.log
 
       - name: Report skipped cases
         if: always()
@@ -122,11 +158,11 @@ jobs:
             grep -n 'was not exercised' smoke-test.log || true
           fi
 
-      - name: Upload smoke diagnostics
-        if: failure()
+      - name: Upload smoke report and diagnostics
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-diagnostics-${{ strategy.job-index }}-${{ github.run_id }}
+          name: playwright-report-${{ github.run_id }}-${{ github.run_attempt }}
           if-no-files-found: warn
           path: |
             smoke-test.log
