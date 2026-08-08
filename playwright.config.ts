@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const baseURL = process.env.SMOKE_TEST_BASE_URL || 'http://127.0.0.1:4173';
 const isLocal = /^(https?:\/\/)?(127\.0\.0\.1|localhost)(:\d+)?/.test(baseURL);
+const localPort = new URL(baseURL).port || '4173';
 
 export default defineConfig({
   testDir: './e2e',
@@ -24,7 +25,7 @@ export default defineConfig({
   },
   webServer: isLocal
     ? {
-        command: 'npm run dev -- --host 127.0.0.1',
+        command: `npm run dev -- --host 127.0.0.1 --port ${localPort}`,
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,

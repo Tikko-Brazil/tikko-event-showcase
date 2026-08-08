@@ -60,6 +60,20 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Playwright smoke workflow
+
+The manual `Playwright smoke tests` workflow runs `e2e/tc04-coupon.spec.ts` (TC-04 and TC-04b). It starts Vite on `http://127.0.0.1:4173` by default; provide a different `frontend_url` when testing an already deployed frontend.
+
+Configure these GitHub Actions repository variables before dispatching it:
+
+- `SMOKE_TEST_API_BASE_URL`
+- `SMOKE_TEST_EVENT_SLUG`, `SMOKE_TEST_EVENT_ID`, `SMOKE_TEST_TICKET_PRICING_ID`
+- `SMOKE_TEST_MANUAL_APPROVAL_EVENT_SLUG`, `SMOKE_TEST_MANUAL_APPROVAL_EVENT_ID`, `SMOKE_TEST_MANUAL_APPROVAL_TICKET_PRICING_ID`
+- `SMOKE_TEST_COUPON_CODE`, `SMOKE_TEST_CLEANUP_URL`
+- `SMOKE_TEST_USER_EMAIL`, `SMOKE_TEST_USER_PHONE`, `SMOKE_TEST_USER_IDENTIFICATION`, `SMOKE_TEST_USER_BIRTHDATE`
+
+Store only `SMOKE_TEST_USER_PASSWORD` as a repository secret. Event slugs and IDs are configuration values, not source-controlled test data. Failed runs upload the Playwright report, traces, screenshots, videos, test results, and the captured smoke log for 14 days.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/dd0bccfd-ccd1-4744-8cda-f492efcf48d1) and click on Share -> Publish.
