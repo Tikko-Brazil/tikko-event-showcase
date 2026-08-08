@@ -175,7 +175,9 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
   if (error) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-red-500">Erro ao carregar participantes</div>
+        <div className="text-red-500" data-testid="participants-error">
+          Erro ao carregar participantes
+        </div>
       </div>
     );
   }
@@ -198,7 +200,7 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
           <div className="col-span-full">
             <Card>
               <CardContent className="flex items-center justify-center h-32">
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground" data-testid="participants-empty">
                   Nenhum participante encontrado
                 </p>
               </CardContent>
@@ -209,6 +211,8 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
             <Card
               key={`${invite.invite_id}-${participantPage}-${index}`}
               className="relative"
+              data-testid="participant-card"
+              data-user-email={invite.user.email}
             >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-4">
@@ -316,6 +320,7 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                         variant="destructive"
                         size="sm"
                         className="w-full"
+                        data-testid="participant-refund"
                       >
                         <DollarSign className="h-4 w-4 mr-2" />
                         {t("eventManagement.participants.actions.refundTicket")}
@@ -340,6 +345,7 @@ export const EventParticipants = ({ eventId }: EventParticipantsProps) => {
                         </AlertDialogCancel>
                         <AlertDialogAction
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          data-testid="participant-refund-confirm"
                           onClick={() => refundMutation.mutate(invite)}
                           disabled={refundMutation.isPending}
                         >
