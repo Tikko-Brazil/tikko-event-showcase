@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       frontend_url:
-        description: 'Frontend URL (leave the default to start Vite in this job)'
+        description: 'Optional frontend URL override (otherwise SMOKE_TEST_BASE_URL is used)'
         required: false
-        default: 'http://127.0.0.1:4173'
+        default: ''
         type: string
 
 permissions:
@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 20
     env:
       CI: true
-      SMOKE_TEST_BASE_URL: ${{ inputs.frontend_url }}
+      SMOKE_TEST_BASE_URL: ${{ inputs.frontend_url || secrets.SMOKE_TEST_BASE_URL || vars.SMOKE_TEST_BASE_URL || 'http://127.0.0.1:4173' }}
       VITE_API_BASE_URL: ${{ secrets.SMOKE_TEST_API_BASE_URL || vars.SMOKE_TEST_API_BASE_URL }}
       SMOKE_TEST_API_BASE_URL: ${{ secrets.SMOKE_TEST_API_BASE_URL || vars.SMOKE_TEST_API_BASE_URL }}
       SMOKE_TEST_EVENT_SLUG: ${{ secrets.SMOKE_TEST_EVENT_SLUG || vars.SMOKE_TEST_EVENT_SLUG }}

@@ -62,7 +62,7 @@ This project is built with:
 
 ## Playwright smoke workflow
 
-The manual `Playwright smoke tests` workflow runs `e2e/tc04-coupon.spec.ts` (TC-04 and TC-04b). It starts Vite on `http://127.0.0.1:4173` by default; provide a different `frontend_url` when testing an already deployed frontend.
+The manual `Playwright smoke tests` workflow runs `e2e/tc04-coupon.spec.ts` (TC-04 and TC-04b). It uses the `SMOKE_TEST_BASE_URL` secret when available, or starts Vite on `http://127.0.0.1:4173`; provide a different `frontend_url` to override it.
 
 Configure these GitHub Actions repository variables or secrets before dispatching it (the workflow accepts either):
 
