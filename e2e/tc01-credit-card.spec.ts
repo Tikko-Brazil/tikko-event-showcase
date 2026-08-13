@@ -6,25 +6,24 @@ import {
   describeCheckoutFrames,
   openEventCheckout,
 } from './helpers/checkout';
-import { TEST_EVENT } from './fixtures/test-events';
+import { MERCADO_PAGO_EVENT, MERCADO_PAGO_EVENT_VARIABLES } from './fixtures/test-events';
+import { requireMercadoPagoFixtures } from './helpers/mercado-pago-suite';
 import { MERCADO_PAGO_CARDS, requireCard } from './fixtures/mercadopago-cards';
 import { issuedSmokeEmails, smokeEmail, smokeIdentification } from './fixtures/test-users';
 
+// The payment is the subject here, so this case charges Mercado Pago for real.
+// It runs in the non-blocking integration workflow, not in the deploy gate.
+requireMercadoPagoFixtures('TC-01', [
+  { event: MERCADO_PAGO_EVENT, variables: MERCADO_PAGO_EVENT_VARIABLES },
+]);
+
 const requireConfiguration = () => {
-  const missing = [
-    ['SMOKE_TEST_EVENT_SLUG', TEST_EVENT.slug],
-    ['SMOKE_TEST_EVENT_ID', TEST_EVENT.id],
-    ['SMOKE_TEST_TICKET_PRICING_ID', TEST_EVENT.ticketPricingId],
-  ].filter(([, value]) => !value);
-  if (missing.length) {
-    throw new Error(`Missing smoke-test configuration: ${missing.map(([name]) => name).join(', ')}`);
-  }
   requireCard(MERCADO_PAGO_CARDS.approved);
 };
 
 async function completeCreditCardCheckout(page: Page, email: string) {
   attachCheckoutDiagnostics(page);
-  await openEventCheckout(page, TEST_EVENT.slug, TEST_EVENT.ticketPricingId);
+  await openEventCheckout(page, MERCADO_PAGO_EVENT.slug, MERCADO_PAGO_EVENT.ticketPricingId);
 
   // One document per buyer: same card, same amount and the same payer a few
   // times over gets the later payments refused as duplicates, which would
@@ -55,7 +54,7 @@ test.beforeEach(() => requireConfiguration());
 test.afterAll(async () => {
   const request = await playwrightRequest.newContext();
   try {
-    await cleanupTestData(request, [TEST_EVENT.id], issuedSmokeEmails());
+    await cleanupTestData(request, [MERCADO_PAGO_EVENT.id], issuedSmokeEmails());
   } finally {
     await request.dispose();
   }

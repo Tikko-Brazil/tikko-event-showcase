@@ -62,14 +62,30 @@ This project is built with:
 
 ## Playwright smoke workflow
 
-The manual `Playwright smoke tests` workflow runs one job per case, so a red suite never hides the others:
+The suite is split in two, because most cases that *pay* are not *about* paying:
 
-| job | spec | covers |
+| suite | cases | who waits for it |
 | --- | --- | --- |
-| TC-01 credit card | `e2e/tc01-credit-card.spec.ts` | approved purchase and the registration payload |
-| TC-02 Pix | `e2e/tc02-pix.spec.ts` | QR Code + polling on both approval flows |
-| TC-04 coupon | `e2e/tc04-coupon.spec.ts` | 100% coupon on both paid events |
-| TC-05 card failures | `e2e/tc05-card-failures.spec.ts` | every declined result, contingency, and the brand matrix |
+| `gate` | TC-04 coupon, TC-06 accept, TC-07 reject, TC-08 refund, TC-09 management errors | the tikko-backend deploy and the Vercel production deploy — this is the deploy gate |
+| `mercado_pago` | TC-01 credit card, TC-02 Pix, TC-05 card failures | nobody. Daily schedule, alert only |
+
+The gate runs against an organization on the **fake payment provider**
+(`organization.payment_provider = 'fake'`, see `SECURITY.md` in tikko-backend):
+TC-06, TC-07 and TC-08 only need a paid participant to exist, and buying it
+through the Mercado Pago sandbox is what used to make the gate as reliable as
+that sandbox was on the day (TIK-34). No payment call leaves the backend for
+these events; the browser still tokenizes at Mercado Pago, which is the one
+piece of that dependency the split does not remove.
+
+The `mercado_pago` suite keeps the real integration covered — it just stopped
+deciding whether a deploy ships. It runs from `smoke-tests-mercado-pago.yml`
+(daily at 06:30 America/Sao_Paulo, or by hand) and pays for real against the
+sandbox account.
+
+Both are the same workflow, selected with the `suite` input
+(`gate` | `mercado_pago` | `all`); `gate` is the default. A spec added later
+joins the gate automatically — only TC-01, TC-02 and TC-05 are listed as
+Mercado Pago cases.
 
 It uses the `SMOKE_TEST_BASE_URL` secret when available, or starts Vite on `http://127.0.0.1:4173`; provide a different `frontend_url` to override it.
 
@@ -80,6 +96,16 @@ Configure these GitHub Actions repository variables or secrets before dispatchin
 - `SMOKE_TEST_MANUAL_APPROVAL_EVENT_SLUG`, `SMOKE_TEST_MANUAL_APPROVAL_EVENT_ID`, `SMOKE_TEST_MANUAL_APPROVAL_TICKET_PRICING_ID`
 - `SMOKE_TEST_COUPON_CODE`, `SMOKE_TEST_CLEANUP_URL`
 - `SMOKE_TEST_USER_EMAIL`, `SMOKE_TEST_USER_PHONE`, `SMOKE_TEST_USER_IDENTIFICATION`, `SMOKE_TEST_USER_BIRTHDATE`
+
+The `mercado_pago` suite needs its own event fixtures, from a second test
+organization that still has `payment_provider = 'mercado_pago'`. They have no
+fallback on purpose: with these unset the cases are reported as skipped, rather
+than quietly running against the fake provider and reporting Mercado Pago
+coverage that no longer exists.
+
+- `SMOKE_TEST_MP_EVENT_SLUG`, `SMOKE_TEST_MP_EVENT_ID`, `SMOKE_TEST_MP_TICKET_PRICING_ID`
+- `SMOKE_TEST_MP_MANUAL_APPROVAL_EVENT_SLUG`, `SMOKE_TEST_MP_MANUAL_APPROVAL_EVENT_ID`, `SMOKE_TEST_MP_MANUAL_APPROVAL_TICKET_PRICING_ID`
+- `SMOKE_TEST_MP_COUPON_CODE` (optional; falls back to `SMOKE_TEST_COUPON_CODE`)
 
 `SMOKE_TEST_USER_PASSWORD` and `SMOKE_TEST_ADMIN_PASSWORD` must be repository secrets. Event slugs and IDs are configuration values, not source-controlled test data. Failed runs upload the Playwright report, traces, screenshots, videos, test results, and the captured smoke log for 14 days.
 
@@ -95,6 +121,8 @@ The brand matrix needs one card per brand, from the private Mercado Pago fixture
 - `SMOKE_TEST_MP_ELO_DEBIT_NUMBER` / `_SECURITY_CODE`
 
 A brand with no secret is reported as skipped (with the missing variable named) rather than silently passing.
+
+The same cardholder-name convention drives the fake provider on the gate events. The backend never sees what is inside a card token, so for a **test organization** the checkout sends the cardholder name on as `payment.simulated_outcome`, and an organization on `payment_provider = 'fake'` reads its result from it — `APRO`, `CONT`, `FUND`, and so on, exactly as the sandbox would. A real organization ignores the field server-side, and the checkout does not send it for one.
 
 ### Cleanup
 

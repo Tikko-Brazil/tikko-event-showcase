@@ -22,6 +22,9 @@ jobs:
     uses: ./.github/workflows/smoke-tests.yml
     secrets: inherit
     with:
+      # The gate only. The Mercado Pago integration cases run on their own
+      # schedule and must not decide whether a frontend deploy looks healthy.
+      suite: gate
       # Deliberately empty: SMOKE_TEST_BASE_URL is the stable production
       # hostname, while a Vercel environment_url can be a per-build alias that
       # the payment provider's allowed origins do not cover.

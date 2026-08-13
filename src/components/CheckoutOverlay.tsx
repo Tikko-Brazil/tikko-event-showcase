@@ -118,6 +118,14 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             paymentMethodId:
               paymentData.cardInfo.formData.payment_method_id || "credit_card",
             issuerId: Number(paymentData.cardInfo.formData.issuer_id) || 0,
+            // Only for a test organization, and only ever the cardholder name
+            // the tester typed. An event whose organization runs on the fake
+            // payment provider takes its result from this field the same way
+            // the Mercado Pago sandbox takes it from the name on the card;
+            // every real organization ignores it server-side.
+            simulatedOutcome: orgIsTest
+              ? paymentData.cardInfo.formData.cardholder_name || ""
+              : "",
             payer: {
               email: paymentData.cardInfo.formData.payer?.email || userData.email,
               identification: paymentData.cardInfo.formData.payer
@@ -173,6 +181,9 @@ export const CheckoutOverlay: React.FC<CheckoutOverlayProps> = ({
             ? "free"
             : paymentInfo?.paymentMethodId || "",
           issuer_id: paymentInfo?.issuerId || 0,
+          ...(paymentInfo?.simulatedOutcome
+            ? { simulated_outcome: paymentInfo.simulatedOutcome }
+            : {}),
           capture: true,
           external_reference: "",
           callback_url: "",
