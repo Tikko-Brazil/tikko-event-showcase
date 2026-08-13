@@ -1,10 +1,27 @@
 name: Playwright smoke tests
 
 run-name: >-
-  Playwright smoke tests${{ inputs.trigger_id && format(' · {0}', inputs.trigger_id) || '' }}
+  Playwright smoke tests${{ inputs.suite && format(' [%s]', inputs.suite) || '' }}${{ inputs.trigger_id && format(' · {0}', inputs.trigger_id) || '' }}
 
+# Two suites share this workflow so the container image, the fixture
+# environment and the reporting stay written once:
+#
+#   gate          everything that has to be true for a deploy to count as good.
+#                 It runs against the organization on the *fake* payment
+#                 provider, so no payment call leaves the backend and a Mercado
+#                 Pago outage cannot fail a healthy deploy. This is the suite
+#                 the tikko-backend deploy dispatches and waits for.
+#   mercado_pago  TC-01, TC-02 and TC-05 — the cases whose subject *is* Mercado
+#                 Pago. Scheduled daily by smoke-tests-mercado-pago.yml and
+#                 never waited on by a deploy: a failure there is an alert, not
+#                 a blocked release.
+#
+# See TIK-36 for why the split exists and what it costs: the gate no longer
+# catches a real break in the Mercado Pago integration. That coverage did not
+# disappear — it stopped deciding whether a deploy ships.
 on:
-  # Called by another workflow in this repository (see after-production-deploy.yml).
+  # Called by another workflow in this repository (see after-production-deploy.yml
+  # and smoke-tests-mercado-pago.yml).
   workflow_call:
     inputs:
       frontend_url:
@@ -16,6 +33,11 @@ on:
         description: 'Free-form marker shown in the run name so a caller can find this run'
         required: false
         default: ''
+        type: string
+      suite:
+        description: 'gate (deploy-blocking, fake payment provider), mercado_pago (integration, non-blocking) or all'
+        required: false
+        default: 'gate'
         type: string
   # Dispatched by hand, and by the tikko-backend deploy via CROSS_REPO_PAT.
   workflow_dispatch:
@@ -30,10 +52,17 @@ on:
         required: false
         default: ''
         type: string
+      suite:
+        description: 'Which cases to run'
+        required: false
+        default: 'gate'
+        type: choice
+        options: [gate, mercado_pago, all]
   schedule:
-    # 06:00 America/Sao_Paulo — production payments are exercised daily even
-    # when nothing is deployed, so a broken external dependency (Mercado Pago,
-    # e-mail, webhooks) surfaces before the next deploy blames itself for it.
+    # 06:00 America/Sao_Paulo — the gate is exercised daily even when nothing is
+    # deployed, so a break that is ours surfaces before the next deploy blames
+    # itself for it. The Mercado Pago cases have their own daily run half an
+    # hour later.
     - cron: '0 9 * * *'
 
 permissions:
@@ -48,7 +77,7 @@ permissions:
 
 jobs:
   smoke:
-    name: Smoke tests
+    name: Smoke tests (${{ inputs.suite || 'gate' }})
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -80,6 +109,19 @@ jobs:
       SMOKE_TEST_MANUAL_APPROVAL_EVENT_ID: ${{ secrets.SMOKE_TEST_MANUAL_APPROVAL_EVENT_ID || vars.SMOKE_TEST_MANUAL_APPROVAL_EVENT_ID }}
       SMOKE_TEST_MANUAL_APPROVAL_TICKET_PRICING_ID: ${{ secrets.SMOKE_TEST_MANUAL_APPROVAL_TICKET_PRICING_ID || vars.SMOKE_TEST_MANUAL_APPROVAL_TICKET_PRICING_ID }}
       SMOKE_TEST_COUPON_CODE: ${{ secrets.SMOKE_TEST_COUPON_CODE || vars.SMOKE_TEST_COUPON_CODE }}
+
+      # The Mercado Pago suite's own fixtures. They belong to a second test
+      # organization — still `is_test`, so still the sandbox account, but on
+      # `payment_provider = 'mercado_pago'`. Pointing TC-01/02/05 at the events
+      # above would run them against the fake provider and report Mercado Pago
+      # coverage that no longer existed, so these have no fallback: unset, the
+      # cases report themselves as skipped.
+      SMOKE_TEST_MP_EVENT_SLUG: ${{ secrets.SMOKE_TEST_MP_EVENT_SLUG || vars.SMOKE_TEST_MP_EVENT_SLUG }}
+      SMOKE_TEST_MP_EVENT_ID: ${{ secrets.SMOKE_TEST_MP_EVENT_ID || vars.SMOKE_TEST_MP_EVENT_ID }}
+      SMOKE_TEST_MP_TICKET_PRICING_ID: ${{ secrets.SMOKE_TEST_MP_TICKET_PRICING_ID || vars.SMOKE_TEST_MP_TICKET_PRICING_ID }}
+      SMOKE_TEST_MP_MANUAL_APPROVAL_EVENT_SLUG: ${{ secrets.SMOKE_TEST_MP_MANUAL_APPROVAL_EVENT_SLUG || vars.SMOKE_TEST_MP_MANUAL_APPROVAL_EVENT_SLUG }}
+      SMOKE_TEST_MP_MANUAL_APPROVAL_EVENT_ID: ${{ secrets.SMOKE_TEST_MP_MANUAL_APPROVAL_EVENT_ID || vars.SMOKE_TEST_MP_MANUAL_APPROVAL_EVENT_ID }}
+      SMOKE_TEST_MP_MANUAL_APPROVAL_TICKET_PRICING_ID: ${{ secrets.SMOKE_TEST_MP_MANUAL_APPROVAL_TICKET_PRICING_ID || vars.SMOKE_TEST_MP_MANUAL_APPROVAL_TICKET_PRICING_ID }}
       # POST /private/smoke-test/cleanup. It authenticates with the standard
       # test user's session below, so there is no cleanup secret to keep in sync.
       SMOKE_TEST_CLEANUP_URL: ${{ secrets.SMOKE_TEST_CLEANUP_URL || vars.SMOKE_TEST_CLEANUP_URL }}
@@ -151,9 +193,58 @@ jobs:
 
       - name: Run smoke tests
         shell: bash
+        env:
+          SUITE: ${{ inputs.suite || 'gate' }}
         run: |
-          set -o pipefail
-          npm run test:e2e -- e2e/ 2>&1 | tee smoke-test.log
+          set -euo pipefail
+
+          # The Mercado Pago cases are listed; the gate is "everything else", so
+          # a case added later joins the deploy gate by default instead of
+          # silently running nowhere.
+          MERCADO_PAGO_SPECS=(
+            e2e/tc01-credit-card.spec.ts
+            e2e/tc02-pix.spec.ts
+            e2e/tc05-card-failures.spec.ts
+          )
+          for spec in "${MERCADO_PAGO_SPECS[@]}"; do
+            if [ ! -f "$spec" ]; then
+              echo "::error::$spec is listed as a Mercado Pago case but does not exist — the suite split is out of date."
+              exit 1
+            fi
+          done
+
+          case "$SUITE" in
+            mercado_pago)
+              SPECS=("${MERCADO_PAGO_SPECS[@]}")
+              ;;
+            all)
+              SPECS=(e2e/)
+              ;;
+            gate)
+              SPECS=()
+              for spec in e2e/*.spec.ts; do
+                skip=""
+                for mp in "${MERCADO_PAGO_SPECS[@]}"; do
+                  [ "$spec" = "$mp" ] && skip=1
+                done
+                [ -z "$skip" ] && SPECS+=("$spec")
+              done
+              ;;
+            *)
+              echo "::error::Unknown suite '$SUITE' (expected gate, mercado_pago or all)."
+              exit 1
+              ;;
+          esac
+
+          if [ ${#SPECS[@]} -eq 0 ]; then
+            echo "::error::The '$SUITE' suite matched no spec files."
+            exit 1
+          fi
+
+          echo "Suite '$SUITE': ${SPECS[*]}"
+          set +e
+          npm run test:e2e -- "${SPECS[@]}" 2>&1 | tee smoke-test.log
+          exit "${PIPESTATUS[0]}"
 
       - name: Report skipped cases
         if: always()

@@ -6,7 +6,8 @@ import {
   collectPageErrors,
   openEventCheckout,
 } from './helpers/checkout';
-import { TEST_EVENT } from './fixtures/test-events';
+import { MERCADO_PAGO_EVENT, MERCADO_PAGO_EVENT_VARIABLES } from './fixtures/test-events';
+import { requireMercadoPagoFixtures } from './helpers/mercado-pago-suite';
 import {
   MERCADO_PAGO_BRANDS,
   MERCADO_PAGO_CARDS,
@@ -31,16 +32,12 @@ const DECLINED_RESULTS: Array<{ card: MercadoPagoCard; reason: string }> = [
   { card: MERCADO_PAGO_CARDS.formError, reason: 'dados do cartão inválidos' },
 ];
 
-const requireConfiguration = () => {
-  const missing = [
-    ['SMOKE_TEST_EVENT_SLUG', TEST_EVENT.slug],
-    ['SMOKE_TEST_EVENT_ID', TEST_EVENT.id],
-    ['SMOKE_TEST_TICKET_PRICING_ID', TEST_EVENT.ticketPricingId],
-  ].filter(([, value]) => !value);
-  if (missing.length) {
-    throw new Error(`Missing smoke-test configuration: ${missing.map(([name]) => name).join(', ')}`);
-  }
-};
+// Every case here is about how Mercado Pago refuses a card, so they charge it
+// for real, from the organization that still resolves to it. Non-blocking
+// workflow, not the deploy gate.
+requireMercadoPagoFixtures('TC-05', [
+  { event: MERCADO_PAGO_EVENT, variables: MERCADO_PAGO_EVENT_VARIABLES },
+]);
 
 const registrationResponse = (page: Page) =>
   page.waitForResponse((response) =>
@@ -52,7 +49,7 @@ async function fillCheckoutUpToConfirmation(page: Page, card: MercadoPagoCard, e
   attachCheckoutDiagnostics(page);
   const pageErrors = collectPageErrors(page);
 
-  await openEventCheckout(page, TEST_EVENT.slug, TEST_EVENT.ticketPricingId);
+  await openEventCheckout(page, MERCADO_PAGO_EVENT.slug, MERCADO_PAGO_EVENT.ticketPricingId);
 
   const checkout = new CheckoutPage(page);
   await checkout.acceptTerms();
@@ -66,13 +63,12 @@ test.beforeEach(() => {
   // A full checkout plus tokenization plus the payment round trip does not fit
   // in the 60s default when CI is slow.
   test.setTimeout(180_000);
-  requireConfiguration();
 });
 
 test.afterAll(async () => {
   const request = await playwrightRequest.newContext();
   try {
-    await cleanupTestData(request, [TEST_EVENT.id], issuedSmokeEmails());
+    await cleanupTestData(request, [MERCADO_PAGO_EVENT.id], issuedSmokeEmails());
   } finally {
     await request.dispose();
   }

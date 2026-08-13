@@ -65,6 +65,14 @@ type RegisterAndJoinEventInput = {
     capture: boolean
     external_reference: string
     callback_url: string
+    /**
+     * Asks a *fake* payment provider for a specific result, using the same
+     * codes the Mercado Pago sandbox reads off a cardholder name (`APRO`,
+     * `CONT`, `FUND`, …). The backend honours it only for an organization on
+     * `payment_provider = 'fake'`; anywhere else it is ignored, and the
+     * checkout only sends it for a test organization to begin with.
+     */
+    simulated_outcome?: string
     payer: {
       email: string
       first_name: string

@@ -126,6 +126,12 @@ export const PaymentInfoStep: React.FC<PaymentInfoStepProps> = ({
             payment_method_id: tokenResponse.payment_method_id || "credit_card",
             issuer_id: tokenResponse.issuer_id || 0,
             installments: 1,
+            // Kept next to the token for test organizations only: Mercado Pago
+            // reads the sandbox outcome off the cardholder name, and an event
+            // on the fake payment provider has to be told the same thing —
+            // the backend never sees the token's contents. CheckoutOverlay
+            // decides whether it travels any further.
+            cardholder_name: values.cardholderName,
             payer: {
               email: values.email,
               identification: {

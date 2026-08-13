@@ -1,0 +1,43 @@
+name: Mercado Pago integration smoke tests
+
+run-name: >-
+  Mercado Pago integration smoke tests${{ inputs.trigger_id && format(' · {0}', inputs.trigger_id) || '' }}
+
+# TC-01, TC-02 and TC-05 — the cases whose subject *is* Mercado Pago. They pay
+# for real against the sandbox account, from a test organization that still has
+# `payment_provider = 'mercado_pago'`.
+#
+# Nothing waits on this workflow. No deploy dispatches it, and the tikko-backend
+# deploy watches `smoke-tests.yml` (the gate) instead — so when the Mercado Pago
+# sandbox misbehaves, as it did in TIK-34, this run goes red and a healthy
+# deploy still ships. Read a failure here as "the payment integration needs
+# looking at", not "the release is broken".
+on:
+  workflow_dispatch:
+    inputs:
+      frontend_url:
+        description: 'Optional frontend URL override (otherwise SMOKE_TEST_BASE_URL is used)'
+        required: false
+        default: ''
+        type: string
+      trigger_id:
+        description: 'Free-form marker shown in the run name so a caller can find this run'
+        required: false
+        default: ''
+        type: string
+  schedule:
+    # 06:30 America/Sao_Paulo, half an hour after the gate. Both suites share a
+    # single test user and its coupon uses, so they are kept apart in time.
+    - cron: '30 9 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  mercado-pago:
+    uses: ./.github/workflows/smoke-tests.yml
+    secrets: inherit
+    with:
+      suite: mercado_pago
+      frontend_url: ${{ inputs.frontend_url || '' }}
+      trigger_id: ${{ inputs.trigger_id || '' }}

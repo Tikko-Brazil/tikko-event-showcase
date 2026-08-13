@@ -6,24 +6,26 @@ import {
   collectPageErrors,
   openEventCheckout,
 } from './helpers/checkout';
-import { MANUAL_APPROVAL_EVENT, TEST_EVENT } from './fixtures/test-events';
+import {
+  MERCADO_PAGO_EVENT,
+  MERCADO_PAGO_EVENT_VARIABLES,
+  MERCADO_PAGO_MANUAL_APPROVAL_EVENT,
+  MERCADO_PAGO_MANUAL_APPROVAL_EVENT_VARIABLES,
+} from './fixtures/test-events';
+import { requireMercadoPagoFixtures } from './helpers/mercado-pago-suite';
 import { issuedSmokeEmails, smokeEmail } from './fixtures/test-users';
 
 type SmokeEvent = { slug: string; id: number; ticketPricingId: number };
 
-const requireConfiguration = () => {
-  const missing = [
-    ['SMOKE_TEST_EVENT_SLUG', TEST_EVENT.slug],
-    ['SMOKE_TEST_EVENT_ID', TEST_EVENT.id],
-    ['SMOKE_TEST_TICKET_PRICING_ID', TEST_EVENT.ticketPricingId],
-    ['SMOKE_TEST_MANUAL_APPROVAL_EVENT_SLUG', MANUAL_APPROVAL_EVENT.slug],
-    ['SMOKE_TEST_MANUAL_APPROVAL_EVENT_ID', MANUAL_APPROVAL_EVENT.id],
-    ['SMOKE_TEST_MANUAL_APPROVAL_TICKET_PRICING_ID', MANUAL_APPROVAL_EVENT.ticketPricingId],
-  ].filter(([, value]) => !value);
-  if (missing.length) {
-    throw new Error(`Missing smoke-test configuration: ${missing.map(([name]) => name).join(', ')}`);
-  }
-};
+// Pix is the subject here, so both events belong to the organization that still
+// charges through Mercado Pago. Non-blocking workflow, not the deploy gate.
+requireMercadoPagoFixtures('TC-02', [
+  { event: MERCADO_PAGO_EVENT, variables: MERCADO_PAGO_EVENT_VARIABLES },
+  {
+    event: MERCADO_PAGO_MANUAL_APPROVAL_EVENT,
+    variables: MERCADO_PAGO_MANUAL_APPROVAL_EVENT_VARIABLES,
+  },
+]);
 
 /**
  * Mercado Pago never settles a sandbox Pix charge on its own, so the only way
@@ -91,13 +93,12 @@ test.beforeEach(() => {
   // A Pix checkout is a full user-info + payment + polling round trip; the
   // 60s default is not enough for it in CI.
   test.setTimeout(180_000);
-  requireConfiguration();
 });
 
 test.afterAll(async () => {
   const request = await playwrightRequest.newContext();
   try {
-    await cleanupTestData(request, [TEST_EVENT.id, MANUAL_APPROVAL_EVENT.id], issuedSmokeEmails());
+    await cleanupTestData(request, [MERCADO_PAGO_EVENT.id, MERCADO_PAGO_MANUAL_APPROVAL_EVENT.id], issuedSmokeEmails());
   } finally {
     await request.dispose();
   }
@@ -106,7 +107,7 @@ test.afterAll(async () => {
 test.describe('TC-02: pagamento via Pix', () => {
   test('gera o QR Code e conclui a compra no evento com aprovação automática', async ({ page }, testInfo) => {
     const email = smokeEmail('tc02-pix-auto', testInfo.retry);
-    const { checkout, polling, pageErrors } = await checkoutWithPix(page, TEST_EVENT, email);
+    const { checkout, polling, pageErrors } = await checkoutWithPix(page, MERCADO_PAGO_EVENT, email);
 
     // While the charge is unpaid the QR stays on screen and nothing is issued.
     await expect.poll(() => polling.polls, { timeout: 30_000 }).toBeGreaterThanOrEqual(2);
@@ -121,7 +122,7 @@ test.describe('TC-02: pagamento via Pix', () => {
 
   test('gera o QR Code e sinaliza aprovação necessária no evento manual', async ({ page }, testInfo) => {
     const email = smokeEmail('tc02-pix-manual', testInfo.retry);
-    const { checkout, polling, pageErrors } = await checkoutWithPix(page, MANUAL_APPROVAL_EVENT, email);
+    const { checkout, polling, pageErrors } = await checkoutWithPix(page, MERCADO_PAGO_MANUAL_APPROVAL_EVENT, email);
 
     await expect.poll(() => polling.polls, { timeout: 30_000 }).toBeGreaterThanOrEqual(2);
     await expect(checkout.dialog.getByText(/pagamento via pix/i).last()).toBeVisible();
